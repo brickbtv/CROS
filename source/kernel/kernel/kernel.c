@@ -11,6 +11,8 @@
 #include "hardware/hardware.h"
 #include "hardware/scr/screen_driver.h"
 
+#include "logo/logo.h"
+
 #define CPU_REG_SP 13
 #define CPU_REG_PC 15
 #define CPU_FLAGSREG_SUPERVISOR (1<<26)
@@ -25,8 +27,8 @@ typedef struct Ctx{
 static Ctx appCtx;
 
 void krn_start(void);
-void krn_debugLog(const char * msg);
 void krn_waitCycles(int times);
+void krn_drawLogo(ScreenInfo * scr_info);
 
 void* krn_init(void){	
 	krn_debugLog("==============================");
@@ -49,13 +51,30 @@ void krn_start(void){
 	
 	hw_initAll();
 	ScreenInfo scr_info = hw_scr_init();
-	krn_debugLogf("SCR: %x, %d, %d, %d", scr_info.addr, scr_info.res_hor, scr_info.res_ver, scr_info.bytes_per_char);
-	
-	hw_scr_putchar(scr_info, 0, 0, SCR_COLOR_GREEN, 'a');
+	krn_debugLogf("SCR: 0x%x, %dx%d, %d", scr_info.addr, scr_info.res_hor, scr_info.res_ver, scr_info.bytes_per_char);
+		
+	krn_drawLogo(&scr_info);
 	
 	krn_waitCycles(10000);
 	krn_debugLog("CROS: ShutDown");
 	krn_waitCycles(10000);
+}
+
+void krn_drawLogo(ScreenInfo * scr_info){
+	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
+
+	for (int y = 0; y < 5; y++){
+		for (int x = 0; x < 30; x++){
+			hw_scr_putchar(scr_info, x + 24, y, logo_arr[y*30 + x]);
+		}
+	}
+	
+	for (int x = 0; x < 80; x++){
+		hw_scr_setTextColor(scr_info, logo_line_color_arr[x%3]);
+		hw_scr_putchar(scr_info, x, 5, logo_line_arr[x%4]);
+	}
+	
+	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
 }
 
 void krn_waitCycles(int times){
@@ -72,8 +91,7 @@ void krn_debugLog(const char * msg){
 	hwi_call(HWBUS_NIC, HW_NIC_FUNC_SEND, &hwi);	
 }
 
-void krn_debugLogf(const char* fmt, ...)
-{
+void krn_debugLogf(const char* fmt, ...){
 	va_list ap;
 	char buf[256];
 	char* out = &buf[0];

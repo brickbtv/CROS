@@ -75,6 +75,10 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\kernel\\logo\\logo.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\scr\\screen_driver.c",
 			"bootfile": false
 		},
