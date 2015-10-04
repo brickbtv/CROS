@@ -18,7 +18,9 @@
 		{
 			"name": "Debug",
 			"includePaths": [
-
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
 			],
 			"defines": [
 				"DEBUG"
@@ -29,7 +31,9 @@
 		{
 			"name": "Release",
 			"includePaths": [
-
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
 			],
 			"defines": [
 				"NDEBUG"
@@ -39,9 +43,44 @@
 		}
 	],
 	"dependencies": [
-
+		"stdlib"
 	],
 	"files": [
-
+		{
+			"path": ".\\boot\\boot.asm",
+			"bootfile": true
+		},
+		{
+			"path": ".\\hardware\\hardware.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\hardware.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hwi\\hwi.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hwi\\hwi_raw_call.asm",
+			"bootfile": false
+		},
+		{
+			"path": ".\\kernel\\kernel.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\kernel\\kernel.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\scr\\screen_driver.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\scr\\screen_driver.h",
+			"bootfile": false
+		}
 	]
 }
