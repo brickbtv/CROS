@@ -11,6 +11,7 @@
 * 	Screen initialization. 
 *	Return: memory address of the screen buffer.
 */
+
 ScreenInfo hw_scr_init(){
 	ScreenInfo scr_info;
 
@@ -23,8 +24,11 @@ ScreenInfo hw_scr_init(){
 	scr_info.res_ver = data.regs[2];
 	scr_info.bytes_per_char = data.regs[3];
 	
-	scr_info.text_color = SCR_COLOR_WHITE;
-	scr_info.text_color = SCR_COLOR_BLACK;
+	scr_info.text_color = SCR_COLOR_WHITE << 8;
+	scr_info.back_color = SCR_COLOR_BLACK << 12; 
+	
+	scr_info.cur_x = 0;
+	scr_info.cur_y = 0;
 	
 	return scr_info;
 }
@@ -37,22 +41,72 @@ void hw_scr_setBackColor(ScreenInfo * info, unsigned int color){
 	info->back_color = color << 12;
 }
 
+void processScroll(ScreenInfo * info){
+	// move one line;
+	short fullsize = info->res_hor * info->res_ver * info->bytes_per_char;
+	short linesize_bytes = info->res_hor;
+	short * src = (info->addr + linesize_bytes);
+	
+	memmove(info->addr, src, fullsize - linesize_bytes * 2);
+	memset(info->addr + linesize_bytes * (info->res_ver - 1), 0, info->res_hor);
+	
+	info->cur_y --;
+}
+
 void hw_scr_putchar(ScreenInfo * info, unsigned int x, unsigned int y, const unsigned char ch){
 	short * canvas = info->addr;
 	
 	*(canvas + y * info->res_hor + x) =  info->back_color | info->text_color | ch;
 }
 
-void hw_scr_printf(ScreenInfo * info, unsigned int x, unsigned int y, const char* fmt, ...){
+void printfXY(ScreenInfo * info, unsigned int x, unsigned int y, const char* buf){
+	const char * ch = buf;
+	
+	info->cur_x = x;
+	info->cur_y = y;
+	
+	while (*ch){
+	
+		if (info->cur_y >= info->res_ver){
+			processScroll(info);
+		}
+	
+		switch(*ch){
+			case '\n':
+				info->cur_x = 0;
+				info->cur_y += 1;
+				ch++;	
+				
+				continue;	
+			case '\t':
+				info->cur_x += ((info->cur_x % SCR_TABSTOP) == 0) ? SCR_TABSTOP : SCR_TABSTOP - info->cur_x % SCR_TABSTOP;
+				ch++;	
+			
+				continue;
+			default: 
+				hw_scr_putchar(info, info->cur_x, info->cur_y, *ch);
+				info->cur_x += 1;
+				ch++;		
+		}		
+	}
+}
+
+void hw_scr_printfXY(ScreenInfo * info, unsigned int x, unsigned int y, const char* fmt, ...){
 	va_list ap;
 	char buf[256];
 	char* out = &buf[0];
 	va_start(ap, fmt);	
 	vsprintf(buf, fmt, ap);
-	char * ch = buf;
-	while (*ch){
-		hw_scr_putchar(info, x, y, *ch);
-		x++;
-		ch++;
-	}
+	
+	printfXY(info, x, y, buf);
+}
+
+void hw_scr_printf(ScreenInfo * info, const char* fmt, ...){
+	va_list ap;
+	char buf[256];
+	char* out = &buf[0];
+	va_start(ap, fmt);	
+	vsprintf(buf, fmt, ap);
+	
+	printfXY(info, info->cur_x, info->cur_y, buf);
 }

@@ -18,7 +18,6 @@
 #define CPU_FLAGSREG_SUPERVISOR (1<<26)
 
 typedef struct Ctx{
-	// Fields that must match the architecture register set
 	int gregs[16];
 	int flags;
 	double fregs[16];
@@ -53,7 +52,13 @@ void krn_start(void){
 	ScreenInfo scr_info = hw_scr_init();
 	krn_debugLogf("SCR: 0x%x, %dx%d, %d", scr_info.addr, scr_info.res_hor, scr_info.res_ver, scr_info.bytes_per_char);
 		
-	krn_drawLogo(&scr_info);
+	//krn_drawLogo(&scr_info);
+	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
+	
+	for (int i = 0; i < 100; i++){
+		hw_scr_printf(&scr_info, "te\tst %d\n", i);
+		krn_waitCycles(100000);
+	}	
 	
 	krn_waitCycles(10000);
 	krn_debugLog("CROS: ShutDown");
@@ -61,7 +66,7 @@ void krn_start(void){
 }
 
 void krn_drawLogo(ScreenInfo * scr_info){
-	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
+	hw_scr_setTextColor(scr_info, SCR_COLOR_GREEN);
 
 	for (int y = 0; y < 5; y++){
 		for (int x = 0; x < 30; x++){
@@ -74,7 +79,10 @@ void krn_drawLogo(ScreenInfo * scr_info){
 		hw_scr_putchar(scr_info, x, 5, logo_line_arr[x%4]);
 	}
 	
-	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
+	hw_scr_setTextColor(scr_info, SCR_COLOR_GREEN);
+	
+	scr_info->cur_x = 0;
+	scr_info->cur_y = 6;
 }
 
 void krn_waitCycles(int times){

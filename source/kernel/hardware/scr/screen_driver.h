@@ -9,6 +9,8 @@ typedef struct ScreenInfo{
 	
 	unsigned int text_color;
 	unsigned int back_color;
+	
+	unsigned short cur_x, cur_y;
 } ScreenInfo;
 
 #define SCR_COLOR_BLACK 	0x0 
@@ -20,12 +22,15 @@ typedef struct ScreenInfo{
 #define SCR_COLOR_BROWN 	0x6 
 #define SCR_COLOR_WHITE 	0x7 
 
+#define SCR_TABSTOP 4 
+
 ScreenInfo hw_scr_init();
 
 void hw_scr_setTextColor(ScreenInfo * info, unsigned int color);
 void hw_scr_setBackColor(ScreenInfo * info, unsigned int color);
 
 void hw_scr_putchar(ScreenInfo * info, unsigned int x, unsigned int y, const unsigned char ch);
-void hw_scr_printf(ScreenInfo * info, unsigned int x, unsigned int y, const char* fmt, ...);
+void hw_scr_printfXY(ScreenInfo * info, unsigned int x, unsigned int y, const char* fmt, ...);
+void hw_scr_printf(ScreenInfo * info, const char* fmt, ...);
 
 #endif
