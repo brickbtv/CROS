@@ -25,6 +25,8 @@ void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 		case HW_CPU_INTR_SWI:
 			krn_debugLogf("INT: Software interruption.");
 			break;
+		default:
+			krn_debugBSODf("CPU0 interruption", "Unknown interruption - %d", reason);
 	}
 }
 

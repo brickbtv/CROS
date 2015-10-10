@@ -5,19 +5,9 @@
 
 #include "kyb/keyboard_driver.h"
 #include "cpu/cpu_driver.h"
+#include "clk/clock_driver.h"
 
 void hw_initAll(void){
-	/*hw_HwiData data;
-	HWERROR err = hwi_call(HWBUS_CPU, HW_CPU_FUNC_RETRAMAMOUNT, &data);
-	
-	if (err != HWERR_SUCCESS){
-		krn_debugLog("DEVICE: cpu0 whi failed"); 
-	}
-	
-	unsigned int ram_in_bytes = data.regs[0];
-	krn_debugLogf("DEVICE: RAM amount = %d bytes; (%d KB)", ram_in_bytes, ram_in_bytes / 1024);
-		*/
-		
 	// TODO: implement all devices initizlization
 	
 	kyb_init();
@@ -32,10 +22,10 @@ void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32
 			hw_cpu_handleInterrupt(reason, data0, data1);
 			break;
 		case HW_BUS_CLK: 
-			krn_debugLogf("CLK0");
+			hw_clk_handleInterrupt(reason, data0, data1);
 			break;
 		case HW_BUS_SCR:
-			krn_debugLogf("SCR0");
+			krn_debugBSODf("SCR0 interruption", "Unknown reason - %d", reason);
 			break;		
 		case HW_BUS_KYB:
 			krn_debugLogf("KYB0");
@@ -47,5 +37,6 @@ void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32
 			break;
 		default: 
 			krn_debugLogf("DEFAULT0");
+			krn_debugBSODf("INTERRUPTION HANDLER", "Bus - %d, Reason - %d", bus, reason);
 	}
 }

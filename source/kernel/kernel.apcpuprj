@@ -51,6 +51,14 @@
 			"bootfile": true
 		},
 		{
+			"path": ".\\hardware\\clk\\clock_driver.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\clk\\clock_driver.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\cpu\\cpu_driver.c",
 			"bootfile": false
 		},

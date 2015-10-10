@@ -12,6 +12,7 @@
 #include "hardware/hardware.h"
 #include "hardware/scr/screen_driver.h"
 #include "hardware/cpu/cpu_driver.h"
+#include "hardware/clk/clock_driver.h"
 
 #include "kernel_debug.h"
 
@@ -66,7 +67,7 @@ void krn_start(void){
 		
 	krn_drawLogo(&scr_info);
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
-	
+
 	for (int i = 0; i < 10; i++){
 		hw_scr_printf(&scr_info, "te\tst %d\n", i);
 		krn_waitCycles(100000);
