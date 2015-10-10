@@ -7,9 +7,13 @@
 #include <string_shared.h>
 #include <stdarg_shared.h>
 #include <stdio_shared.h>
+#include <stddef_shared.h>
 
 #include "hardware/hardware.h"
 #include "hardware/scr/screen_driver.h"
+#include "hardware/cpu/cpu_driver.h"
+
+#include "kernel_debug.h"
 
 #include "logo/logo.h"
 
@@ -45,44 +49,52 @@ void* krn_init(void){
 	return &appCtx;
 }
 
+void krn_halt(void){
+	while(1){
+		hw_cpu_halt();
+	}
+}
+
+static ScreenInfo scr_info;
+
 void krn_start(void){
 	krn_debugLog("CROS: Start");
 	
 	hw_initAll();
-	ScreenInfo scr_info = hw_scr_init();
+	scr_info = hw_scr_init();
 	krn_debugLogf("SCR: 0x%x, %dx%d, %d", scr_info.addr, scr_info.res_hor, scr_info.res_ver, scr_info.bytes_per_char);
 		
-	//krn_drawLogo(&scr_info);
+	krn_drawLogo(&scr_info);
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
 	
-	for (int i = 0; i < 100; i++){
+	for (int i = 0; i < 10; i++){
 		hw_scr_printf(&scr_info, "te\tst %d\n", i);
 		krn_waitCycles(100000);
 	}	
 	
 	krn_waitCycles(10000);
 	krn_debugLog("CROS: ShutDown");
-	krn_waitCycles(10000);
+	krn_halt();
 }
 
 void krn_drawLogo(ScreenInfo * scr_info){
 	hw_scr_setTextColor(scr_info, SCR_COLOR_GREEN);
 
-	for (int y = 0; y < 5; y++){
-		for (int x = 0; x < 30; x++){
-			hw_scr_putchar(scr_info, x + 24, y, logo_arr[y*30 + x]);
+	for (int y = 0; y < 7; y++){
+		for (int x = 0; x < 40; x++){
+			hw_scr_putchar(scr_info, x + 19, y, logo_arr[y*40 + x]);
 		}
 	}
 	
 	for (int x = 0; x < 80; x++){
 		hw_scr_setTextColor(scr_info, logo_line_color_arr[x%3]);
-		hw_scr_putchar(scr_info, x, 5, logo_line_arr[x%4]);
+		hw_scr_putchar(scr_info, x, 7, logo_line_arr[x%4]);
 	}
 	
 	hw_scr_setTextColor(scr_info, SCR_COLOR_GREEN);
 	
 	scr_info->cur_x = 0;
-	scr_info->cur_y = 6;
+	scr_info->cur_y = 8;
 }
 
 void krn_waitCycles(int times){
@@ -91,23 +103,8 @@ void krn_waitCycles(int times){
 	}
 }
 
-void krn_debugLog(const char * msg){
-	hw_HwiData hwi;
-	hwi.regs[0] = 0; // Destination id (0 is a debug destination)
-	hwi.regs[1] = (unsigned int)msg;
-	hwi.regs[2] = strlen(msg) + 1;
-	hwi_call(HWBUS_NIC, HW_NIC_FUNC_SEND, &hwi);	
-}
-
-void krn_debugLogf(const char* fmt, ...){
-	va_list ap;
-	char buf[256];
-	char* out = &buf[0];
-	va_start(ap, fmt);	
-	vsprintf(buf, fmt, ap);
-	krn_debugLog(buf);
-}
-
-Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
+Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){	
+	hw_handleInterrupt(krn_currIntrBusAndReason, data0, data1, data2, data3);
+	
 	return &appCtx;
 }

@@ -14,13 +14,16 @@ extern _krn_handleInterrupt
 .zero 196		; default registers set
 
 ; init function
-public _reset
 _reset:
 
 	bl _krn_init
 	ctxswitch [r0]
-	
-	
+		
 _interrupts_all:
+	str [_krn_currIntrBusAndReason], ip
 	bl _krn_handleInterrupt
 	ctxswitch [r0]
+
+public _krn_currIntrBusAndReason
+_krn_currIntrBusAndReason:
+.word 15

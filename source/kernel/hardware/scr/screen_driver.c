@@ -17,7 +17,7 @@ ScreenInfo hw_scr_init(){
 
 	hw_HwiData data;
 	
-	HWERROR err = hwi_call(HWBUS_SCR, HW_SCR_FUNC_SCREENINFO, &data);
+	HWERROR err = hwi_call(HW_BUS_SCR, HW_SCR_FUNC_SCREENINFO, &data);
 	
 	scr_info.addr = (void*)data.regs[0];
 	scr_info.res_hor = data.regs[1];
@@ -109,4 +109,15 @@ void hw_scr_printf(ScreenInfo * info, const char* fmt, ...){
 	vsprintf(buf, fmt, ap);
 	
 	printfXY(info, info->cur_x, info->cur_y, buf);
+}
+
+void hw_scr_clearScreen(ScreenInfo * info, unsigned int color){
+	unsigned int size = info->res_hor * info->res_ver;
+	short space = color << 12 | info->text_color << 8 | ' ';
+	
+	short * canvas = info->addr;
+	
+	for (short i = 0; i < size; i++){
+		*(canvas + i) = space;
+	}
 }

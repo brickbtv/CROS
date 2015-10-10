@@ -1,18 +1,22 @@
 #ifndef _HARDWARE_H_
 #define _HARDWARE_H_
 
-#define HWBUS_CPU 0
-#define HWBUS_CLK 1
-#define HWBUS_SCR 2
-#define HWBUS_KYB 3
-#define HWBUS_NIC 4
-#define HWBUS_DKC 5
+#include "stdint_shared.h"
+
 #define HWBUS_DEFAULTDEVICES_MAX 6
 
-#define HW_CPU_FUNC_RETRAMAMOUNT 0
+typedef enum HW_BUS{
+	HW_BUS_CPU = 0,
+	HW_BUS_CLK = 1,
+	HW_BUS_SCR = 2,
+	HW_BUS_KYB = 3, 
+	HW_BUS_NIC = 4,
+	HW_BUS_DKC = 5
+}HW_BUS;
 
 #define HW_SCR_FUNC_SCREENINFO 0
 #define HW_SCR_FUNC_MAPSCREENBUFFER 1
+ 
 
 #define HW_NIC_FUNC_SEND 0 // TODO: it changes to 1, after next release of DevKit
 
@@ -26,6 +30,6 @@
 
 void hw_initAll(void);
 
-
+void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32 data3);
 
 #endif

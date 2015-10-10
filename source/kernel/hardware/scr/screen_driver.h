@@ -13,14 +13,17 @@ typedef struct ScreenInfo{
 	unsigned short cur_x, cur_y;
 } ScreenInfo;
 
-#define SCR_COLOR_BLACK 	0x0 
-#define SCR_COLOR_BLUE 		0x1 
-#define SCR_COLOR_GREEN 	0x2 
-#define SCR_COLOR_CYAN 		0x3 
-#define SCR_COLOR_RED 		0x4 
-#define SCR_COLOR_MAGNETA 	0x5 
-#define SCR_COLOR_BROWN 	0x6 
-#define SCR_COLOR_WHITE 	0x7 
+typedef enum ScrColor{
+	SCR_COLOR_BLACK = 0x0, 
+	SCR_COLOR_BLUE 	= 0x1, 
+	SCR_COLOR_GREEN = 0x2, 
+	SCR_COLOR_CYAN 	= 0x3, 
+	SCR_COLOR_RED 	= 0x4, 
+	SCR_COLOR_MAGNETA = 0x5, 
+	SCR_COLOR_BROWN = 0x6, 
+	SCR_COLOR_WHITE = 0x7 
+
+} ScrColor;
 
 #define SCR_TABSTOP 4 
 
@@ -32,5 +35,7 @@ void hw_scr_setBackColor(ScreenInfo * info, unsigned int color);
 void hw_scr_putchar(ScreenInfo * info, unsigned int x, unsigned int y, const unsigned char ch);
 void hw_scr_printfXY(ScreenInfo * info, unsigned int x, unsigned int y, const char* fmt, ...);
 void hw_scr_printf(ScreenInfo * info, const char* fmt, ...);
+
+void hw_scr_clearScreen(ScreenInfo * info, unsigned int color);
 
 #endif

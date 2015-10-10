@@ -51,6 +51,14 @@
 			"bootfile": true
 		},
 		{
+			"path": ".\\hardware\\cpu\\cpu_driver.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\cpu\\cpu_driver.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\hardware.c",
 			"bootfile": false
 		},
@@ -72,6 +80,22 @@
 		},
 		{
 			"path": ".\\kernel\\kernel.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\kernel\\kernel_debug.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\kernel\\kernel_debug.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\kyb\\keyboard_driver.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\kyb\\keyboard_driver.h",
 			"bootfile": false
 		},
 		{

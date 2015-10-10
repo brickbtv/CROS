@@ -1,0 +1,14 @@
+#ifndef _KEYBOARD_DRIVER_H_
+#define _KEYBOARD_DRIVER_H_
+
+typedef enum HW_KYB_FUNC{
+	HW_KYB_FUNC_CLEARBUFFER = 0,
+	HW_KYB_FUNC_GETNEXTCHAR = 1,
+	HW_KYB_FUNC_GETKEYSTATE = 2,
+	HW_KYB_FUNC_IRQMODE = 3
+}HW_KYB_FUNC;
+
+
+void kyb_init(void);
+
+#endif
