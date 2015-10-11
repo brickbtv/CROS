@@ -27,7 +27,7 @@ void krn_debugLogf(const char* fmt, ...){
 }
 
 void krn_debugBSOD(const char * initiator, const char * msg){
-	ScreenInfo scr_info = hw_scr_init();
+	ScreenInfo scr_info = hw_scr_screenInfo();
 	hw_scr_clearScreen(&scr_info, SCR_COLOR_BLUE);
 	
 	hw_scr_setBackColor(&scr_info, SCR_COLOR_BLUE);

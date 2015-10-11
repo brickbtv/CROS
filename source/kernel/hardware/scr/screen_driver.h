@@ -27,7 +27,8 @@ typedef enum ScrColor{
 
 #define SCR_TABSTOP 4 
 
-ScreenInfo hw_scr_init();
+ScreenInfo hw_scr_screenInfo();
+void hw_scr_mapScreenBuffer(void * addr);
 
 void hw_scr_setTextColor(ScreenInfo * info, unsigned int color);
 void hw_scr_setBackColor(ScreenInfo * info, unsigned int color);

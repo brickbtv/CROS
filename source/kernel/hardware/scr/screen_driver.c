@@ -12,7 +12,7 @@
 *	Return: memory address of the screen buffer.
 */
 
-ScreenInfo hw_scr_init(){
+ScreenInfo hw_scr_screenInfo(){
 	ScreenInfo scr_info;
 
 	hw_HwiData data;
@@ -31,6 +31,13 @@ ScreenInfo hw_scr_init(){
 	scr_info.cur_y = 0;
 	
 	return scr_info;
+}
+
+void hw_scr_mapScreenBuffer(void * addr){
+	hw_HwiData data;
+	data.regs[0] = (unsigned int)addr;	
+
+	hwi_call(HW_BUS_SCR, HW_SCR_FUNC_MAPSCREENBUFFER, &data);
 }
 
 void hw_scr_setTextColor(ScreenInfo * info, unsigned int color){
