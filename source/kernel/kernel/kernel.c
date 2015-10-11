@@ -13,6 +13,7 @@
 #include "hardware/scr/screen_driver.h"
 #include "hardware/cpu/cpu_driver.h"
 #include "hardware/clk/clock_driver.h"
+#include "hardware/kyb/keyboard_driver.h"
 
 #include "kernel_debug.h"
 
@@ -56,19 +57,26 @@ void krn_halt(void){
 	}
 }
 
+void kybCback(KeyboardEvent event){
+	krn_debugLogf("kb = %c", event.key_code);
+}
+
 static ScreenInfo scr_info;
 
 void krn_start(void){
 	krn_debugLog("CROS: Start");
 	
 	hw_initAll();
+	
+	hw_kyb_setCallback(kybCback);
+	
 	scr_info = hw_scr_screenInfo();
 	krn_debugLogf("SCR: 0x%x, %dx%d, %d", scr_info.addr, scr_info.res_hor, scr_info.res_ver, scr_info.bytes_per_char);
 		
 	krn_drawLogo(&scr_info);
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
 
-	for (int i = 0; i < 10; i++){
+	for (int i = 0; i < 50; i++){
 		hw_scr_printf(&scr_info, "te\tst %d time: %d\n ", i, hw_clk_readTimeSinceBoot());
 		krn_waitCycles(100000);
 	}	

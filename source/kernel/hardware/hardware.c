@@ -10,7 +10,7 @@
 void hw_initAll(void){
 	// TODO: implement all devices initizlization
 	
-	kyb_init();
+	hw_kyb_init();
 }
 
 void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32 data3){
@@ -28,7 +28,7 @@ void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32
 			krn_debugBSODf("SCR0 interruption", "Unknown reason - %d", reason);
 			break;		
 		case HW_BUS_KYB:
-			krn_debugLogf("KYB0");
+			hw_kyb_handleInterrupt(reason);
 			break;
 		case HW_BUS_NIC:
 			break;
