@@ -77,11 +77,11 @@ void krn_start(void){
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
 
 	for (int i = 0; i < 50; i++){
-		hw_scr_printf(&scr_info, "te\tst %d time: %d\n ", i, hw_clk_readTimeSinceBoot());
-		krn_waitCycles(100000);
+		hw_scr_printf(&scr_info, "te\tst %d time: %d\n", i, hw_clk_readTimeSinceBoot());
+		krn_sleep(500);
 	}	
 	
-	krn_waitCycles(10000);
+	krn_sleep(1000);
 	krn_debugLog("CROS: ShutDown");
 	krn_halt();
 }
@@ -106,9 +106,16 @@ void krn_drawLogo(ScreenInfo * scr_info){
 	scr_info->cur_y = 8;
 }
 
-void krn_waitCycles(int times){
-	for (int i = 0; i < times; i++){
-		// do nothing
+
+void krn_sleep(unsigned int ms){
+	unsigned int start = hw_clk_readTimeSinceBoot();
+	unsigned int current = hw_clk_readTimeSinceBoot();
+	
+	while (current - start < ms){
+		if (current < start)
+			return;
+			
+		current = hw_clk_readTimeSinceBoot();
 	}
 }
 

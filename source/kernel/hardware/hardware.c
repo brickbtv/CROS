@@ -6,6 +6,7 @@
 #include "kyb/keyboard_driver.h"
 #include "cpu/cpu_driver.h"
 #include "clk/clock_driver.h"
+#include "nic/network_driver.h"
 
 void hw_initAll(void){
 	// TODO: implement all devices initizlization
@@ -31,6 +32,7 @@ void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32
 			hw_kyb_handleInterrupt(reason);
 			break;
 		case HW_BUS_NIC:
+			hw_nic_handleInterrupt(reason);
 			break;
 		case HW_BUS_DKC:
 			krn_debugLogf("DKC0");

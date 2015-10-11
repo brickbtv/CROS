@@ -67,6 +67,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\hardware\\dkc\\disc_driver.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\dkc\\disc_driver.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\hardware.c",
 			"bootfile": false
 		},
@@ -108,6 +116,14 @@
 		},
 		{
 			"path": ".\\kernel\\logo\\logo.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\nic\\network_driver.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\hardware\\nic\\network_driver.h",
 			"bootfile": false
 		},
 		{

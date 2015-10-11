@@ -3,7 +3,9 @@
 
 #include "kernel_debug.h"
 
+#define KRN_TIMER 0
+
 extern const int krn_currIntrBusAndReason;
 
-void krn_waitCycles(int times);
+void krn_sleep(unsigned int ms);
 #endif
