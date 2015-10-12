@@ -67,11 +67,11 @@
 			"bootfile": false
 		},
 		{
-			"path": ".\\hardware\\dkc\\disc_driver.c",
+			"path": ".\\hardware\\dkc\\disk_driver.c",
 			"bootfile": false
 		},
 		{
-			"path": ".\\hardware\\dkc\\disc_driver.h",
+			"path": ".\\hardware\\dkc\\disk_driver.h",
 			"bootfile": false
 		},
 		{
