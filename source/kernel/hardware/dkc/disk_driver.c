@@ -3,6 +3,10 @@
 #include "hwi/hwi.h"
 #include "kernel/kernel.h"
 
+void hw_dkc_init(void){
+	hw_dkc_setIrqMode(true);
+}
+
 void hw_dkc_setIrqMode(bool mode){
 	hw_HwiData data;
 	data.regs[0] = (uint32_t)mode;

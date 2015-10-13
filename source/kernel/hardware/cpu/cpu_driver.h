@@ -21,6 +21,8 @@ typedef enum HW_CPU_INTR{
 void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1);
 
 unsigned int hw_cpu_retRamAmount(void);
+unsigned int hw_cpu_retIrqQueueSize(void);
+void hw_cpu_setMmuTableAddress(unsigned int addr);
 
 void hw_cpu_halt()
 INLINEASM("\t\

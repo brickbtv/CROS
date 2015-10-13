@@ -32,6 +32,8 @@ typedef struct DiskQuery{
 	unsigned int sectorSize;
 }DiskQuery;
 
+void hw_dkc_init(void);
+
 void hw_dkc_setIrqMode(bool mode);
 DiskQuery hw_dkc_query(uint32_t diskNum);
 void hw_dkc_readSector(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size);

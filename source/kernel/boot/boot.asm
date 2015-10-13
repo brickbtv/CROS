@@ -1,7 +1,7 @@
 
 extern _krn_init
-extern _krn_start
 extern _krn_handleInterrupt
+extern _krn_unexpectedContextSwitch
 
 ; interruptions
 ; Address: 0x0	Size: 8 bytes
@@ -15,15 +15,25 @@ extern _krn_handleInterrupt
 
 ; init function
 _reset:
-
 	bl _krn_init
+	
 	ctxswitch [r0]
-		
+	; unexpected context switch. fatal.
+	bl _krn_unexpectedContextSwitch
+
+; handle all interruption here:		
 _interrupts_all:
+	; save bus and reason before call handler
 	str [_krn_currIntrBusAndReason], ip
 	bl _krn_handleInterrupt
+	
 	ctxswitch [r0]
+	
+	; unexpected context switch. fatal.
+	bl _krn_unexpectedContextSwitch
 
+
+; variable, which used to save interruption bus and reson before call handler
 public _krn_currIntrBusAndReason
 _krn_currIntrBusAndReason:
 .word 15

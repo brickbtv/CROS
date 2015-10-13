@@ -13,6 +13,11 @@ typedef struct ScreenInfo{
 	unsigned short cur_x, cur_y;
 } ScreenInfo;
 
+typedef enum HW_SCR_FUNC{
+	HW_SCR_FUNC_SCREENINFO = 0,
+	HW_SCR_FUNC_MAPSCREENBUFFER = 1
+}HW_SCR_FUNC;
+
 typedef enum ScrColor{
 	SCR_COLOR_BLACK = 0x0, 
 	SCR_COLOR_BLUE 	= 0x1, 

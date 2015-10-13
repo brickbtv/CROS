@@ -67,6 +67,10 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\context\\ctx.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\dkc\\disk_driver.c",
 			"bootfile": false
 		},
@@ -112,6 +116,10 @@
 		},
 		{
 			"path": ".\\hardware\\kyb\\keyboard_driver.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\kernel\\logo\\logo.c",
 			"bootfile": false
 		},
 		{

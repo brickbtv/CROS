@@ -3,9 +3,11 @@
 
 #include "kernel_debug.h"
 
+// reserved. used for multiprocessing
 #define KRN_TIMER 0
 
 extern const int krn_currIntrBusAndReason;
 
 void krn_sleep(unsigned int ms);
+void krn_halt(void);
 #endif
