@@ -135,6 +135,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\process\\process.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\process\\process.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\scr\\screen_driver.c",
 			"bootfile": false
 		},

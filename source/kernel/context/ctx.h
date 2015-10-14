@@ -3,7 +3,11 @@
 
 #define CPU_REG_SP 13
 #define CPU_REG_PC 15
-#define CPU_FLAGSREG_SUPERVISOR (1<<26)
+
+typedef enum Usermode{
+	USERMODE_SUPERVISOR = (1<<26),
+	USERMODE_USER = 0
+}Usermode;
 
 /*!
 *	wrapper for registers set.

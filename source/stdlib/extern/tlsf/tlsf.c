@@ -882,7 +882,6 @@ tlsf_t tlsf_create(void* mem)
 		return 0;
 	}
 #endif
-
 	if (((tlsfptr_t)mem % ALIGN_SIZE) != 0)
 	{
 		printf("tlsf_create: Memory must be aligned to %u bytes.\n",
