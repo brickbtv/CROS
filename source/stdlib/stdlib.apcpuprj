@@ -53,6 +53,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\containers\\list.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\containers\\list.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\details\\memdetails.c",
 			"bootfile": false
 		},

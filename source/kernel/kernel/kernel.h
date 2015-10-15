@@ -2,6 +2,7 @@
 #define _KERNEL_H_
 
 #include "kernel_debug.h"
+#include "details/memdetails.h"
 
 // reserved. used for multiprocessing
 #define KRN_TIMER 0
