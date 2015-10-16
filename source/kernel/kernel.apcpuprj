@@ -20,7 +20,8 @@
 			"includePaths": [
 				"$(ProjectDir)",
 				"$(SolutionDir)",
-				"$(SolutionDir)\/stdlib"
+				"$(SolutionDir)\/stdlib",
+				"$(SolutionDir)\/sdk"
 			],
 			"defines": [
 				"DEBUG"
@@ -33,7 +34,8 @@
 			"includePaths": [
 				"$(ProjectDir)",
 				"$(SolutionDir)",
-				"$(SolutionDir)\/stdlib"
+				"$(SolutionDir)\/stdlib",
+				"$(SolutionDir)\/sdk"
 			],
 			"defines": [
 				"NDEBUG"
@@ -43,7 +45,8 @@
 		}
 	],
 	"dependencies": [
-		"stdlib"
+		"stdlib",
+		"sdk"
 	],
 	"files": [
 		{
@@ -148,6 +151,14 @@
 		},
 		{
 			"path": ".\\hardware\\scr\\screen_driver.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\syscall\\syscall.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\syscall\\syscall.h",
 			"bootfile": false
 		}
 	]

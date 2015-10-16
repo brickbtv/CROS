@@ -15,13 +15,14 @@ static list_node * currProc;
 /*!
 *	Draft of multiprocessing stuff
 */
-Process * prc_create(const char * name, uint32_t * stackTop,
+Process * prc_create(const char * name, uint32_t stackSize,
 						uint32_t * entryPoint, Usermode mode){
 	Process * prc = malloc(sizeof(Process));
 	memset(prc, 0, sizeof(Process));
+	prc->stack = malloc(stackSize * sizeof(char));
 	strcpy(prc->name, name);
 	
-	prc->context.gregs[CPU_REG_SP] = (uint32_t)stackTop;
+	prc->context.gregs[CPU_REG_SP] = (uint32_t)&prc->stack[stackSize - 1];
 	prc->context.gregs[CPU_REG_PC] = (uint32_t)entryPoint;
 	prc->context.flags = mode;
 	
@@ -67,4 +68,11 @@ void prc_startScheduler(void){
 	while (TRUE){
 		krn_halt();
 	}
+}
+
+/*!
+*	Can be useful to recieve current context
+*/
+Process * prc_getCurrentProcess(void){
+	return (Process *)currProc->data;
 }

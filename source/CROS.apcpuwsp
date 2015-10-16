@@ -4,6 +4,7 @@
 	"name": "CROS",
 	"projects": [
 		".\\kernel\\kernel.apcpuprj",
-		".\\stdlib\\stdlib.apcpuprj"
+		".\\stdlib\\stdlib.apcpuprj",
+		".\\sdk\\sdk.apcpuprj"
 	]
 }

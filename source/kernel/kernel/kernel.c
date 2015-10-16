@@ -20,6 +20,8 @@
 
 #include "process/process.h"
 
+#include "clk/clock.h"
+
 static Process * processKernel;
 
 void krn_start(void);
@@ -36,8 +38,8 @@ int memCback(const char * fmt, ...){
 *	Initialize stdlib memory allocation. 
 */
 void krn_initMalloc(void){
-	static char test[1024 * 4];
-	stdcshared_init(memCback, (void*)&test[1], 1024 * 4);
+	static char test[1024 * 40];
+	stdcshared_init(memCback, (void*)&test[1], 1024 * 40);
 }
 
 
@@ -48,9 +50,8 @@ void* krn_init(void){
 	krn_debugLog("==============================");
 	krn_initMalloc();
 	
-	#define APPSTACKSIZE 1024*10
-	static char appStack[APPSTACKSIZE];
-	processKernel = prc_create("kernel", (uint32_t*)&appStack[APPSTACKSIZE], (uint32_t*) &krn_start, USERMODE_SUPERVISOR);
+	#define APPSTACKSIZE 1024
+	processKernel = prc_create("kernel", APPSTACKSIZE, (uint32_t*) &krn_start, USERMODE_SUPERVISOR);
 		
 	return &processKernel->context;
 }
@@ -90,6 +91,15 @@ void p2Ep(void){
 	}
 }
 
+void p3Ep(void){
+	while(true){
+		
+		hw_scr_printf(&scr_info, "test time3: %d\n", sdk_clk_TimeSinceBoot());
+		//krn_sleep(500);
+	}
+}
+
+
 /*!
 *	Kernel entry point. 
 */
@@ -103,10 +113,9 @@ void krn_start(void){
 	
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
 	
-	static char st1[1024];
-	static char st2[1024];
-	p1 = prc_create("p1", (uint32_t*)&st1[1024-1], (uint32_t*)p1Ep, USERMODE_SUPERVISOR);
-	p2 = prc_create("p2", (uint32_t*)&st2[1024-1], (uint32_t*)p2Ep, USERMODE_SUPERVISOR);
+	p1 = prc_create("p1", 1024, (uint32_t*)p1Ep, USERMODE_SUPERVISOR);
+	p2 = prc_create("p2", 1024, (uint32_t*)p2Ep, USERMODE_SUPERVISOR);
+		 prc_create("p3", 1024, (uint32_t*)p3Ep, USERMODE_USER);
 
 	prc_startScheduler();
 }

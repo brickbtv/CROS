@@ -3,6 +3,11 @@
 #include "kernel/kernel.h"
 #include "hwi/hwi.h"
 
+#include "process/process.h"
+#include "syscall/syscall.h"
+
+#define SYSCALL_ID_REGISTER 10
+
 void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 	char mode[3][8] = {"Read   ", "Write  ", "Execute"};
 	switch (reason){
@@ -23,7 +28,12 @@ void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 			krn_debugBSOD("CPU0 interruption", "Illegal instruction");
 			break;
 		case HW_CPU_INTR_SWI:
-			krn_debugLogf("INT: Software interruption.");
+			//krn_debugLogf("INT: Software interruption.");
+			{
+				Process * prc = prc_getCurrentProcess();
+				uint32_t swi_id = prc->context.gregs[SYSCALL_ID_REGISTER];
+				syscall_clk_readTimeSinceBoot();
+			}
 			break;
 		default:
 			krn_debugBSODf("CPU0 interruption", "Unknown interruption - %d", reason);

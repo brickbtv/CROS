@@ -11,12 +11,15 @@
 
 typedef struct Process{
 	char name[50];
+	char * stack;
 	Ctx context;
 }Process;
 
-Process * prc_create(const char * name, uint32_t * stackTop,
+Process * prc_create(const char * name, uint32_t stackSize,
 						uint32_t * entryPoint, Usermode mode);
 
 void prc_startScheduler(void);
+
+Process * prc_getCurrentProcess(void);
 
 #endif
