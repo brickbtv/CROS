@@ -1,7 +1,7 @@
 {
 	"format": "Project",
 	"version": 1,
-	"name": "sdk",
+	"name": "app_chat",
 	"type": 2,
 	"globalconfiguration": {
 		"name": "Global",
@@ -47,39 +47,11 @@
 	],
 	"files": [
 		{
-			"path": ".\\clk\\clock.c",
+			"path": ".\\app_chat.c",
 			"bootfile": false
 		},
 		{
-			"path": ".\\clk\\clock.h",
-			"bootfile": false
-		},
-		{
-			"path": ".\\os\\debug.c",
-			"bootfile": false
-		},
-		{
-			"path": ".\\os\\debug.h",
-			"bootfile": false
-		},
-		{
-			"path": ".\\os\\process.c",
-			"bootfile": false
-		},
-		{
-			"path": ".\\os\\process.h",
-			"bootfile": false
-		},
-		{
-			"path": ".\\scr\\screen.c",
-			"bootfile": false
-		},
-		{
-			"path": ".\\scr\\screen.h",
-			"bootfile": false
-		},
-		{
-			"path": ".\\syscall_def.h",
+			"path": ".\\app_chat.h",
 			"bootfile": false
 		}
 	]

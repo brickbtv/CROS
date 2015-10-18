@@ -8,32 +8,36 @@
 
 #define SYSCALL_ID_REGISTER 10
 
+extern F_SYSCALL syscalls_cbacks[];
+
 void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
+	Process * prc = prc_getCurrentProcess();
+
 	char mode[3][8] = {"Read   ", "Write  ", "Execute"};
 	switch (reason){
 		case HW_CPU_INTR_ABORT: 
-			krn_debugLogf("INT: CPU Abort. Context Address: %x, Mode: %s", data0, mode[data1]);
+			krn_debugLogf("INT: CPU Abort. Context Address: %x, Mode: %s. %s", data0, mode[data1], prc->name);
 			krn_debugBSODf("CPU0 interruption", "Abort. Context address: %x, Mode: %s", data0, mode[data1]);
 			break;
 		case HW_CPU_INTR_DIVIDE_BY_ZERO:
-			krn_debugLogf("INT: CPU Divide by zero.");
+			krn_debugLogf("INT: CPU Divide by zero. %s", prc->name);
 			krn_debugBSOD("CPU0 interruption", "Divide by zero");
 			break;
 		case HW_CPU_INTR_UNDEFINED_INSTRUCTION:
-			krn_debugLogf("INT: Undefined instruction.");
+			krn_debugLogf("INT: Undefined instruction. %s", prc->name);
 			krn_debugBSOD("CPU0 interruption", "Undefined instruction");
 			break;
 		case HW_CPU_INTR_ILLEGAL_INSTRUCTION:
-			krn_debugLogf("INT: Illegal instruction.");
+			krn_debugLogf("INT: Illegal instruction. %s", prc->name);
 			krn_debugBSOD("CPU0 interruption", "Illegal instruction");
 			break;
 		case HW_CPU_INTR_SWI:
 			//krn_debugLogf("INT: Software interruption.");
 			{
-				Process * prc = prc_getCurrentProcess();
-				uint32_t swi_id = prc->context.gregs[SYSCALL_ID_REGISTER];
-				syscall_clk_readTimeSinceBoot();
+				uint32_t swi_id = prc->context->gregs[SYSCALL_ID_REGISTER];
+				syscalls_cbacks[swi_id]();
 			}
+			
 			break;
 		default:
 			krn_debugBSODf("CPU0 interruption", "Unknown interruption - %d", reason);

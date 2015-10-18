@@ -46,9 +46,18 @@
 	],
 	"dependencies": [
 		"stdlib",
-		"sdk"
+		"sdk",
+		"app_chat"
 	],
 	"files": [
+		{
+			"path": ".\\autorun\\autorun.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\autorun\\autorun.h",
+			"bootfile": false
+		},
 		{
 			"path": ".\\boot\\boot.asm",
 			"bootfile": true

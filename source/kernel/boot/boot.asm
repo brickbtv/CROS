@@ -32,6 +32,20 @@ _interrupts_all:
 	; unexpected context switch. fatal.
 	bl _krn_unexpectedContextSwitch
 
+public _hw_cpu_enableIRQ
+_hw_cpu_enableIRQ:
+	mrs r0 ; load flags register
+	and r0, r0, ~(1<<27) ; clear bit 27
+	msr r0 ; and set the flags register to the new value
+	mov pc, lr
+
+public _hw_cpu_disableIRQ
+_hw_cpu_disableIRQ:
+	mrs r0 ; load flags register
+	or r0, r0, 1<<27 ; Set bit 27
+	msr r0 ; and set the flags register to the new value
+	mov pc, lr
+
 
 ; variable, which used to save interruption bus and reson before call handler
 public _krn_currIntrBusAndReason

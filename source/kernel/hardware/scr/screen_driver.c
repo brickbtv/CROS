@@ -48,7 +48,7 @@ void hw_scr_setBackColor(ScreenInfo * info, unsigned int color){
 	info->back_color = color << 12;
 }
 
-void processScroll(ScreenInfo * info){
+void useScroll(ScreenInfo * info){
 	// move one line;
 	short fullsize = info->res_hor * info->res_ver * info->bytes_per_char;
 	short linesize_bytes = info->res_hor;
@@ -66,7 +66,7 @@ void hw_scr_putchar(ScreenInfo * info, unsigned int x, unsigned int y, const uns
 	*(canvas + y * info->res_hor + x) =  info->back_color | info->text_color | ch;
 }
 
-void printfXY(ScreenInfo * info, unsigned int x, unsigned int y, const char* buf){
+void canvasPrintfXY(ScreenInfo * info, unsigned int x, unsigned int y, const char* buf){
 	const char * ch = buf;
 	
 	info->cur_x = x;
@@ -75,7 +75,7 @@ void printfXY(ScreenInfo * info, unsigned int x, unsigned int y, const char* buf
 	while (*ch){
 	
 		if (info->cur_y >= info->res_ver){
-			processScroll(info);
+			useScroll(info);
 		}
 	
 		switch(*ch){
@@ -105,7 +105,7 @@ void hw_scr_printfXY(ScreenInfo * info, unsigned int x, unsigned int y, const ch
 	va_start(ap, fmt);	
 	vsprintf(buf, fmt, ap);
 	
-	printfXY(info, x, y, buf);
+	canvasPrintfXY(info, x, y, buf);
 }
 
 void hw_scr_printf(ScreenInfo * info, const char* fmt, ...){
@@ -115,7 +115,7 @@ void hw_scr_printf(ScreenInfo * info, const char* fmt, ...){
 	va_start(ap, fmt);	
 	vsprintf(buf, fmt, ap);
 	
-	printfXY(info, info->cur_x, info->cur_y, buf);
+	canvasPrintfXY(info, info->cur_x, info->cur_y, buf);
 }
 
 void hw_scr_clearScreen(ScreenInfo * info, unsigned int color){

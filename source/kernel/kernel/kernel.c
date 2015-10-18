@@ -19,8 +19,7 @@
 #include "hardware/kyb/keyboard_driver.h"
 
 #include "process/process.h"
-
-#include "clk/clock.h"
+#include "autorun/autorun.h"
 
 static Process * processKernel;
 
@@ -75,30 +74,6 @@ void kybCback(KeyboardEvent event){
 }
 
 ScreenInfo scr_info;
-static Process * p1, * p2;
-
-void p1Ep(void){
-	while(true){
-		hw_scr_printf(&scr_info, "test time1: %d\n", hw_clk_readTimeSinceBoot());
-		krn_sleep(500);
-	}
-}
-
-void p2Ep(void){
-	while(true){
-		hw_scr_printf(&scr_info, "test time2: %d\n", hw_clk_readTimeSinceBoot());
-		krn_sleep(500);
-	}
-}
-
-void p3Ep(void){
-	while(true){
-		
-		hw_scr_printf(&scr_info, "test time3: %d\n", sdk_clk_TimeSinceBoot());
-		//krn_sleep(500);
-	}
-}
-
 
 /*!
 *	Kernel entry point. 
@@ -112,10 +87,8 @@ void krn_start(void){
 	krn_drawLogo(&scr_info);
 	
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
-	
-	p1 = prc_create("p1", 1024, (uint32_t*)p1Ep, USERMODE_SUPERVISOR);
-	p2 = prc_create("p2", 1024, (uint32_t*)p2Ep, USERMODE_SUPERVISOR);
-		 prc_create("p3", 1024, (uint32_t*)p3Ep, USERMODE_USER);
+		
+	krn_autorun();
 
 	prc_startScheduler();
 }
@@ -141,9 +114,11 @@ void krn_sleep(unsigned int ms){
 *	\return basic kernel context
 */
 Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){	
+	//hw_cpu_disableIRQ();
 	hw_handleInterrupt(krn_currIntrBusAndReason, data0, data1, data2, data3);
+	//hw_cpu_enableIRQ();
 	
-	return &processKernel->context;
+	return processKernel->context;
 }
 
 /*!

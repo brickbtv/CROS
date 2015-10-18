@@ -5,6 +5,7 @@
 	"projects": [
 		".\\kernel\\kernel.apcpuprj",
 		".\\stdlib\\stdlib.apcpuprj",
-		".\\sdk\\sdk.apcpuprj"
+		".\\sdk\\sdk.apcpuprj",
+		".\\app_chat\\app_chat.apcpuprj"
 	]
 }
