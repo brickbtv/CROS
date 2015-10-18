@@ -118,7 +118,7 @@ Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 	hw_handleInterrupt(krn_currIntrBusAndReason, data0, data1, data2, data3);
 	//hw_cpu_enableIRQ();
 	
-	return processKernel->context;
+	return prc_getCurrentProcess()->context;//processKernel->context;
 }
 
 /*!

@@ -8,7 +8,7 @@
 #include "context/ctx.h"
 #include "hardware/scr/screen_driver.h"
 
-#define PRC_CTXSWITCH_RATE_MS 15
+#define PRC_CTXSWITCH_RATE_MS 1
 
 typedef struct Process{
 	char name[50];

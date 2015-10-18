@@ -102,10 +102,9 @@ void clkCback(int clk){
 		do{
 			currProc = currProc->next;
 			prc = currProc->data;
-			//krn_debugLogf("prc %x %s pc=%d", prc, prc->name, prc->context->gregs[CPU_REG_PC]);
 		} while (isNeedSleep(prc)); // check sleep time
 			
-		prc_ctxswitch(prc->context);
+		//prc_ctxswitch(prc->context);
 	}
 }
 
