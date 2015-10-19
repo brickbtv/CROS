@@ -66,9 +66,38 @@ Process * prc_create(const char * name, uint32_t stackSize,
 		newPrc->next = listPrcLoop;			// loop to beginning
 	}
 	
+	// clean msgs queue
+	prc->list_msgs = NULL;
+	
 	return prc;
 }
 
+/*
+*	Messages queue
+*/
+void sendMessageToAll(PRC_MESSAGE type, int reason, int value){
+	Process * prc;
+	list_node * it = listPrcLoop;
+	
+	PrcMessage * msg = malloc(sizeof(PrcMessage));
+	msg->type = type;
+	msg->reason = reason;
+	msg->value = value;
+	
+	do{
+		prc = it->data;
+		if (prc->list_msgs == NULL){
+			prc->list_msgs = list_create((void*)msg);
+		} else {
+			list_insert_end(prc->list_msgs, (void*)msg);
+		}
+		it = it->next;
+	} while (listPrcLoop != it); 
+}
+
+/*
+*	Multiprocessing draft. 
+*/
 bool isNeedSleep(Process * prc){
 	if (prc->sleep_ms == 0){
 		return FALSE;
@@ -84,9 +113,6 @@ bool isNeedSleep(Process * prc){
 	return TRUE;	
 }
 
-/*!
-*	Multiprocessing draft. 
-*/
  void prc_ctxswitch(__reg("r0") void* ctx)
  INLINEASM("\t\
  ctxswitch [r0]");

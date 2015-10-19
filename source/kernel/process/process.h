@@ -8,6 +8,8 @@
 #include "context/ctx.h"
 #include "hardware/scr/screen_driver.h"
 
+#include "containers/list.h"
+
 #define PRC_CTXSWITCH_RATE_MS 15
 
 typedef struct Process{
@@ -19,15 +21,26 @@ typedef struct Process{
 	uint32_t sleep_ms;
 	
 	ScreenInfo * screen;
+	
+	list_node * list_msgs;
 }Process;
+
+typedef enum PRC_MESSAGE{
+	PRC_MESSAGE_KYB = 0,
+	PRC_MESSAGE_NIC = 1
+}PRC_MESSAGE;
+
+typedef struct PrcMessage{
+	PRC_MESSAGE type;
+	int reason;
+	int value;
+}PrcMessage;
 
 Process * prc_create(const char * name, uint32_t stackSize,
 						uint32_t * entryPoint, Usermode mode);
-
 void prc_startScheduler(void);
-
 Process * prc_getCurrentProcess(void);
-
 void prc_skipCurrentProc(void);
-	
+void sendMessageToAll(PRC_MESSAGE type, int reason, int value);
+
 #endif

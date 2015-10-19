@@ -25,6 +25,20 @@ void syscall_prc_getCurrentProcessScreenInfo(void){
 	prc->context->gregs[0] = (unsigned int)prc->screen;	
 }
 
+void syscall_prc_haveNewMessages(void){
+	Process * prc = prc_getCurrentProcess();
+	if (prc->list_msgs != NULL)
+		prc->context->gregs[0] = 1;
+	else 
+		prc->context->gregs[0] = 0;
+}
+
+void syscall_prc_getNextMessage(void){
+	Process * prc = prc_getCurrentProcess();
+	prc->context->gregs[0] = (unsigned int)prc->list_msgs->data;
+	list_remove(&prc->list_msgs, prc->list_msgs);
+}
+
 //////////////////////
 //		CLOCK 		//
 //////////////////////
@@ -92,6 +106,8 @@ F_SYSCALL syscalls_cbacks[] =
 	// processes 
 	syscall_prc_sleep,
 	syscall_prc_getCurrentProcessScreenInfo,
+	syscall_prc_haveNewMessages,
+	syscall_prc_getNextMessage,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,

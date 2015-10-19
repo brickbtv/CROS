@@ -70,7 +70,7 @@ void krn_halt(void){
 * 	Used directly, because kernel executed in privileged mode.
 */
 void kybCback(KeyboardEvent event){
-	krn_debugLogf("kb = %c", event.key_code);
+	sendMessageToAll(PRC_MESSAGE_KYB, event.event_type, event.key_code);
 }
 
 ScreenInfo scr_info;

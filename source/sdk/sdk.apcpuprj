@@ -20,7 +20,8 @@
 			"includePaths": [
 				"$(ProjectDir)",
 				"$(SolutionDir)",
-				"$(SolutionDir)\/stdlib"
+				"$(SolutionDir)\/stdlib",
+				"$(SolutionDir)\/kernel"
 			],
 			"defines": [
 				"DEBUG"
@@ -33,7 +34,8 @@
 			"includePaths": [
 				"$(ProjectDir)",
 				"$(SolutionDir)",
-				"$(SolutionDir)\/stdlib"
+				"$(SolutionDir)\/stdlib",
+				"$(SolutionDir)\/kernel"
 			],
 			"defines": [
 				"NDEBUG"
@@ -60,6 +62,10 @@
 		},
 		{
 			"path": ".\\os\\debug.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\kyb\\keyboard.h",
 			"bootfile": false
 		},
 		{
