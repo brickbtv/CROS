@@ -14,19 +14,23 @@ unsigned int hw_nic_getInformation(){
 
 void hw_nic_bufferOutgoingPacket(uint32_t network_address, void * addr, uint32_t size){
 	hw_HwiData data;
+		
 	data.regs[0] = network_address;
 	data.regs[1] = (uint32_t) addr;
 	data.regs[2] = size;
 	hwi_call(HW_BUS_NIC, HW_NIC_FUNC_BUFFEROUTGOINGPACKET, &data);
 }
 	
-void hw_nic_retrieveIncomingPacket(void * addr, uint32_t size, uint32_t * network_address, uint32_t * recv_size){
+void hw_nic_retrieveIncomingPacket(char * msg, uint32_t size, uint32_t * network_address, uint32_t * recv_size){
 	hw_HwiData data;
-	data.regs[0] = (uint32_t)addr;
-	data.regs[1] = size;
 	
-	hwi_call(HW_BUS_NIC, HW_NIC_FUNC_RETRIEVEINCOMMINGPACKET, &data);
+	data.regs[0] = (uint32_t)msg;
+	data.regs[1] = 1024;
 	
+	int res = hwi_call(HW_BUS_NIC, HW_NIC_FUNC_RETRIEVEINCOMMINGPACKET, &data);
+	if (res == 0x1){	// nothing to receive
+		return;
+	}
 	*network_address = data.regs[0];
 	*recv_size = data.regs[1];
 }

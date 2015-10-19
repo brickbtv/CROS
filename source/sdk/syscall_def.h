@@ -47,7 +47,9 @@ typedef enum SYSCALL_CBACKS{
 	syscall_clk_readCountdownTimer,
 	syscall_clk_setCountdownTimer,
 	// network
-	syscall_nic_debug
+	syscall_nic_debug,
+	syscall_nic_send,
+	syscall_nic_recv
 } SYSCALL_CBACKS;
 
 #endif

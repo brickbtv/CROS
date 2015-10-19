@@ -6,7 +6,7 @@
 typedef enum HW_NIC_FUNC{
 	HW_NIC_FUNC_GETINFORMATION = 0,
 	HW_NIC_FUNC_BUFFEROUTGOINGPACKET = 0, //1, TODO: fixed in next build
-	HW_NIC_FUNC_RETRIEVEINCOMMINGPACKET = 2,
+	HW_NIC_FUNC_RETRIEVEINCOMMINGPACKET = 1, //2, TODO: fixed in next build
 	HW_NIC_FUNC_QUERYBUFFERSTATE = 3, 
 	HW_NIC_FUNC_QUERYGLOBALSTATS = 4
 }HW_NIC_FUNC;
@@ -31,7 +31,7 @@ typedef struct NetworkGlobalState{
 
 unsigned int hw_nic_getInformation();
 void hw_nic_bufferOutgoingPacket(uint32_t network_address, void * addr, uint32_t size);
-void hw_nic_retrieveIncomingPacket(void * addr, uint32_t size, uint32_t * network_address, uint32_t * recv_size);
+void hw_nic_retrieveIncomingPacket(char * msg, uint32_t size, uint32_t * network_address, uint32_t * recv_size);
 NetworkBuffersState hw_nic_queryBufferState();
 NetworkGlobalState hw_nic_queryGlobalState();
 

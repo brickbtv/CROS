@@ -63,6 +63,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\nic\\network.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\nic\\network.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\os\\process.c",
 			"bootfile": false
 		},

@@ -22,7 +22,7 @@ void hw_initAll(void){
 void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32 data3){
 	uint8_t bus = bus_and_reason >> 24;
 	uint32_t reason = bus_and_reason & 0x80FFFFFF;
-
+	
 	switch(bus){
 		case HW_BUS_CPU :
 			hw_cpu_handleInterrupt(reason, data0, data1);

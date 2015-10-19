@@ -6,6 +6,8 @@
 #include "hardware/nic/network_driver.h"
 #include "kernel/kernel_debug.h"
 
+#include <details/memdetails.h>
+
 //////////////////////
 //	PROCESSES 		//
 //////////////////////
@@ -54,10 +56,33 @@ void syscall_nic_debug(void){
 	Process * prc = prc_getCurrentProcess();
 	char * msg = (char *)prc->context->gregs[0];
 	uint32_t size = prc->context->gregs[1];
-	
-	krn_debugLogf("sdads %s %d", msg, size);
-	
+		
 	hw_nic_bufferOutgoingPacket(0, msg, size);
+}
+
+void syscall_nic_send(void){
+	Process * prc = prc_getCurrentProcess();
+	
+	uint32_t addr = prc->context->gregs[0];
+	char * msg = (char *)prc->context->gregs[1];
+	uint32_t size = prc->context->gregs[2];
+	
+	hw_nic_bufferOutgoingPacket(addr, msg, size);
+}
+
+void syscall_nic_recv(void){
+	Process * prc = prc_getCurrentProcess();
+	
+	char * msg = (char *)prc->context->gregs[0];
+	int max_size = prc->context->gregs[1];
+	int * addr = (int *)prc->context->gregs[2];
+	int recv_size;
+	hw_nic_retrieveIncomingPacket(msg, max_size, addr, &recv_size);
+	// TODO: return all args
+	// TODO: process errors
+	// TODO: replace ints by messages
+	// TODO: implement all TODO: labels
+	prc->context->gregs[0] = recv_size;
 }
 
 //////////////////////
@@ -72,5 +97,7 @@ F_SYSCALL syscalls_cbacks[] =
 	syscall_clk_readCountdownTimer,
 	syscall_clk_setCountdownTimer,
 	// network
-	syscall_nic_debug
+	syscall_nic_debug,
+	syscall_nic_send,
+	syscall_nic_recv
 };
