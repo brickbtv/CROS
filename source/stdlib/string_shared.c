@@ -63,3 +63,12 @@ int strcmp(const char *str1, const char *str2)
 	}
     return *(const unsigned char*)str1-*(const unsigned char*)str2;
 }
+
+int strncmp( const char * str1, const char * str2, int n ){
+	assert(str1 && str2);
+	for (int i = 0; i < n; i++){
+		if (*(str1+i) != *(str2+i))
+			return -1;
+	}
+    return 0;
+}

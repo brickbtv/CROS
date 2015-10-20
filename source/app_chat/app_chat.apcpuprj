@@ -53,6 +53,14 @@
 		{
 			"path": ".\\app_chat.h",
 			"bootfile": false
+		},
+		{
+			"path": ".\\server.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\server.h",
+			"bootfile": false
 		}
 	]
 }

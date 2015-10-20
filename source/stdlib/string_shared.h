@@ -58,6 +58,7 @@ char* strncpy(char *dest, const char *src, size_t num);
 *	   in str2
 */
 int strcmp( const char * str1, const char * str2 );
+int strncmp( const char * str1, const char * str2, int n );
 
 /*! Sets a block of memory to the specified byte value
 * \param dest

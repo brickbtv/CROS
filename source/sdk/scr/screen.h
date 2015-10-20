@@ -34,5 +34,6 @@ void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const char*
 void sdk_scr_printf(Canvas * info, const char* fmt, ...);
 
 void sdk_scr_clearScreen(Canvas * info, CanvasColor color);
+void sdk_scr_putchar(Canvas * info, unsigned int x, unsigned int y, const unsigned char ch);
 
 #endif
