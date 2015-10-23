@@ -2,6 +2,7 @@
 
 #include "hwi/hwi.h"
 #include "kernel/kernel_debug.h"
+#include "kernel/kernel.h"
 
 static F_HW_CLK_CBACK hw_clk_cbacks[HW_CLK_MAXTIMERSNUM + 1];
 

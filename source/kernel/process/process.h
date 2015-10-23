@@ -10,7 +10,7 @@
 
 #include "containers/list.h"
 
-#define PRC_CTXSWITCH_RATE_MS 15
+#define PRC_CTXSWITCH_RATE_MS 60
 
 typedef struct Process{
 	char name[50];
@@ -22,7 +22,9 @@ typedef struct Process{
 	
 	ScreenInfo * screen;
 	
-	list_node * list_msgs;
+	list_t * list_msgs;
+	
+	bool sync_lock;
 }Process;
 
 typedef enum PRC_MESSAGE{

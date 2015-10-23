@@ -5,6 +5,7 @@
 #include "hardware/clk/clock_driver.h"
 #include "hardware/nic/network_driver.h"
 #include "kernel/kernel_debug.h"
+#include "kernel/kernel.h"
 
 #include <details/memdetails.h>
 
@@ -27,16 +28,31 @@ void syscall_prc_getCurrentProcessScreenInfo(void){
 
 void syscall_prc_haveNewMessages(void){
 	Process * prc = prc_getCurrentProcess();
-	if (prc->list_msgs != NULL)
+	if (prc->list_msgs->len > 0)
 		prc->context->gregs[0] = 1;
 	else 
 		prc->context->gregs[0] = 0;
 }
 
 void syscall_prc_getNextMessage(void){
+	krn_getIdleProcess()->sync_lock = TRUE;
 	Process * prc = prc_getCurrentProcess();
-	prc->context->gregs[0] = (unsigned int)prc->list_msgs->data;
-	list_remove(&prc->list_msgs, prc->list_msgs);
+	list_node_t * node = list_lpop(prc->list_msgs);
+	//PrcMessage * msg = (PrcMessage*)node->val;
+	unsigned int msg = (unsigned int)node->val;
+	prc->context->gregs[0] = msg;//(unsigned int)node->val;
+	free(node);
+	krn_getIdleProcess()->sync_lock = FALSE;
+}
+
+void syscall_prc_lock(void){
+	Process * prc = prc_getCurrentProcess();
+	prc->sync_lock = TRUE;
+}
+
+void syscall_prc_unlock(void){
+	Process * prc = prc_getCurrentProcess();
+	prc->sync_lock = TRUE;
 }
 
 //////////////////////
@@ -108,6 +124,8 @@ F_SYSCALL syscalls_cbacks[] =
 	syscall_prc_getCurrentProcessScreenInfo,
 	syscall_prc_haveNewMessages,
 	syscall_prc_getNextMessage,
+	syscall_prc_lock,
+	syscall_prc_unlock,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,

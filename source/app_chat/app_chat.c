@@ -17,12 +17,14 @@ static int symb = 0;
 
 static int server_addr = 0;
 
+void draw_fake_gui();
+int findServer();
+
 static int state = 0;	//0 - connection; 1 - name request ; 2 - chat;
 
 void msgHandler(int type, int reason, int value){
 	switch (type){
 		case SDK_PRC_MESSAGE_KYB: 
-			sdk_debug_logf("ki: %c", value);
 			if (reason == KEY_STATE_KEYTYPED){
 				if (value == 0x01){
 					if (--symb <= 0){
@@ -40,13 +42,16 @@ void msgHandler(int type, int reason, int value){
 							break;
 						case 2:
 							sdk_nic_sendf(server_addr, "> MESSAGE %s", input);
-							sdk_scr_printfXY(canvas, 3, canvas->res_ver - 2, "                               ");
+							sdk_scr_printfXY(canvas, 3, canvas->res_ver - 2, "                                                         ");
 							break;
 					}
 					
 					memset(input, 0, 1024 * sizeof(char));
 					symb = 0;
 				} else {
+					if (symb >= 56)	// message can't be longer
+						break;
+						
 					input[symb++] = value;
 				}
 				
@@ -69,14 +74,15 @@ void msgHandler(int type, int reason, int value){
 }
 
 void app_chat(void){
-	canvas = (unsigned int*)sdk_prc_getCanvas();
+	canvas = (Canvas*)sdk_prc_getCanvas();
+	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
 			
 	memset(input, 0, 1024 * sizeof(char));
 		
 	while (1){
 		switch (state){
 			case 0:
-				sdk_scr_printfXY(canvas, 0, 0, "Search server... ")
+				sdk_scr_printfXY(canvas, 0, 0, "Search server... ");
 				server_addr = findServer();
 				state = 1;
 				sdk_scr_printf(canvas, "done.\nEnter your name: \n");
@@ -94,8 +100,35 @@ void app_chat(void){
 					memset(msg, 0, 1024 * sizeof(char));
 					int recvs = sdk_nic_recv(msg, 1024, &addr);
 					if ((strlen(msg) > 0) && (strncmp("< MESSAGE", msg, 6) == 0)){
-						sdk_scr_printfXY(canvas, 2, line, " > %s", &msg[10]);
-						line++;							
+						char cutmsg[100];
+						memset(cutmsg, 0, sizeof(char) * 100);
+						
+						if (strlen(&msg[10]) >= 55){
+							strncpy(cutmsg, &msg[10], 55);
+							cutmsg[55] = '.';
+							cutmsg[56] = '.';
+							cutmsg[57] = '.';
+							cutmsg[58] = 0;
+						} else {
+							strcpy(cutmsg, &msg[10]);
+						}
+					
+						sdk_scr_printfXY(canvas, 1, line, ">%s", cutmsg);
+						line++;		
+						if (line > canvas->res_ver - 5){
+							//scroll
+							for (int i = 1; i < line; i++){
+								// move one line;
+								//short fullsize = info->res_hor * info->res_ver * info->bytes_per_char;
+								short linesize_bytes = canvas->res_hor;
+								short * dest = (canvas->addr + linesize_bytes*i);
+								
+								memcpy(dest, dest + linesize_bytes, 60*2);
+								//memmove(info->addr, src, fullsize - linesize_bytes * 2);
+								//memset(info->addr + linesize_bytes * (info->res_ver - 1), 0, info->res_hor);
+							}
+							line--;
+						}
 					}
 						
 				}

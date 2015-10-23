@@ -28,4 +28,15 @@ void hw_cpu_halt()
 INLINEASM("\t\
 hlt");
 
+uint32_t hw_cpu_nextIRQ(
+	__reg("r0") int busid,
+	__reg("r4") u32* data0, __reg("r5") u32* data1)
+INLINEASM("\t\
+nextirq r0\n\t\
+; ip will contain 0 if no IRQ was retrieved, (bus<<24)|reason if it was\n\t\
+str [r4],r0\n\t\
+str [r5],r1\n\t\
+mov r0, ip\n\t\
+");
+
 #endif

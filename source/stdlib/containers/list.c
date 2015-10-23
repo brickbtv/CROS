@@ -1,142 +1,202 @@
-#include <stdlib_shared.h>
-#include <string_shared.h>
+
+//
+// list.c
+//
+// Copyright (c) 2010 TJ Holowaychuk <tj@vision-media.ca>
+//
+
 #include "list.h"
 
-/* Creates a list (node) and returns it
- * Arguments: The data the list will contain or NULL to create an empty
- * list/node
+/*
+ * Allocate a new list_t. NULL on failure.
  */
-list_node* list_create(void *data)
-{
-	list_node *l = malloc(sizeof(list_node));
-	if (l != NULL) {
-		l->next = NULL;
-		l->data = data;
-	}
 
-	return l;
+list_t *
+list_new() {
+  list_t *self;
+  if (!(self = LIST_MALLOC(sizeof(list_t))))
+    return NULL;
+  self->head = NULL;
+  self->tail = NULL;
+  self->free = NULL;
+  self->match = NULL;
+  self->len = 0;
+  return self;
 }
 
-/* Completely destroys a list
- * Arguments: A pointer to a pointer to a list
+/*
+ * Free the list.
  */
-void list_destroy(list_node **list)
-{
-	if (list == NULL) return;
-	while (*list != NULL) {
-		list_remove(list, *list);
-	}
+
+void
+list_destroy(list_t *self) {
+  unsigned int len = self->len;
+  list_node_t *next;
+  list_node_t *curr = self->head;
+
+  while (len--) {
+    next = curr->next;
+    //if (self->free) self->free(curr->val);
+    LIST_FREE(curr);
+    curr = next;
+  }
+
+  LIST_FREE(self);
 }
 
-/* Creates a list node and inserts it after the specified node
- * Arguments: A node to insert after and the data the new node will contain
+/*
+ * Append the given node to the list
+ * and return the node, NULL on failure.
  */
-list_node* list_insert_after(list_node *node, void *data)
-{
-	list_node *new_node = list_create(data);
-	if (new_node) {
-		new_node->next = node->next;
-		node->next = new_node;
-	}
-	return new_node;
+
+list_node_t *
+list_rpush(list_t *self, list_node_t *node) {
+  if (!node) return NULL;
+
+  if (self->len) {
+    node->prev = self->tail;
+    node->next = NULL;
+    self->tail->next = node;
+    self->tail = node;
+  } else {
+    self->head = self->tail = node;
+    node->prev = node->next = NULL;
+  }
+
+  ++self->len;
+  return node;
 }
 
-/* Creates a new list node and inserts it in the beginning of the list
- * Arguments: The list the node will be inserted to and the data the node will
- * contain
+/*
+ * Return / detach the last node in the list, or NULL.
  */
-list_node* list_insert_beginning(list_node *list, void *data)
-{
-	list_node *new_node = list_create(data);
-	if (new_node != NULL) { new_node->next = list; }
-	return new_node;
+
+list_node_t *
+list_rpop(list_t *self) {
+  if (!self->len) return NULL;
+
+  list_node_t *node = self->tail;
+
+  if (--self->len) {
+    (self->tail = node->prev)->next = NULL;
+  } else {
+    self->tail = self->head = NULL;
+  }
+
+  node->next = node->prev = NULL;
+  return node;
 }
 
-/* Creates a new list node and inserts it at the end of the list
- * Arguments: The list the node will be inserted to and the data the node will
- * contain
+/*
+ * Return / detach the first node in the list, or NULL.
  */
-list_node* list_insert_end(list_node *list, void *data)
-{
-	list_node *new_node = list_create(data);
-	if (new_node != NULL) {
-		for(list_node *it = list; it != NULL; it = it->next) {
-			if (it->next == NULL) {
-				it->next = new_node;
-				break;
-			}
-		}
-	}
-	return new_node;
+
+list_node_t *
+list_lpop(list_t *self) {
+  if (!self->len) return NULL;
+
+  list_node_t *node = self->head;
+
+  if (--self->len) {
+    (self->head = node->next)->prev = NULL;
+  } else {
+    self->head = self->tail = NULL;
+  }
+
+  node->next = node->prev = NULL;
+  return node;
 }
 
-/* Removes a node from the list
- * Arguments: The list and the node that will be removed
+/*
+ * Prepend the given node to the list
+ * and return the node, NULL on failure.
  */
-void list_remove(list_node **list, list_node *node)
-{
-	list_node *tmp = NULL;
-	if (list == NULL || *list == NULL || node == NULL) return;
 
-	if (*list == node) {
-		*list = (*list)->next;
-		free(node);
-		node = NULL;
-	} else {
-		tmp = *list;
-		while (tmp->next && tmp->next != node) tmp = tmp->next;
-		if (tmp->next) {
-			tmp->next = node->next;
-			free(node);
-			node = NULL;
-		}
-	}
+list_node_t *
+list_lpush(list_t *self, list_node_t *node) {
+  if (!node) return NULL;
+
+  if (self->len) {
+    node->next = self->head;
+    node->prev = NULL;
+    self->head->prev = node;
+    self->head = node;
+  } else {
+    self->head = self->tail = node;
+    node->prev = node->next = NULL;
+  }
+
+  ++self->len;
+  return node;
 }
 
-/* Removes an element from a list by comparing the data pointers
- * Arguments: A pointer to a pointer to a list and the pointer to the data
+/*
+ * Return the node associated to val or NULL.
  */
-void list_remove_by_data(list_node **list, void *data)
-{
-	if (list == NULL || *list == NULL || data == NULL) return;
-	list_remove(list, list_find_by_data(*list, data));
+
+list_node_t *
+list_find(list_t *self, void *val) {
+  list_iterator_t *it = list_iterator_new(self, LIST_HEAD);
+  list_node_t *node;
+
+  while ((node = list_iterator_next(it))) {
+    if (self->match) {
+      if (self->match(val, node->val)) {
+        list_iterator_destroy(it);
+        return node;
+      }
+    } else {
+      if (val == node->val) {
+        list_iterator_destroy(it);
+        return node;
+      }
+    }
+  }
+
+  list_iterator_destroy(it);
+  return NULL;
 }
 
-/* Find an element in a list by the pointer to the element
- * Arguments: A pointer to a list and a pointer to the node/element
+/*
+ * Return the node at the given index or NULL.
  */
-list_node* list_find_node(list_node *list, list_node *node)
-{
-	while (list) {
-		if (list == node) break;
-		list = list->next;
-	}
-	return list;
+
+list_node_t *
+list_at(list_t *self, int index) {
+  list_direction_t direction = LIST_HEAD;
+
+  if (index < 0) {
+    direction = LIST_TAIL;
+    index = ~index;
+  }
+
+  if ((unsigned)index < self->len) {
+    list_iterator_t *it = list_iterator_new(self, direction);
+    list_node_t *node = list_iterator_next(it);
+    while (index--) node = list_iterator_next(it);
+    list_iterator_destroy(it);
+    return node;
+  }
+
+  return NULL;
 }
 
-/* Finds an elemt in a list by the data pointer
- * Arguments: A pointer to a list and a pointer to the data
+/*
+ * Remove the given node from the list, freeing it and it's value.
  */
-list_node* list_find_by_data(list_node *list, void *data)
-{
-	while (list) {
-		if (list->data == data) break;
-		list = list->next;
-	}
-	return list;
-}
 
-/* Finds an element in the list by using the comparison function
- * Arguments: A pointer to a list, the comparison function and a pointer to the
- * data
- */
-list_node* list_find(list_node *list, int(*func)(list_node*,void*), void *data)
-{
-	if (!func) return NULL;
-	while(list) {
-		if (func(list, data)) break;
-		list = list->next;
-	}
-	return list;
-}
+void
+list_remove(list_t *self, list_node_t *node) {
+  node->prev
+    ? (node->prev->next = node->next)
+    : (self->head = node->next);
 
+  node->next
+    ? (node->next->prev = node->prev)
+    : (self->tail = node->prev);
+
+  //if (self->free) self->free(node->val);
+
+  LIST_FREE(node);
+  --self->len;
+}

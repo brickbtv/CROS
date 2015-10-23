@@ -17,15 +17,25 @@ extern _krn_unexpectedContextSwitch
 _reset:
 	bl _krn_init
 	
+	; set up double fault catcher
+	str [_krn_currIntrBusAndReason], -1
+	
 	ctxswitch [r0]
 	; unexpected context switch. fatal.
 	bl _krn_unexpectedContextSwitch
 
 ; handle all interruption here:		
-_interrupts_all:
-	; save bus and reason before call handler
+_interrupts_all:	
+	; Set the previous bus and reason variable
+	; This allows us to detect kernel double faults
+	ldr r4, [_krn_currIntrBusAndReason]
+	str [_krn_prevIntrBusAndReason], r4
 	str [_krn_currIntrBusAndReason], ip
+	
 	bl _krn_handleInterrupt
+	
+	; We are done with the interrupt servicing, so martk it as so.
+	str [_krn_currIntrBusAndReason], -1
 	
 	ctxswitch [r0]
 	
@@ -50,4 +60,11 @@ _hw_cpu_disableIRQ:
 ; variable, which used to save interruption bus and reson before call handler
 public _krn_currIntrBusAndReason
 _krn_currIntrBusAndReason:
+.word 15
+
+
+; This variable allows detection of double faults.
+; When we are serving an interrupt, if another one happens, it's a double fault.
+public _krn_prevIntrBusAndReason
+_krn_prevIntrBusAndReason:
 .word 15

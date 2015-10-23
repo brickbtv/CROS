@@ -9,10 +9,9 @@
 #include "sdk/os/process.h"
 
 // Processes loop.
-list_node * listPrcLoop = NULL;
-list_node * listPrcLoopLast = NULL;
+list_t * listPrcLoop = NULL;
 
-static list_node * currProc;
+static list_node_t * currProc;
 static Process * currFocusedProc;
 
 // TODO: leave here only superuser mode code
@@ -38,7 +37,7 @@ Process * prc_create(const char * name, uint32_t stackSize,
 	ScreenInfo info = hw_scr_screenInfo();
 	
 	prc->screen = malloc(sizeof(ScreenInfo));
-	prc->screen->addr = malloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
+	prc->screen->addr = info.addr;//malloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
 	prc->screen->res_hor = info.res_hor;
 	prc->screen->res_ver = info.res_ver;
 	prc->screen->bytes_per_char = info.bytes_per_char;
@@ -55,19 +54,19 @@ Process * prc_create(const char * name, uint32_t stackSize,
 	
 	// insert process to scheduler
 	if (listPrcLoop == NULL){				// empty scheduler
-		listPrcLoop = list_create(prc);
-		listPrcLoop->next = listPrcLoop;	// loop itself
-		listPrcLoopLast = listPrcLoop;
-		currProc = listPrcLoop;
+		listPrcLoop = list_new();
+		
+		// set up first created process as current. needed in scheduler.
+		currProc = list_rpush(listPrcLoop, list_node_new(prc));
 	} else {
-		list_node * newPrc = list_create(prc);
-		listPrcLoopLast->next = newPrc;
-		listPrcLoopLast = newPrc;
-		newPrc->next = listPrcLoop;			// loop to beginning
+		list_rpush(listPrcLoop, list_node_new(prc));
 	}
 	
 	// clean msgs queue
-	prc->list_msgs = NULL;
+	prc->list_msgs = list_new();
+	
+	// synchrinization flag
+	prc->sync_lock = FALSE;
 	
 	return prc;
 }
@@ -76,23 +75,28 @@ Process * prc_create(const char * name, uint32_t stackSize,
 *	Messages queue
 */
 void sendMessageToAll(PRC_MESSAGE type, int reason, int value){
+	krn_getIdleProcess()->sync_lock = TRUE;
 	Process * prc;
-	list_node * it = listPrcLoop;
+	list_node_t * node;
 	
-	PrcMessage * msg = malloc(sizeof(PrcMessage));
-	msg->type = type;
-	msg->reason = reason;
-	msg->value = value;
+	list_iterator_t * it = list_iterator_new(listPrcLoop, LIST_HEAD);
+	while (node = list_iterator_next(it)){
+		/*PrcMessage * msg = malloc(sizeof(PrcMessage));
+		msg->type = type;
+		msg->reason = reason;
+		msg->value = value;*/
+		unsigned int msg = type << 24 | reason << 16 | value;
 	
-	do{
-		prc = it->data;
-		if (prc->list_msgs == NULL){
-			prc->list_msgs = list_create((void*)msg);
-		} else {
-			list_insert_end(prc->list_msgs, (void*)msg);
-		}
-		it = it->next;
-	} while (listPrcLoop != it); 
+		prc = node->val;
+		
+		list_rpush(prc->list_msgs, list_node_new((void*)msg));
+			
+		/*size_t us, fr, ma;
+		_getmemstats(&us, &fr, &ma);
+		krn_debugLogf("us: %d, fr: %d, ma: %d\n", us, fr, ma);*/
+	}
+	list_iterator_destroy(it);
+	krn_getIdleProcess()->sync_lock = FALSE;
 }
 
 /*
@@ -120,17 +124,29 @@ bool isNeedSleep(Process * prc){
 void clkCback(int clk){	
 	if (clk != KRN_TIMER)
 		return;
-
-	if (listPrcLoop == NULL){		// we don't have processes
+		
+	// if process need lock. skip scheduled
+	if (((Process*)currProc->val)->sync_lock == TRUE){
+		return;
+	}
+	
+	// kernel lock
+	if (krn_getIdleProcess()->sync_lock == TRUE){
+		return;
+	}
+		
+	if (listPrcLoop == NULL){		// we don't have any processes
 		return;
 	} else {
 		Process * prc;
 		do{
-			currProc = currProc->next;
-			prc = currProc->data;
+			if (currProc->next != NULL){
+				currProc = currProc->next;
+			} else {
+				currProc = listPrcLoop->head;
+			}
+			prc = currProc->val;
 		} while (isNeedSleep(prc)); // check sleep time
-			
-		//prc_ctxswitch(prc->context);
 	}
 }
 
@@ -142,6 +158,19 @@ void prc_startScheduler(void){
 	hw_clk_setCountdownTimer(KRN_TIMER, PRC_CTXSWITCH_RATE_MS, true, true);
 
 	while (TRUE){
+		// is there messages to the kernel? 
+		Process * prc = prc_getCurrentProcess();
+		
+		while (prc->list_msgs->len > 0){
+			krn_getIdleProcess()->sync_lock = TRUE;
+			list_node_t * node = list_lpop(prc->list_msgs);
+			//PrcMessage * msg = (PrcMessage * )node->val; // TODO: process it. do not just destroy 
+			free(node); 
+			krn_getIdleProcess()->sync_lock = FALSE;
+		}
+		
+		// wait for interruptions
+		// save the energy!
 		krn_halt();
 	}
 }
@@ -150,7 +179,7 @@ void prc_startScheduler(void){
 *	Can be useful to recieve current context
 */
 Process * prc_getCurrentProcess(void){
-	return (Process *)currProc->data;
+	return (Process *)currProc->val;
 }
 
 /*!

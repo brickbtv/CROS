@@ -15,4 +15,7 @@ typedef void (*F_PRC_MSGCBACK)(int type, int reason, int value);
 
 bool sdk_prc_haveNewMessage(void);
 void sdk_prc_handleMessage(F_PRC_MSGCBACK cback);
+
+void sdk_prc_lock(void);
+void sdk_prc_unlock(void);
 #endif

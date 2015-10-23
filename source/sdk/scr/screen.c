@@ -12,14 +12,14 @@ void sdk_scr_setBackColor(Canvas * info, CanvasColor color){
 	info->back_color = color << 12;
 }
 
-void sdk_scr_putchar(Canvas * info, unsigned int x, unsigned int y, const unsigned char ch){
-	putchar(info, x, y, ch);
-}
-
 void putchar(Canvas * info, unsigned int x, unsigned int y, const unsigned char ch){
 	short * canvas = info->addr;
 	
 	*(canvas + y * info->res_hor + x) =  info->back_color | info->text_color | ch;
+}
+
+void sdk_scr_putchar(Canvas * info, unsigned int x, unsigned int y, const unsigned char ch){
+	putchar(info, x, y, ch);
 }
 
 void processScroll(Canvas * info){

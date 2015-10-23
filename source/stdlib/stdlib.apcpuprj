@@ -61,6 +61,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\containers\\list_iterator.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\containers\\list_node.c",
+			"bootfile": false
+		},
+		{
 			"path": ".\\details\\memdetails.c",
 			"bootfile": false
 		},

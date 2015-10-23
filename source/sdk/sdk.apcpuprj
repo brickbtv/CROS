@@ -26,7 +26,7 @@
 			"defines": [
 				"DEBUG"
 			],
-			"compilerOptions": "-c99 -O2 -g -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"compilerOptions": "-c99 -O2 -g -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153 ",
 			"linkerextralibs": ""
 		},
 		{

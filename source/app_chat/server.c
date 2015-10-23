@@ -11,7 +11,7 @@
 #include <containers/list.h>
 #include <details/memdetails.h>
 
-list_node * root_clients = 0;
+list_t * list_clients = 0;
 
 typedef struct ClientInfo{
 	char name[128];
@@ -21,7 +21,7 @@ typedef struct ClientInfo{
 Canvas * canvas2;
 
 void app_chat_server(){
-	canvas2 = (unsigned int*)sdk_prc_getCanvas();
+	canvas2 = (Canvas *)sdk_prc_getCanvas();
 	
 	sdk_scr_printfXY(canvas2, 0, 0, "Starting server.\n");
 	while (1){
@@ -36,52 +36,43 @@ void app_chat_server(){
 		}
 		
 		if ((strlen(msg) > 0) && (strncmp(msg, "> NICKNAME", 8) == 0)){
-			sdk_scr_printf(canvas2, "name: %s\n", &msg[10]);
+			sdk_scr_printf(canvas2, "name: %s\n", &msg[11]);
 			
 			ClientInfo * cl = malloc(sizeof(ClientInfo));
+			memset(cl, 0, sizeof(ClientInfo));
 			
 			cl->addr = addr;
-			strcpy(cl->name, &msg[10]);
+			strncpy(cl->name, &msg[10], strlen(&msg[10]));
 			
-			if (root_clients == 0){
-				root_clients = list_create((void*)cl);
-				root_clients->next = 0;
-			} else {
-				list_node * it = root_clients;
-				while (it){
-					if (it->next == 0){
-						it->next = list_create((void*)cl);
-						it->next->next = 0;
-						break;
-					}
-					
-					it = it->next;
-				}
+			if (list_clients == 0){
+				list_clients = list_new((void*)cl);
 			}
+			
+			list_rpush(list_clients, list_node_new((void*)cl));			
 		}
 		
 		if ((strlen(msg) > 0) && (strncmp(msg, "> MESSAGE ", 8) == 0)){
 			sdk_scr_printf(canvas2, "msg: %s\n", &msg[10]);
 			//sender name
-			ClientInfo * author;
-			list_node * it = root_clients;
-			while (it){
-				author = (ClientInfo*)it->data;
+			ClientInfo * author = NULL;
+			
+			list_node_t *node;
+			list_iterator_t *it = list_iterator_new(list_clients, LIST_HEAD);
+			while ((node = list_iterator_next(it))) {
+				author = (ClientInfo*)node->val;
 				if (author->addr == addr){
 					break;
 				}
-				
-				it = it->next;
-			}
+			}	
+			list_iterator_destroy(it);
 			
-			it = root_clients;
-			while (it){
-				ClientInfo * cl = (ClientInfo*)it->data;
+			it = list_iterator_new(list_clients, LIST_HEAD);
+			while ((node = list_iterator_next(it))) {
+				ClientInfo * cl = (ClientInfo*)node->val;
 		
 				sdk_nic_sendf(cl->addr, "< MESSAGE %s: %s", author->name, &msg[10]);
-				
-				it = it->next;
 			}
+			list_iterator_destroy(it);
 		}
 	}
 }

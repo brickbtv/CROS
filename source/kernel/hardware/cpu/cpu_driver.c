@@ -10,6 +10,7 @@
 
 extern F_SYSCALL syscalls_cbacks[];
 
+
 void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 	Process * prc = prc_getCurrentProcess();
 
@@ -34,6 +35,8 @@ void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 		case HW_CPU_INTR_SWI:
 			//krn_debugLogf("INT: Software interruption.");
 			{
+				while (prc->sync_lock){};	// TODO: deffered swi processing
+			
 				uint32_t swi_id = prc->context->gregs[SYSCALL_ID_REGISTER];
 				syscalls_cbacks[swi_id]();
 			}
