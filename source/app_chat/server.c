@@ -7,6 +7,8 @@
 #include "sdk/kyb/keyboard.h"
 
 #include <string_shared.h>
+#include <stdarg_shared.h>
+#include <stdio_shared.h>
 
 #include <containers/list.h>
 #include <details/memdetails.h>
@@ -19,6 +21,23 @@ typedef struct ClientInfo{
 }ClientInfo;
 
 Canvas * canvas2;
+
+void sendMsg(int addr, char * fmt, ...){	
+	va_list ap;
+	char buf[256];
+	char* out = &buf[0];
+	va_start(ap, fmt);	
+	vsprintf(buf, fmt, ap);
+		
+	list_node_t *node;	
+	list_iterator_t *it = list_iterator_new(list_clients, LIST_HEAD);
+	while ((node = list_iterator_next(it))) {
+		ClientInfo * cl = (ClientInfo*)node->val;
+
+		sdk_nic_sendf(cl->addr, buf);
+	}
+	list_iterator_destroy(it);
+}
 
 void app_chat_server(){
 	canvas2 = (Canvas *)sdk_prc_getCanvas();
@@ -49,10 +68,13 @@ void app_chat_server(){
 			}
 			
 			list_rpush(list_clients, list_node_new((void*)cl));			
+			
+			sendMsg(addr, "< NEWUSER %s", cl->name);
 		}
 		
 		if ((strlen(msg) > 0) && (strncmp(msg, "> MESSAGE ", 8) == 0)){
 			sdk_scr_printf(canvas2, "msg: %s\n", &msg[10]);
+			
 			//sender name
 			ClientInfo * author = NULL;
 			
@@ -66,13 +88,7 @@ void app_chat_server(){
 			}	
 			list_iterator_destroy(it);
 			
-			it = list_iterator_new(list_clients, LIST_HEAD);
-			while ((node = list_iterator_next(it))) {
-				ClientInfo * cl = (ClientInfo*)node->val;
-		
-				sdk_nic_sendf(cl->addr, "< MESSAGE %s: %s", author->name, &msg[10]);
-			}
-			list_iterator_destroy(it);
+			sendMsg(addr, "< MESSAGE %s: %s", author->name, &msg[10]);
 		}
 	}
 }

@@ -11,6 +11,7 @@
 Canvas * canvas;
 
 static int line = 1;
+static int users_line = 1;
 
 static char input[1024];
 static int symb = 0;
@@ -73,6 +74,19 @@ void msgHandler(int type, int reason, int value){
 	}
 }
 
+void scroll(){
+	if (line > canvas->res_ver - 5){
+		//scroll
+		for (int i = 1; i < line; i++){
+			short linesize_bytes = canvas->res_hor;
+			short * dest = (canvas->addr + linesize_bytes*i);
+			
+			memcpy(dest, dest + linesize_bytes, 60*2);
+		}
+		line--;
+	}
+}
+
 void app_chat(void){
 	canvas = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
@@ -115,20 +129,17 @@ void app_chat(void){
 					
 						sdk_scr_printfXY(canvas, 1, line, ">%s", cutmsg);
 						line++;		
-						if (line > canvas->res_ver - 5){
-							//scroll
-							for (int i = 1; i < line; i++){
-								// move one line;
-								//short fullsize = info->res_hor * info->res_ver * info->bytes_per_char;
-								short linesize_bytes = canvas->res_hor;
-								short * dest = (canvas->addr + linesize_bytes*i);
-								
-								memcpy(dest, dest + linesize_bytes, 60*2);
-								//memmove(info->addr, src, fullsize - linesize_bytes * 2);
-								//memset(info->addr + linesize_bytes * (info->res_ver - 1), 0, info->res_hor);
-							}
-							line--;
-						}
+						scroll();
+					}
+					if ((strlen(msg) > 0) && (strncmp("< NEWUSER", msg, 6) == 0)){
+						sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
+						sdk_scr_printfXY(canvas, 1, line, "user %s joined the chanel", &msg[10]);
+						sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
+						line++;	
+						
+						sdk_scr_printfXY(canvas, 62, users_line, &msg[10]);
+						users_line++;
+						scroll();
 					}
 						
 				}
