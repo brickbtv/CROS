@@ -14,6 +14,8 @@
 
 typedef struct Process{
 	char name[50];
+	unsigned int pid;
+	
 	char * stack;
 	Ctx * context;
 	

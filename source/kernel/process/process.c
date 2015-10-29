@@ -11,10 +11,12 @@
 // Processes loop.
 list_t * listPrcLoop = NULL;
 
-static list_node_t * currProc;
+static list_node_t * currProc = NULL;
 static Process * currFocusedProc;
 
 // TODO: leave here only superuser mode code
+
+static unsigned int totalPIDs = 0;
 
 /*!
 *	Draft of multiprocessing stuff
@@ -27,9 +29,9 @@ Process * prc_create(const char * name, uint32_t stackSize,
 	// allocate stack
 	prc->stack = malloc(stackSize * sizeof(char));
 	
-	// process name
-	// TODO: process pid
+	// info
 	strcpy(prc->name, name);
+	prc->pid = totalPIDs++;
 	
 	prc->context = malloc (sizeof(Ctx));
 	
@@ -55,8 +57,10 @@ Process * prc_create(const char * name, uint32_t stackSize,
 	// insert process to scheduler
 	if (listPrcLoop == NULL){				// empty scheduler
 		listPrcLoop = list_new();
-		
-		// set up first created process as current. needed in scheduler.
+	}
+	
+	// set up first created process (idle) as current. needed in scheduler.
+	if (currProc == NULL){
 		currProc = list_rpush(listPrcLoop, list_node_new(prc));
 	} else {
 		list_rpush(listPrcLoop, list_node_new(prc));
@@ -117,15 +121,22 @@ bool isNeedSleep(Process * prc){
 	return TRUE;	
 }
 
- void prc_ctxswitch(__reg("r0") void* ctx)
- INLINEASM("\t\
- ctxswitch [r0]");
+void prc_ctxswitch(__reg("r0") void* ctx)
+INLINEASM("\t\
+ctxswitch [r0]");
 
+/*!
+*	Timing processing
+*/
 void clkCback(int clk){	
 	if (clk != KRN_TIMER)
 		return;
 		
-	// if process need lock. skip scheduled
+	/* if process need lock. skip scheduler
+	
+		Imitation of synchronization primitives.
+		TODO: fix that
+	*/
 	if (((Process*)currProc->val)->sync_lock == TRUE){
 		return;
 	}
@@ -184,6 +195,7 @@ Process * prc_getCurrentProcess(void){
 
 /*!
 *	SUPEUSER MODE FUNC
+*	TODO: it's hack
 */
 void prc_skipCurrentProc(void){
 	clkCback(KRN_TIMER);

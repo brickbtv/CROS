@@ -63,18 +63,18 @@ void* krn_init(void){
 	return &processKernel->context;
 }
 
+/*! 
+*	Returns main process
+*/
 Process * krn_getIdleProcess(void){
 	return processKernel;
 }
 
 /*!
-*	Stop OS execution.
+*	Stop OS execution until any interruption
 */ 
 void krn_halt(void){
-	// TODO: disable IRQ before
-	//while(1){
-		hw_cpu_halt();
-	//}
+	hw_cpu_halt();
 }
 
 /*!
@@ -132,7 +132,6 @@ extern const int krn_prevIntrBusAndReason;
 Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 	if (krn_getIdleProcess()->sync_lock)
 		return prc_getCurrentProcess()->context;
-	//hw_cpu_disableIRQ();
 	
 	// Check for double faults (kernel crashes)
 	// This is detecting by checking if we were serving an interrupt before
@@ -150,9 +149,8 @@ Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 		hw_handleInterrupt(busAndReason, data0, data1, data2, data3);
 		busAndReason = hw_cpu_nextIRQ(-1, &data0, &data1);
 	} while (busAndReason);
-	//hw_cpu_enableIRQ();
 	
-	return prc_getCurrentProcess()->context;//processKernel->context;
+	return prc_getCurrentProcess()->context;
 }
 
 /*!
