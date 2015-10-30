@@ -63,6 +63,10 @@
 			"bootfile": true
 		},
 		{
+			"path": ".\\boot\\boot.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\clk\\clock_driver.c",
 			"bootfile": false
 		},
@@ -136,6 +140,14 @@
 		},
 		{
 			"path": ".\\kernel\\logo\\logo.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\mmu\\mmu.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\mmu\\mmu.h",
 			"bootfile": false
 		},
 		{

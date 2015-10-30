@@ -4,6 +4,8 @@
 
 //#define DEBUG 1
 
+#include "boot/boot.h"
+
 #include "kernel.h"
 #include "kernel_debug.h"
 
@@ -58,7 +60,7 @@ void* krn_init(void){
 	krn_initMalloc();
 	
 	#define APPSTACKSIZE 1024
-	processKernel = prc_create("kernel", APPSTACKSIZE, (uint32_t*) &krn_start, USERMODE_SUPERVISOR);
+	processKernel = prc_create("kernel", APPSTACKSIZE, 1024*10, (uint32_t*) &krn_start, USERMODE_SUPERVISOR);
 		
 	return &processKernel->context;
 }
@@ -100,6 +102,17 @@ void krn_start(void){
 	
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
 		
+	hw_scr_printfXY(&scr_info, 0, 0, "%d %d \n%d %d \n%d %d\n\n",
+						processInfo.readOnlyAddr, 
+						processInfo.readOnlySize,
+						processInfo.readWriteAddr,
+						processInfo.readWriteSize,
+						processInfo.sharedReadWriteAddr,
+						processInfo.sharedReadWriteSize
+						);
+						
+	hw_scr_printf(&scr_info, "%d", hw_cpu_retRamAmount());
+						
 	krn_autorun();
 
 	prc_startScheduler();

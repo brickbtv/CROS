@@ -1,6 +1,7 @@
 #ifndef _CTX_H_
 #define _CTX_H_
 
+#define CPU_REG_DS 11
 #define CPU_REG_SP 13
 #define CPU_REG_PC 15
 
