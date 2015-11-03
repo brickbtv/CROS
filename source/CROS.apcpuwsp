@@ -6,6 +6,8 @@
 		".\\kernel\\kernel.apcpuprj",
 		".\\stdlib\\stdlib.apcpuprj",
 		".\\sdk\\sdk.apcpuprj",
-		".\\app_chat\\app_chat.apcpuprj"
+		".\\app_chat\\app_chat.apcpuprj",
+		".\\filesystem\\filesystem.apcpuprj",
+		".\\app_test\\app_test.apcpuprj"
 	]
 }

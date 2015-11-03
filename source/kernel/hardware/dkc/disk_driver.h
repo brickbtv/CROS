@@ -41,4 +41,8 @@ void hw_dkc_writeSector(uint32_t diskNum, uint32_t sectorNum, char * outData, ui
 
 void hw_dkc_handleInterrupt(unsigned int reason, uint32_t data0, uint32_t data1);
 
+int hw_dkc_is_ready(uint32_t diskNum);
+void hw_dkc_read_sync(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size);
+void hw_dkc_write_sync(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size);
+
 #endif 

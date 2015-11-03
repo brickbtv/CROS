@@ -1,0 +1,58 @@
+{
+	"format": "Project",
+	"version": 1,
+	"name": "app_test",
+	"type": 2,
+	"globalconfiguration": {
+		"name": "Global",
+		"includePaths": [
+
+		],
+		"defines": [
+
+		],
+		"compilerOptions": "",
+		"linkerextralibs": ""
+	},
+	"configurations": [
+		{
+			"name": "Debug",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"DEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -g -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		},
+		{
+			"name": "Release",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"NDEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -k -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		}
+	],
+	"dependencies": [
+
+	],
+	"files": [
+		{
+			"path": ".\\app_test.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_test.h",
+			"bootfile": false
+		}
+	]
+}

@@ -47,7 +47,9 @@
 	"dependencies": [
 		"stdlib",
 		"sdk",
-		"app_chat"
+		"app_chat",
+		"filesystem",
+		"app_test"
 	],
 	"files": [
 		{

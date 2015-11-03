@@ -53,7 +53,12 @@ typedef enum SYSCALL_CBACKS{
 	// network
 	syscall_nic_debug,
 	syscall_nic_send,
-	syscall_nic_recv
+	syscall_nic_recv,
+	// disk drive
+	syscall_dkc_read,
+	syscall_dkc_write,
+	syscall_dkc_getInfo,
+	syscall_dkc_isReady
 } SYSCALL_CBACKS;
 
 #endif

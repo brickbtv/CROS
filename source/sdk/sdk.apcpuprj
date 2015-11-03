@@ -65,6 +65,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\dkc\\disk_drive.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\dkc\\disk_drive.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\kyb\\keyboard.h",
 			"bootfile": false
 		},

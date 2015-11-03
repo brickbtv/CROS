@@ -2,10 +2,13 @@
 
 #include "hwi/hwi.h"
 #include "kernel/kernel.h"
+#include "kernel/hardware/cpu/cpu_driver.h"
 
 void hw_dkc_init(void){
 	hw_dkc_setIrqMode(true);
 }
+
+static int hw_dkc_busy = 0;
 
 void hw_dkc_setIrqMode(bool mode){
 	hw_HwiData data;
@@ -30,6 +33,20 @@ DiskQuery hw_dkc_query(uint32_t diskNum){
 	return query;
 }
 
+int hw_dkc_is_ready(uint32_t diskNum){
+	return (hw_dkc_busy == 0);
+}
+
+void hw_dkc_read_sync(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
+	//while (hw_dkc_busy){hw_cpu_halt();}
+	hw_dkc_readSector(diskNum, sectorNum, outData, size);
+}
+
+void hw_dkc_write_sync(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
+	//while (hw_dkc_busy){hw_cpu_halt();}
+	hw_dkc_writeSector(diskNum, sectorNum, outData, size);
+}
+
 void hw_dkc_readSector(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
 	hw_HwiData data;
 	data.regs[0] = (sectorNum << 8) | diskNum;
@@ -37,6 +54,7 @@ void hw_dkc_readSector(uint32_t diskNum, uint32_t sectorNum, char * outData, uin
 	data.regs[2] = size;
 	
 	hwi_call(HW_BUS_DKC, HW_DKC_FUNC_READSECTOR, &data);
+	hw_dkc_busy = 1;
 }
 
 void hw_dkc_writeSector(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
@@ -46,11 +64,13 @@ void hw_dkc_writeSector(uint32_t diskNum, uint32_t sectorNum, char * outData, ui
 	data.regs[2] = size;
 	
 	hwi_call(HW_BUS_DKC, HW_DKC_FUNC_WRITESECTOR, &data);
+	hw_dkc_busy = 1;
 }
 
 void hw_dkc_handleInterrupt(unsigned int reason, uint32_t data0, uint32_t data1){
 	switch(reason){
 		case HW_DKC_INTS_FINISHED:
+			hw_dkc_busy = 0;
 			break;
 			
 		case HW_DKC_INTS_MOUNT:

@@ -4,6 +4,7 @@
 
 #include "hardware/clk/clock_driver.h"
 #include "hardware/nic/network_driver.h"
+#include "hardware/dkc/disk_driver.h"
 #include "kernel/kernel_debug.h"
 #include "kernel/kernel.h"
 
@@ -116,6 +117,46 @@ void syscall_nic_recv(void){
 }
 
 //////////////////////
+//	DISK DRIVE		//
+//////////////////////
+
+void syscall_dkc_read(void){
+	Process * prc = prc_getCurrentProcess();
+	
+	u32 diskNum = prc->context->gregs[0];
+	u32 sectorNum = prc->context->gregs[1];
+	char * data = (char*)prc->context->gregs[2];
+	int size = prc->context->gregs[4];
+	
+	
+	hw_dkc_read_sync(diskNum, sectorNum, data, size);
+}
+
+void syscall_dkc_write(void){
+	Process * prc = prc_getCurrentProcess();
+	
+	u32 diskNum = prc->context->gregs[0];
+	u32 sectorNum = prc->context->gregs[1];
+	char * data = (char *)prc->context->gregs[2];
+	int size = prc->context->gregs[4];
+	
+	hw_dkc_write_sync(diskNum, sectorNum, data, size);
+}
+
+void syscall_dkc_getInfo(void){
+	Process * prc = prc_getCurrentProcess();
+	int diskNum = prc->context->gregs[0];
+	DiskQuery * dq = (DiskQuery *)prc->context->gregs[1];
+	*dq = hw_dkc_query(diskNum);
+}
+
+void syscall_dkc_isReady(void){
+	Process * prc = prc_getCurrentProcess();
+	int diskNum = prc->context->gregs[0];
+	prc->context->gregs[0] = hw_dkc_is_ready(diskNum);
+}
+
+//////////////////////
 
 F_SYSCALL syscalls_cbacks[] = 
 {
@@ -133,5 +174,10 @@ F_SYSCALL syscalls_cbacks[] =
 	// network
 	syscall_nic_debug,
 	syscall_nic_send,
-	syscall_nic_recv
+	syscall_nic_recv,
+	// disk drive
+	syscall_dkc_read,
+	syscall_dkc_write,
+	syscall_dkc_getInfo,
+	syscall_dkc_isReady
 };
