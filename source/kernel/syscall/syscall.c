@@ -125,8 +125,8 @@ void syscall_dkc_read(void){
 	
 	u32 diskNum = prc->context->gregs[0];
 	u32 sectorNum = prc->context->gregs[1];
-	char * data = (char*)prc->context->gregs[2];
-	int size = prc->context->gregs[4];
+	void * data = (void*)prc->context->gregs[2];
+	int size = prc->context->gregs[3];
 	
 	
 	hw_dkc_read_sync(diskNum, sectorNum, data, size);
@@ -137,8 +137,8 @@ void syscall_dkc_write(void){
 	
 	u32 diskNum = prc->context->gregs[0];
 	u32 sectorNum = prc->context->gregs[1];
-	char * data = (char *)prc->context->gregs[2];
-	int size = prc->context->gregs[4];
+	void * data = (void *)prc->context->gregs[2];
+	int size = prc->context->gregs[3];
 	
 	hw_dkc_write_sync(diskNum, sectorNum, data, size);
 }

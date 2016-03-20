@@ -7,7 +7,6 @@
 typedef enum HW_CPU_FUNC{
 	HW_CPU_FUNC_RET_RAM_AMOUNT = 0,
 	HW_CPU_FUNC_RET_IRQ_QUEUE_SIZE = 1,
-	HW_CPU_FUNC_SET_MMU_TABLE_ADDR = 2
 }HW_CPU_FUNC;
 
 typedef enum HW_CPU_INTR{
@@ -22,7 +21,6 @@ void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1);
 
 unsigned int hw_cpu_retRamAmount(void);
 unsigned int hw_cpu_retIrqQueueSize(void);
-void hw_cpu_setMmuTableAddress(unsigned int addr);
 
 void hw_cpu_halt()
 INLINEASM("\t\

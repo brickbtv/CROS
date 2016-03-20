@@ -37,17 +37,17 @@ int hw_dkc_is_ready(uint32_t diskNum){
 	return (hw_dkc_busy == 0);
 }
 
-void hw_dkc_read_sync(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
+void hw_dkc_read_sync(uint32_t diskNum, uint32_t sectorNum, void * outData, uint32_t size){
 	//while (hw_dkc_busy){hw_cpu_halt();}
 	hw_dkc_readSector(diskNum, sectorNum, outData, size);
 }
 
-void hw_dkc_write_sync(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
+void hw_dkc_write_sync(uint32_t diskNum, uint32_t sectorNum, void * outData, uint32_t size){
 	//while (hw_dkc_busy){hw_cpu_halt();}
 	hw_dkc_writeSector(diskNum, sectorNum, outData, size);
 }
 
-void hw_dkc_readSector(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
+void hw_dkc_readSector(uint32_t diskNum, uint32_t sectorNum, void * outData, int size){
 	hw_HwiData data;
 	data.regs[0] = (sectorNum << 8) | diskNum;
 	data.regs[1] = (uint32_t) outData;
@@ -57,7 +57,10 @@ void hw_dkc_readSector(uint32_t diskNum, uint32_t sectorNum, char * outData, uin
 	hw_dkc_busy = 1;
 }
 
-void hw_dkc_writeSector(uint32_t diskNum, uint32_t sectorNum, char * outData, uint32_t size){
+void hw_dkc_writeSector(uint32_t diskNum, uint32_t sectorNum, void * outData, int size){
+	
+	//krn_debugLogf("There: %d", size);
+	
 	hw_HwiData data;
 	data.regs[0] = (sectorNum << 8) | diskNum;
 	data.regs[1] = (uint32_t) outData;

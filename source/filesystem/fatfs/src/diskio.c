@@ -10,6 +10,7 @@
 #include "diskio.h"		/* FatFs lower layer API */
 #include "kernel/hardware/dkc/disk_driver.h"
 #include "sdk/dkc/disk_drive.h"
+#include "sdk/os/debug.h"
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -78,6 +79,9 @@ DRESULT disk_write (
 {
 	DiskQuery di;
 	sdk_dkc_get_disk_info(pdrv, &di);
+	
+	
+	//sdk_debug_logf("%d, %d, %d, secs: %d stat: %d", pdrv, sector, count, di.sectorSize, di.status);
 	sdk_dkc_write(pdrv, sector, buff, count*di.sectorSize);
 	return 0;
 }
@@ -129,7 +133,7 @@ DWORD get_fattime(void)
 	/*
 		TODO: Returns the current date/time
 	*/
-	return 11111;//
+	return 0;//
 }
 
 #endif

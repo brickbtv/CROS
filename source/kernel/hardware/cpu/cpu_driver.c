@@ -60,10 +60,3 @@ unsigned int hw_cpu_retIrqQueueSize(void){
 	hwi_call(HW_BUS_CPU, HW_CPU_FUNC_RET_IRQ_QUEUE_SIZE, &data);
 	return data.regs[0];
 }
-
-void hw_cpu_setMmuTableAddress(unsigned int addr){
-	hw_HwiData data;
-	data.regs[0] = addr;
-	
-	hwi_call(HW_BUS_CPU, HW_CPU_FUNC_SET_MMU_TABLE_ADDR, &data);
-}

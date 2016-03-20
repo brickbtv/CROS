@@ -145,14 +145,6 @@
 			"bootfile": false
 		},
 		{
-			"path": ".\\mmu\\mmu.c",
-			"bootfile": false
-		},
-		{
-			"path": ".\\mmu\\mmu.h",
-			"bootfile": false
-		},
-		{
 			"path": ".\\hardware\\nic\\network_driver.c",
 			"bootfile": false
 		},

@@ -9,8 +9,6 @@
 #include "sdk/clk/clock.h"
 #include "sdk/os/process.h"
 
-#include "mmu/mmu.h"
-
 #include "boot/boot.h"
 #include "extern/tlsf/tlsf.h"
 #include "stdcshared_defs.h"
@@ -75,23 +73,9 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	if (currProc == NULL){
 		currProc = list_rpush(listPrcLoop, list_node_new(prc));
 		
-		HeapInfo heapInfo;
-		bool ret = prc_setupMemory(
-					prc, KERNEL_STACKSIZE, KERNEL_HEAPSIZE, (SIZE_TO_PAGES(hw_cpu_retRamAmount())*4),
-					&heapInfo);
-		stdcshared_init((DebugLogFunc)memCback, 
-						(void*)heapInfo.start, 
-						heapInfo.size);
 	} else {
 		list_rpush(listPrcLoop, list_node_new(prc));
 		HeapInfo heapInfo;
-		bool ret = prc_setupMemory(
-					prc, stackSize, heapSize, 0,
-					&heapInfo);
-		
-		if (ret == 0){
-			krn_debugBSODf("Process Creation", "prc_setupMemory failed");
-		}
 	}
 	
 	// clean msgs queue
@@ -101,99 +85,6 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	prc->sync_lock = FALSE;
 	
 	return prc;
-}
-
-bool prc_setupMemory(Process * prc, unsigned int stackSize, 
-									unsigned int heapSize,
-									unsigned int extraSize,
-									HeapInfo * heapInfo){
-	bool isKrn = (prc->pid == PID_KERNEL);
-									
-	int sharedSize = align(processInfo.sharedReadWriteSize, 4);	
-	stackSize = align( (stackSize > PRC_MIN_STACKSIZE) ? stackSize:PRC_MIN_STACKSIZE, 4);
-	heapSize = align(heapSize,4);
-	size_t neededSize = stackSize + extraSize + sharedSize + heapSize;
-	// If no dynamic memory needed, then don't waste space with tlsf
-	if (heapSize)
-		neededSize += tlsf_size();
-	neededSize = align(neededSize, MMU_PAGE_SIZE);
-	int numPages = SIZE_TO_PAGES(neededSize);
-	
-	//
-	// Calculate first page
-	//
-	int firstPage;
-	if (isKrn) {
-		firstPage = ADDR_TO_PAGE( align(
-			processInfo.sharedReadWriteAddr+sharedSize,MMU_PAGE_SIZE));
-	} else {
-		firstPage = mmu_findFreePages( numPages );
-		if (firstPage==-1) {
-			krn_debugLog("Not enough contiguous pages to create process heap");
-			return FALSE;
-		}
-	}
-	
-	uint8_t* memStart = PAGE_TO_ADDR(firstPage);
-	prc->firstPage = firstPage;
-	prc->numPages = numPages;
-	prc->ds = (unsigned int)(memStart + stackSize + extraSize);
-	
-	
-	// WARNING: This needs to be setup before initializing the MMU, otherwise
-	// if this is the kernel process initialization, it will crash since this
-	// thread context is in protected memory
-	//TCB* tcb = pcb->mainthread;
-	prc->context->gregs[CPU_REG_DS] = (uint32_t)prc->ds;	
-	
-	//
-	// Stack
-	// The stack is at the start, to help catch stack overflow,
-	// since it will crash when trying to write to the lower page
-	// Note: Not actually setting the stack register here, because this code
-	// is also used to initialize the kernel process. The caller is responsible
-	// by setting the registers
-	uint8_t* ptr = memStart;
-	prc->stackBottom = (unsigned int)ptr;
-	prc->stackTop = (unsigned int)(ptr + stackSize);
-
-	// If this is the kernel process, we initialize the mmu as soon as
-	// possible to help catch bugs during kernel boot.		
-	if (isKrn)
-	{
-		//assert(extraSize>=MMU_TABLE_SIZE);
-		mmu_init(firstPage, numPages, memStart+stackSize);
-	}
-	
-	//
-	// Shared data
-	//
-	// Temporarly set write permissions for the kernel so we can write stuff into
-	// the process heap area
-	/*prc_setPagesAccess(pcb, PID_KERNEL);
-	memcpy(pcb->ds , (void*)processInfo.sharedReadWriteAddr, sharedSize);
-	ptr = (uint8_t*)pcb->ds + sharedSize;
-	prc_setPagesAccess(pcb, pcb->info.pid);*/
-
-	memset(heapInfo, 0, sizeof(*heapInfo));
-	if (heapSize) {
-		heapInfo->start = (unsigned int)ptr;
-		heapInfo->size = neededSize - (ptr-memStart);
-	}
-
-	//pcb->info.memory = mmu_countPages(pcb->info.pid) * MMU_PAGE_SIZE;
-	//krn.info.mem_available = mmu_countPages(PID_NONE)*MMU_PAGE_SIZE;
-	return TRUE;
-}
-
-void prc_setPagesAccess(Process * prc, uint8_t pid)
-{
-	mmu_setPages(prc->firstPage, prc->numPages, pid, true, true, false);
-	
-	mmu_setPages(
-		ADDR_TO_PAGE(prc->stackBottom),
-		SIZE_TO_PAGES(prc->stackTop - prc->stackBottom),
-		pid, true, true, false);
 }
 
 /*

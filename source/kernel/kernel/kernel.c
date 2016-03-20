@@ -126,7 +126,7 @@ void krn_sleep(unsigned int ms){
 	unsigned int start = hw_clk_readTimeSinceBoot();
 	unsigned int current = hw_clk_readTimeSinceBoot();
 	
-	while (current - start < ms){
+	while (current - start <= ms){
 		if (current < start)
 			return;
 			
@@ -135,7 +135,7 @@ void krn_sleep(unsigned int ms){
 }
 
 /*!
-*	Entry point to all execptions.
+*	Entry point to all interruptions.
 *	\return basic kernel context
 */
 
@@ -147,7 +147,7 @@ Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 		return prc_getCurrentProcess()->context;
 	
 	// Check for double faults (kernel crashes)
-	// This is detecting by checking if we were serving an interrupt before
+	// They are detecter by checking if we were serving an interrupt before
 	if (krn_prevIntrBusAndReason!=NO_INTERRUPT && (krn_currIntrBusAndReason >> 24) != 0)
 	{
 		krn_debugBSODf("Interruptions handler",	"DOUBLE FAULT: PREVIOUS %d %d, DATA 0x%X,0x%X,0x%X,0x%X\n  CURRENT: %d %d",
