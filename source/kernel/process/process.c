@@ -53,6 +53,8 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	prc->screen->res_hor = info.res_hor;
 	prc->screen->res_ver = info.res_ver;
 	prc->screen->bytes_per_char = info.bytes_per_char;
+	prc->screen->cur_x = 0;
+	prc->screen->cur_y = 0;
 	
 	hw_scr_setTextColor(prc->screen, SCR_COLOR_GREEN);
 	hw_scr_setBackColor(prc->screen, SCR_COLOR_BLACK);

@@ -47,8 +47,8 @@ int memCback(const char * fmt, ...){
 *	Initialize stdlib memory allocation. 
 */
 void krn_initMalloc(void){
-	static char test[1024 * 40+1];
-	stdcshared_init(memCback, (void*)&test[1], 1024 * 40);
+	static char test[1024 * 50+1];
+	stdcshared_init(memCback, (void*)&test[1], 1024 * 50);
 }
 
 

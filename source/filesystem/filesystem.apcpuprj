@@ -67,6 +67,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\filesystem.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\fatfs\\src\\integer.h",
 			"bootfile": false
 		},

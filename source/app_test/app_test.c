@@ -5,91 +5,63 @@
 #include "sdk/os/debug.h"
 #include "sdk/nic/network.h"
 #include "sdk/kyb/keyboard.h"
-//#include "sdk/dkc/disk_drive.h"
-#include "filesystem/fatfs/src/ff.h"
 
-#include "filesystem/fatfs/src/diskio.h"
+#include "filesystem/filesystem.h"
+
+int mount_drive_and_make_fs_if_needed(Canvas * canvas){
+	int res = fs_mount_drive(0);
+	if (res != FS_OK){
+		if (res == FS_NO_FILESYSTEM){
+			sdk_scr_printf(canvas, "No file system found.\nMarking drive 0. It takes 1-2 minutes.\n");
+			int res_mkfs = fs_make_filesystem();
+			if (res_mkfs != FS_OK){
+				sdk_scr_printf(canvas, "Failed to make filesytem. Abort.\n");
+				return 1;
+			} else {
+				sdk_scr_printf(canvas, "Done.\n");
+			}
+		} else {
+			sdk_scr_printf(canvas, "Failed to mount drive. It's mounted? Abort.\n");
+			return 2;
+		}
+	} 
+	
+	return 0;
+}
 
 void app_test(void){
-	Canvas * canvas2 = (Canvas*)sdk_prc_getCanvas();
-//	sdk_scr_clearScreen(canvas2, SCR_COLOR_BLACK);
+	Canvas * canvas = (Canvas*)sdk_prc_getCanvas();
+	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
 	
-	FATFS fs;
-	
-	/*char buff[512];
-	char wbuff[512];
-	wbuff[0] = 'a';
-	wbuff[1] = 'b';
-	wbuff[2] = 'c';
-	for (int i = 3; i < 512-23; i++){
-		wbuff[i] = 'd';
+	int res = mount_drive_and_make_fs_if_needed(canvas);
+	if (res){
+		return;
 	}
-	
-	for (int i = 512-23; i < 512; i++){
-		wbuff[i] = 'a' + i;
-	}
-	
-	for (int i = 0; i < 512; i++){
-		buff[i] = 0;
-	}
-	
-	disk_write(0, wbuff, 0, 1);
-	disk_read(0, buff, 0, 1);
-	
-	
-	char * a = buff;
-	sdk_debug_logf("sec_1: %c", *a);
-	for (int i = 0; i < 512; i++){
-		//if (*a != 0){
-			char b = buff[i];
-			sdk_debug_logf("sec_0: %d, %c", i, *a);
-		//}
-		a++;
-	}
-	*/
-	
-	char drive_name[2];
-	drive_name[0] = (char)0;
-	drive_name[1] = 0;
-	
-	
-	FRESULT res = f_mount(&fs, "", 1);
-	if (res != FR_OK){
-		sdk_debug_logf("f_mount: %d", res);
-		res = f_mkfs("", 0, 0);
-		if (res != FR_OK){
-			sdk_debug_logf("f_mkfs: %d", res);
-		} else {
-			FIL fil;
-			//res = f_open(&fil, "NOO.TXT", FA_CREATE_NEW);
-			res = f_mount(&fs, "", 1);
-			if (res != FR_OK){
-				sdk_debug_logf("f_open: %d", res);
+
+	res = fs_mkdir("CROS");
+	if (res != FS_OK && res != FS_EXIST){
+		sdk_scr_printf(canvas, "Failed to create directory.\n");
+	} else if (res == FS_OK || res == FS_EXIST){
+		FILE * file = fs_open_file("CROS/ABC.TXT", 'w');
+		if (file){
+			int res_write = fs_write_file(file, "EVERYBODY JUMPS");
+			if (res_write != FS_OK){
+				sdk_scr_printf(canvas, "Failed to write file\n");
 			} else {
-				sdk_debug_logf("IMPOSSSIBLE");
+				fs_close_file(file);
+				FILE * file2 = fs_open_file("CROS/ABC.TXT", 'r');
+				char buf[1024];
+				unsigned int rb;
+				int rr = fs_read_file(file2, buf, 1024, &rb);
+				if (rr != FS_OK){
+					sdk_scr_printf(canvas, "Failed to read from file.\n");
+				}
+				fs_close_file(file2);
+				sdk_scr_printf(canvas, "Readed from file: %s BR: %d\n", buf, rb);
 			}
-		}
-	} else {
-		FIL fil;
-		res = f_open(&fil, "NOO.TXT", FA_WRITE);
-		if (res != FR_OK){
-			sdk_debug_logf("f_open: %d", res);
 		} else {
-			sdk_debug_logf("IMPOSSSIBLE");
-			UINT bw; 
-			f_write(&fil, "MAKE IT EASIER", 15, &bw);
-			if (res != FR_OK){
-				sdk_debug_logf("f_write: %d", res);
-			} else {
-				f_close(&fil);
-				res = f_open(&fil, "NOO.TXT", FA_READ);
-				char ge[1024];
-				res = f_read(&fil, ge, 1024, &bw);
-				sdk_debug_logf("Nuuuuuu! : %s", ge);
-			}
+			sdk_scr_printf(canvas, "Failed to open file\n");
 		}
-	
-		sdk_debug_logf("IMPOSSSIBLE NUMBER TWO");
 	}
 	
 	
