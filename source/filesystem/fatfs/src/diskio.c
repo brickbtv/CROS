@@ -20,7 +20,9 @@
 
 static int get_status(int diskNum)
 {
-	return 0;
+	DiskQuery di;
+	sdk_dkc_get_disk_info(diskNum, &di);
+	return di.status;
 }
 
 DSTATUS disk_status (
@@ -40,6 +42,11 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
+	DiskQuery di;
+	sdk_dkc_get_disk_info(pdrv, &di);
+	if (di.errorCode == HW_DKC_ERROR_NOMEDIA){
+		return RES_NOTRDY;
+	}
 	return 0;
 }
 
