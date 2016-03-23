@@ -10,7 +10,10 @@ void hw_clk_handleInterrupt(int reason, u32 data0, u32 data1){
 	if (reason == HW_CLK_INTR_REACHED_COUNTDOWN){
 		for (int i = 0; i < HW_CLK_MAXTIMERSNUM; i++){
 			 if (data0 & 1 << i){
-				(hw_clk_cbacks[i])(i);
+				// TODO: need some smater
+				if (hw_clk_cbacks[i] != NULL){
+					(hw_clk_cbacks[i])(i);
+				}
 			 }
 		}
 	} else { 

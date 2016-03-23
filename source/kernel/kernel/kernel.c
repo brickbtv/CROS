@@ -43,12 +43,19 @@ int memCback(const char * fmt, ...){
 	return 1;
 }
 
+int align(unsigned int pointer){
+	return pointer % 4;
+}
+
 /*!
 *	Initialize stdlib memory allocation. 
 */
 void krn_initMalloc(void){
-	static char test[1024 * 50+1];
-	stdcshared_init(memCback, (void*)&test[1], 1024 * 50);
+	static char test[1024 * 50+10];
+	unsigned int align_offset = (unsigned int)&test[0];
+	int a = align(align_offset);
+	
+	stdcshared_init(memCback, (void*)&test[a], 1024 * 50);
 }
 
 

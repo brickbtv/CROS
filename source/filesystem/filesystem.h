@@ -12,6 +12,10 @@ typedef struct FILE{
 	void * fil;
 } FILE;
 
+typedef struct FOLDER{
+	void * folder;
+} FOLDER;
+
 int fs_mount_drive(int drive_id);
 int fs_make_filesystem();
 FILE * fs_open_file(const char* path, const char mode);

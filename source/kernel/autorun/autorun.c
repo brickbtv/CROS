@@ -4,6 +4,7 @@
 #include "app_chat/app_chat.h"
 #include "app_chat/server.h"
 #include "app_test/app_test.h"
+#include "app_shell/app_shell.h"
 
 #include <stdint_shared.h>
 
@@ -13,6 +14,7 @@
 void krn_autorun(void){
 	//Process * prc = prc_create("app_chat", 1024*5, 1024*10, (uint32_t*)app_chat, USERMODE_USER);
 	//Process * prc = prc_create("app_chat_server", 1024*10, 1024*10, (uint32_t*)app_chat_server, USERMODE_USER);
-	Process * prc = prc_create("app_test", 1024*20, 1024*20, (uint32_t*)app_test, USERMODE_USER);
+	//Process * prc = prc_create("app_test", 1024*20, 1024*20, (uint32_t*)app_test, USERMODE_USER);
+	Process * prc = prc_create("app_test", 1024*10, 1024*20, (uint32_t*)app_shell, USERMODE_USER);
 	hw_scr_mapScreenBuffer((void*)prc->screen->addr);
 }

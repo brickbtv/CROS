@@ -34,7 +34,7 @@ void processScroll(Canvas * info){
 	info->cur_y --;
 }
 
-void printfXY(Canvas * info, unsigned int x, unsigned int y, const char* buf){
+void printfXY(Canvas * info, unsigned int x, unsigned int y, const unsigned char* buf){
 	const char * ch = buf;
 	
 	info->cur_x = x;
@@ -66,7 +66,7 @@ void printfXY(Canvas * info, unsigned int x, unsigned int y, const char* buf){
 	}
 }
 
-void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const char* fmt, ...){
+void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const unsigned char* fmt, ...){
 	va_list ap;
 	char buf[256];
 	char* out = &buf[0];
@@ -76,13 +76,13 @@ void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const char*
 	printfXY(info, x, y, buf);
 }
 
-void sdk_scr_printf(Canvas * info, const char* fmt, ...){
+void sdk_scr_printf(Canvas * info, const unsigned char* fmt, ...){
 	va_list ap;
 	char buf[256];
 	char* out = &buf[0];
 	va_start(ap, fmt);	
 	vsprintf(buf, fmt, ap);
-	
+		
 	printfXY(info, info->cur_x, info->cur_y, buf);
 }
 
