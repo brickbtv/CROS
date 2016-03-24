@@ -10,7 +10,7 @@
 
 #include <string_shared.h>
 
-#include "filesystem/fatfs/src/ff.h"
+//#include "filesystem/fatfs/src/ff.h"
 
 static char input[1024];
 static int symb = 0;
@@ -25,26 +25,30 @@ void manage_command(){
 		" 'ls' - show files and folders in current directory\n"
 		" 'mkdir NAME' - make new directory\n");
 	} else if (strcmp(input, "ls") == 0){
-		DIR dir;
-		FILINFO fno;
+		FILEINFO fno;
 		int i;
 		char *fn;
-		FRESULT res = f_opendir(&dir, curent_path);                       /* Open the directory */
-		if (res == FR_OK) {
+		FOLDER* dir = fs_opendir(curent_path);                       	/* Open the directory */
+		if (dir) {
 			i = strlen(curent_path);
 			for (;;) {
-				res = f_readdir(&dir, &fno);                   /* Read a directory item */
-				if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
+				int res = fs_readdir(dir, &fno);                   		/* Read a directory item */
+				if (res != FS_OK || fno.fname[0] == 0) break;  			/* Break on error or end of dir */
 								
 				fn = fno.fname;
 				
 				sdk_scr_printf(canvas, "%s/%s\n", curent_path, fn);
 			}
-			f_closedir(&dir);
+			fs_closedir(dir);
 		}
 
-	} else if (strncmp(input, "mkdir", strlen("mkdir")) == 0){
+	} else if (strncmp(input, "mkdir ", strlen("mkdir ")) == 0){
 		fs_mkdir(&input[strlen("mkdir") + 1]);
+	} else if (strncmp(input, "cd ", strlen("cd ")) == 0){
+		curent_path[strlen(curent_path)] = '/';
+		strcpy(&curent_path[strlen(curent_path)], &input[strlen("cd ")]);
+	} else if (strncmp(input, "rm ", strlen("rm ")) == 0){
+		fs_unlink(&input[strlen("rm ")]);
 	}
 }
 

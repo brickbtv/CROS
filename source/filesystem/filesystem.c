@@ -110,3 +110,51 @@ int fs_remove(const char* path){
 	}
 	return FS_OK;
 }
+
+FOLDER * fs_opendir(const char* path){
+	FOLDER* folder = malloc(sizeof(FOLDER));
+	DIR* dir = malloc(sizeof(DIR));
+	FRESULT res = f_opendir(dir, path);
+	if (res != FR_OK){
+		return 0;
+	}
+	
+	folder->folder = dir;
+	
+	return folder;
+}
+
+void fs_closedir(FOLDER* folder){
+	if (folder && folder->folder){
+		free(folder->folder);
+		folder->folder = NULL;
+		free(folder);
+		folder = NULL;
+	}
+}
+
+int fs_readdir(FOLDER* folder, FILEINFO* fileinfo){
+	FILINFO inf;
+	memset(&fileinfo->fname[0], 0, sizeof(fileinfo->fname));
+	FRESULT res = f_readdir(folder->folder, &inf);
+	if (res != FS_OK){
+		return FS_UNKNOWN_ERROR;
+	}
+	
+	fileinfo->fattrib = inf.fattrib;
+	fileinfo->fdate = inf.fdate;
+	strcpy(fileinfo->fname, inf.fname);
+	fileinfo->fsize = inf.fsize;
+	fileinfo->ftime = inf.ftime;
+	
+	return FS_OK;	
+}
+
+int fs_unlink(const char* path){
+	FRESULT res = f_unlink(path);
+	if (res != FR_OK){
+		return FS_UNKNOWN_ERROR;
+	}
+	
+	return FS_OK;
+}
