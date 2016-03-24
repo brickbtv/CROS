@@ -22,6 +22,7 @@ typedef struct FILEINFO{
 	int	ftime;						/* Last modified time */
 	short fattrib;					/* Attribute */
 	unsigned char fname[13];		/* Short file name (8.3 format) */
+	char ftype;						/* d - directory, f - file */
 } FILEINFO;
 
 int fs_mount_drive(int drive_id);

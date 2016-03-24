@@ -147,6 +147,10 @@ int fs_readdir(FOLDER* folder, FILEINFO* fileinfo){
 	fileinfo->fsize = inf.fsize;
 	fileinfo->ftime = inf.ftime;
 	
+	fileinfo->ftype = 'f';
+	if (inf.fattrib & AM_DIR)
+		fileinfo->ftype = 'd';
+	
 	return FS_OK;	
 }
 
