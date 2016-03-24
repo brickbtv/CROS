@@ -40,5 +40,9 @@ void fs_closedir(FOLDER* folder);
 int fs_readdir(FOLDER* folder, FILEINFO* fileinfo);
 
 int fs_unlink(const char* path);
+int fs_chdir(const char* dir);
+
+int fs_chdir(const char* dir);
+int fs_getcwd(char * cwd_str, int str_len);
 
 #endif

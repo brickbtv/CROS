@@ -53,6 +53,14 @@
 		{
 			"path": ".\\app_shell.h",
 			"bootfile": false
+		},
+		{
+			"path": ".\\commands\\commands.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\commands\\commands.h",
+			"bootfile": false
 		}
 	]
 }

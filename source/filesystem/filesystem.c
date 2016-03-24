@@ -5,6 +5,8 @@
 #include <string_shared.h>
 #include "sdk/os/debug.h"
 
+#define DEF_ERR_HANDLER(r) if (r != FR_OK){ return FS_UNKNOWN_ERROR; } return FS_OK;
+
 int fs_mount_drive(int drive_id){
 	FATFS * fs = malloc(sizeof(FATFS));
 	FRESULT res = f_mount(fs, "", 1);
@@ -12,20 +14,12 @@ int fs_mount_drive(int drive_id){
 		return FS_NO_FILESYSTEM;
 	} 
 	
-	if (res != FR_OK){
-		return FS_UNKNOWN_ERROR;
-	}
-	
-	return FS_OK;
+	DEF_ERR_HANDLER(res)
 }
 
 int fs_make_filesystem(){
 	FRESULT res = f_mkfs("", 0, 0);
-	if (res != FR_OK){
-		return FS_UNKNOWN_ERROR;
-	}
-	
-	return FS_OK;
+	DEF_ERR_HANDLER(res)
 }
 
 FILE * fs_open_file(const char* path, const char mode){
@@ -84,11 +78,7 @@ int fs_read_file(FILE* file, char* buf, unsigned int size, unsigned int* readed_
 	*readed_bytes = br;
 	strcpy(buf, b);
 	
-	if (res != FR_OK){
-		return FS_UNKNOWN_ERROR;
-	}
-	
-	return FS_OK;
+	DEF_ERR_HANDLER(res)
 }
 
 int fs_mkdir(const char* path){
@@ -96,19 +86,12 @@ int fs_mkdir(const char* path){
 	if (res == FR_EXIST){
 		return FS_EXIST;
 	}
-	if (res != FR_OK){
-		return FS_UNKNOWN_ERROR;
-	}
-	
-	return FS_OK;
+	DEF_ERR_HANDLER(res)
 }
 
 int fs_remove(const char* path){
 	FRESULT res = f_unlink(path);
-	if (res != FR_OK){
-		return FS_UNKNOWN_ERROR;
-	}
-	return FS_OK;
+	DEF_ERR_HANDLER(res)
 }
 
 FOLDER * fs_opendir(const char* path){
@@ -156,9 +139,15 @@ int fs_readdir(FOLDER* folder, FILEINFO* fileinfo){
 
 int fs_unlink(const char* path){
 	FRESULT res = f_unlink(path);
-	if (res != FR_OK){
-		return FS_UNKNOWN_ERROR;
-	}
-	
-	return FS_OK;
+	DEF_ERR_HANDLER(res)
+}
+
+int fs_chdir(const char* dir){
+	FRESULT res = f_chdir(dir);
+	DEF_ERR_HANDLER(res);
+}
+
+int fs_getcwd(char * cwd_str, int str_len){
+	FRESULT res = f_getcwd(cwd_str, str_len);
+	DEF_ERR_HANDLER(res);
 }
