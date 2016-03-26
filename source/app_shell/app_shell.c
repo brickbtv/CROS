@@ -81,7 +81,8 @@ void app_shell(void){
 	canvas = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
 	
-	mount_drive_and_mkfs_if_needed(canvas);
+	if (mount_drive_and_mkfs_if_needed(canvas) == 2)
+		while(1){};	
 	
 	sdk_scr_printf(canvas, "CR Shell. Version 1.0.\nWelcome!\nType 'help' for commands list\n");
 	sdk_scr_printf(canvas, "%s>", current_path);

@@ -31,7 +31,9 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		}
 
 	} else if (strncmp(input, "mkdir ", strlen("mkdir ")) == 0){
-		fs_mkdir(&input[strlen("mkdir ")]);
+		int res = fs_mkdir(&input[strlen("mkdir ")]);
+		if (res != FS_OK)
+			sdk_scr_printf(canvas, "Failed to create directory.\n");
 	} else if (strncmp(input, "mkfile ", strlen("mkfile ")) == 0){
 		FILE * file = fs_open_file(&input[strlen("mkfile ")], 'w');
 		if (file){
@@ -40,9 +42,34 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 			sdk_scr_printf(canvas, "Failed to create file.\n");
 		}
 	} else if (strncmp(input, "cd ", strlen("cd ")) == 0){
-		fs_chdir(&input[strlen("cd ")]);
+		int res = fs_chdir(&input[strlen("cd ")]);
+		if (res != FS_OK)
+			sdk_scr_printf(canvas, "Failed to change directory.\n");
 		fs_getcwd(current_path, 256);
 	} else if (strncmp(input, "rm ", strlen("rm ")) == 0){
-		fs_unlink(&input[strlen("rm ")]);
+		int res = fs_unlink(&input[strlen("rm ")]);
+		if (res != FS_OK)
+			sdk_scr_printf(canvas, "Failed to remove file or directory.\n");
+	} else if (strncmp(input, "cat ", strlen("cat ")) == 0){
+		FILE * file = fs_open_file(&input[strlen("cat ")], 'r');
+		if (file){
+			char buff[1024];
+			int rb;
+			
+			memset(buff, 0, 1024);
+			fs_read_file(file, buff, 1024, &rb);
+			while(strlen(buff) > 0){
+				sdk_scr_printf(canvas, buff);
+				memset(buff, 0, 1024);
+				if (rb < 1024)
+					break;
+					
+				fs_read_file(file, buff, 1024, &rb);
+			}
+			sdk_scr_printf(canvas, "\n");
+			fs_close_file(file);
+		} else {
+			sdk_scr_printf(canvas, "Failed to open file.\n");
+		}
 	}
 }
