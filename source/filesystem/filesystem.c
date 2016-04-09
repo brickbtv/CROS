@@ -38,6 +38,7 @@ FILE * fs_open_file(const char* path, const char mode){
 	
 	FRESULT res = f_open((FIL*)file->fil, path, open_mode);
 	if (res != FR_OK){
+		sdk_debug_logf("res: %d", res);
 		return 0;
 	}
 	
@@ -68,15 +69,7 @@ int fs_write_file(FILE* file, const char * buf){
 }
 
 int fs_read_file(FILE* file, char* buf, unsigned int size, unsigned int* readed_bytes){
-	char b[1024];	
-	if (size > 1024){
-		return FS_INVALID_PARAM;
-	}
-	
-	UINT br; 
-	FRESULT res = f_read((FIL*)file->fil, b, size, &br);
-	*readed_bytes = br;
-	strcpy(buf, b);
+	FRESULT res = f_read((FIL*)file->fil, buf, size, readed_bytes);
 	
 	DEF_ERR_HANDLER(res)
 }
@@ -150,4 +143,8 @@ int fs_chdir(const char* dir){
 int fs_getcwd(char * cwd_str, int str_len){
 	FRESULT res = f_getcwd(cwd_str, str_len);
 	DEF_ERR_HANDLER(res);
+}
+
+unsigned int fs_getsize(FILE* file){
+	//return f_size(file->fil);
 }
