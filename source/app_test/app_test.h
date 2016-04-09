@@ -2,5 +2,6 @@
 #define _APP_TEST_H_
 
 void app_test(void);
+void asm_func(void);
 
 #endif
