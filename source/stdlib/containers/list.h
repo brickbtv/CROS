@@ -96,6 +96,9 @@ list_rpop(list_t *self);
 list_node_t *
 list_lpop(list_t *self);
 
+list_node_t *
+list_insertafter(list_t *self, list_node_t *node_ins_after, list_node_t *node);
+
 void
 list_remove(list_t *self, list_node_t *node);
 

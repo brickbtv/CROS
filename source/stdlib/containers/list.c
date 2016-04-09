@@ -68,6 +68,28 @@ list_rpush(list_t *self, list_node_t *node) {
 }
 
 /*
+ * Insert the given node to the list after given second node
+ * and return the node, NULL on failure.
+ */
+
+list_node_t *
+list_insertafter(list_t *self, list_node_t *node_ins_after, list_node_t *node) {
+  if (!node) return NULL;
+  if (!self) return NULL;
+
+  if (self->len) {
+	node->next = node_ins_after->next;
+	node->prev = node_ins_after;
+	node_ins_after->next = node;
+  } else {
+    return NULL;
+  }
+
+  ++self->len;
+  return node;
+}
+
+/*
  * Return / detach the last node in the list, or NULL.
  */
 
