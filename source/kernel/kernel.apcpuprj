@@ -50,7 +50,8 @@
 		"app_chat",
 		"filesystem",
 		"app_test",
-		"app_shell"
+		"app_shell",
+		"app_texteditor"
 	],
 	"files": [
 		{

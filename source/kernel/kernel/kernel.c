@@ -51,11 +51,11 @@ int align(unsigned int pointer){
 *	Initialize stdlib memory allocation. 
 */
 void krn_initMalloc(void){
-	static char test[1024 * 50+10];
+	static char test[1024 * 100+10];
 	unsigned int align_offset = (unsigned int)&test[0];
 	int a = align(align_offset);
 	
-	stdcshared_init(memCback, (void*)&test[a], 1024 * 50);
+	stdcshared_init(memCback, (void*)&test[a], 1024 * 100);
 }
 
 
