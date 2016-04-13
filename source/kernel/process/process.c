@@ -5,7 +5,6 @@
 
 #include "hardware/clk/clock_driver.h"
 #include "hardware/cpu/cpu_driver.h"
-#include "containers/list.h"
 #include "sdk/clk/clock.h"
 #include "sdk/os/process.h"
 
@@ -38,7 +37,7 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	
 	// allocate stack
 	prc->stack = malloc(stackSize * sizeof(char));
-	
+	prc->heap = malloc(heapSize * sizeof(char) + 1024 * 7);
 	// info
 	strcpy(prc->name, name);
 	prc->pid = totalPIDs++;
@@ -70,23 +69,28 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	if (listPrcLoop == NULL){				// empty scheduler
 		listPrcLoop = list_new();
 	}
-	
+
+	// set up events queue
+	prc->list_msgs = list_new();
+
 	// set up first created process (idle) as current. needed in scheduler.
 	if (currProc == NULL){
 		currProc = list_rpush(listPrcLoop, list_node_new(prc));
-		
 	} else {
 		list_rpush(listPrcLoop, list_node_new(prc));
-		HeapInfo heapInfo;
 	}
 	
-	// clean msgs queue
-	prc->list_msgs = list_new();
-	
+	_mem_init(prc->heap, heapSize * sizeof(char), 0);
+		
 	// synchrinization flag
 	prc->sync_lock = FALSE;
 	
 	return prc;
+}
+
+void prc_initMessagesList(){
+	//Process* prc = prc_getCurrentProcess();
+	//prc->list_msgs = list_new();
 }
 
 /*
@@ -171,6 +175,7 @@ void clkCback(int clk){
 				currProc = listPrcLoop->head;
 			}
 			prc = currProc->val;
+			
 		} while (isNeedSleep(prc)); // check sleep time
 	}
 }
@@ -204,7 +209,10 @@ void prc_startScheduler(void){
 *	Can be useful to recieve current context
 */
 Process * prc_getCurrentProcess(void){
-	return (Process *)currProc->val;
+	if (currProc)
+		return (Process *)currProc->val;
+	
+	return NULL;
 }
 
 /*!

@@ -22,6 +22,7 @@ typedef struct Process{
 	unsigned int pid;
 	
 	char * stack;
+	char * heap;
 	Ctx * context;
 	
 	uint32_t sleep_start;
@@ -63,5 +64,7 @@ void prc_startScheduler(void);
 Process * prc_getCurrentProcess(void);
 void prc_skipCurrentProc(void);
 void sendMessageToAll(PRC_MESSAGE type, int reason, int value);
+
+void prc_initMessagesList();
 
 #endif
