@@ -10,11 +10,20 @@
 
 extern F_SYSCALL syscalls_cbacks[];
 
+static char mode[3][8] = {"Read   ", "Write  ", "Execute"};
 
 void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 	Process * prc = prc_getCurrentProcess();
 
-	char mode[3][8] = {"Read   ", "Write  ", "Execute"};
+	/*
+	*	This check is a hack, because i can't catch why 
+	*	process can send SWI and be NULL at the same time.
+	*/
+	if (prc == NULL){
+		krn_debugLogf("WARNING. Process with NULL pointer sent SWI.");
+		return;
+	}
+	
 	switch (reason){
 		case HW_CPU_INTR_ABORT: 
 			krn_debugLogf("INT: CPU Abort. Context Address: %x, Mode: %s. %s", data0, mode[data1], prc->name);
@@ -35,8 +44,8 @@ void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 		case HW_CPU_INTR_SWI:
 			//krn_debugLogf("INT: Software interruption.");
 			{
-				while (prc->sync_lock){};	// TODO: deffered swi processing
-			
+				while (prc->sync_lock){};	// TODO: deffered swi processing				
+				
 				uint32_t swi_id = prc->context->gregs[SYSCALL_ID_REGISTER];
 				syscalls_cbacks[swi_id]();
 			}
