@@ -5,8 +5,8 @@
 #include <stddef_shared.h>
 #include <stdint_shared.h>
 
-void sdk_dkc_read(u32 diskNum, u32 sectorNum, char * data, int size);
-void sdk_dkc_write(u32 diskNum, u32 sectorNum, const char * data, int size);
+void sdk_dkc_read(u32 diskNum, u32 sectorNum, void * data, int size);
+void sdk_dkc_write(u32 diskNum, u32 sectorNum, const void * data, int size);
 //void sdk_dkc_set_flags(u32 diskNum, u32 flags);
 //int sdk_dkc_get_flags(u32 diskNum);
 

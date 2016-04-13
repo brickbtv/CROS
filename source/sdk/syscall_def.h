@@ -42,6 +42,7 @@ typedef enum SYSCALL_CBACKS{
 	// processes
 	syscall_prc_sleep,
 	syscall_prc_getCurrentProcessScreenInfo,
+	syscall_prc_getCurrentProcessHeapPointer,
 	syscall_prc_haveNewMessages,
 	syscall_prc_getNextMessage,
 	syscall_prc_lock,

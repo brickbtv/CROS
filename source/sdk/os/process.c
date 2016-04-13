@@ -13,6 +13,10 @@ unsigned int * sdk_prc_getCanvas(){
 	return (unsigned int *)app_syscall0(syscall_prc_getCurrentProcessScreenInfo);
 }
 
+void * sdk_prc_getHeapPointer(){
+	return (void*)app_syscall0(syscall_prc_getCurrentProcessHeapPointer);
+}
+
 bool sdk_prc_haveNewMessage(void){
 	return (bool)app_syscall0(syscall_prc_haveNewMessages);
 }

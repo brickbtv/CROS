@@ -30,8 +30,8 @@ typedef enum CanvasColor{
 void sdk_scr_setTextColor(Canvas * info, CanvasColor color);
 void sdk_scr_setBackColor(Canvas * info, CanvasColor color);
 
-void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const char* fmt, ...);
-void sdk_scr_printf(Canvas * info, const char* fmt, ...);
+void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const unsigned char* fmt, ...);
+void sdk_scr_printf(Canvas * info, const unsigned char* fmt, ...);
 
 void sdk_scr_clearScreen(Canvas * info, CanvasColor color);
 void sdk_scr_putchar(Canvas * info, unsigned int x, unsigned int y, const unsigned char ch);
