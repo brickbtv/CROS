@@ -19,7 +19,8 @@
 			"name": "Debug",
 			"includePaths": [
 				"$(ProjectDir)",
-				"$(SolutionDir)"
+				"$(SolutionDir)",
+				"$(SolutionDir)\/kernel"
 			],
 			"defines": [
 				"DEBUG"
@@ -31,7 +32,8 @@
 			"name": "Release",
 			"includePaths": [
 				"$(ProjectDir)",
-				"$(SolutionDir)"
+				"$(SolutionDir)",
+				"$(SolutionDir)\/kernel"
 			],
 			"defines": [
 				"NDEBUG"

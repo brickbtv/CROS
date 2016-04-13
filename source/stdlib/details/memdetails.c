@@ -3,183 +3,99 @@
 #include "string_shared.h"
 #include "extern/tlsf/tlsf.h"
 
+#include "sdk/os/process.h"
+#include "sdk/os/debug.h"
 
-#if MEMDEBUG
-	typedef struct allocdbginfo_st {
-		int line;
-		const char* file;
-	} allocdbginfo_st;
-	#define BOUNDSIZE 0
-	#define USER_TO_INTERNAL(ptr) ((ptr) ? ((uint8_t*)(ptr) - (sizeof(allocdbginfo_st) + BOUNDSIZE)) : NULL)
-	#define INTERNAL_TO_USER(ptr) ((ptr) ? ((uint8_t*)ptr + (sizeof(allocdbginfo_st) + BOUNDSIZE)) : NULL)
-	#define SIZE_USER_TO_INTERNAL(size) ((size) ? (size + sizeof(allocdbginfo_st) + BOUNDSIZE*2) : 0)
-	#define SIZE_INTERNAL_TO_USER(size) ((size) ? (size - sizeof(allocdbginfo_st) - BOUNDSIZE*2) : 0)
-	#define LOGMEM LOG
-#else
-	#define USER_TO_INTERNAL(ptr) (ptr)
-	#define INTERNAL_TO_USER(ptr) (ptr)
-	#define SIZE_USER_TO_INTERNAL(size) (size)
-	#define SIZE_INTERNAL_TO_USER(size) (size)
-	#define LOGMEM(...) (void)(0)
-#endif
+#include "kernel/kernel/kernel.h"
+#include "kernel/process/process.h"
 
+static void * kernel_heap;
 
-tlsf_t _mem_tdata;
-
-void _mem_init(void* start, size_t size)
+void _mem_init(void* start, size_t size, int krn)
 {
-	assert( size>=tlsf_size() );
-
-	_mem_tdata = tlsf_create_with_pool(start, size);
-
-	LOGMEM("  tlsf_size() = %u", tlsf_size() );
-	LOGMEM("  tlsf_align_size() = %u", tlsf_align_size() );
-	LOGMEM("  tlsf_block_size_min() = %u", tlsf_block_size_min() );
-	LOGMEM("  tlsf_block_size_max() = %u", tlsf_block_size_max() );
-	LOGMEM("  tlsf_pool_overhead() = %u", tlsf_pool_overhead());
-	LOGMEM("  tlsf_alloc_overhead() = %u", tlsf_alloc_overhead());
-	LOGMEM("  OS debug alloc overhead = %u", SIZE_USER_TO_INTERNAL(1)-1 );
-	LOGMEM("  Total alloc overhead = %u", tlsf_alloc_overhead() + SIZE_USER_TO_INTERNAL(1)-1 );
-	if (tlsf_block_size_max()<=size) {
-		LOGMEM("  WARNING: maximum allowed block size not big enough for available RAM.");
+	if (krn == 1){
+		kernel_heap = start;
 	}
+	//sdk_debug_logf("hk: %x", kernel_heap);
+	
+	int allocated = init_memory_pool(size, start);
 
+	krn_debugLogf("init mem pool: %d == %d", size, allocated);
 }
 
-
-void* _malloc_impl( size_t size
-#if MEMDEBUG
-	, int line, const char* file
-#endif
-)
-{
-
-	uint8_t* ptr = tlsf_malloc(_mem_tdata, SIZE_USER_TO_INTERNAL(size) );
-
-#if MEMDEBUG
-	if (ptr) {
-		((allocdbginfo_st*)ptr)->line = line;
-		((allocdbginfo_st*)ptr)->file = file;
-	} else {
-		LOGMEM("Out of memory");
+void show_mem_info(void* pool, int krn){
+	if (krn == 1)
+		krn_debugLogf("Stat_k: %d %d", get_used_size(pool), get_max_size(pool));
+	else {
+		sdk_debug_logf("Stat_a: %d %d", get_used_size(pool), get_max_size(pool));
 	}
-#endif
-
-	return INTERNAL_TO_USER(ptr);
 }
 
-void* _realloc_impl( void* oldptr, size_t size
-#if MEMDEBUG
-	, int line, const char* file
-#endif
-)
-{
-	uint8_t* newptr = tlsf_realloc(
-				_mem_tdata,
-				USER_TO_INTERNAL(oldptr),
-				SIZE_USER_TO_INTERNAL(size));
-
-#if MEMDEBUG
-	if (newptr)
-	{
-		((allocdbginfo_st*)newptr)->line = line;
-		((allocdbginfo_st*)newptr)->file = file;
-	} else {
-		LOGMEM("Out of memory");
+int is_kernel(){
+	int mode = 0;
+	if (krn_is_init() == false || krn_getIdleProcess()->sync_lock == TRUE){
+		mode = 1;
 	}
-#endif
-
-	return INTERNAL_TO_USER(newptr);
+		
+	return mode;
 }
 
+void* malloc(size_t size){
+	return _malloc_impl(size, is_kernel());
+}
 
-void* _calloc_impl( size_t size
-#if MEMDEBUG
-, int line, const char* file
-#endif
-)
+void* _malloc_impl( size_t size, int krn)
 {
-	void* p = _malloc_impl(size
-#if MEMDEBUG	
-			, line, file
-#endif
-	);
+	if (krn == 1){	// kernel
+		uint8_t* ptr = malloc_ex(size, kernel_heap);
+		show_mem_info(kernel_heap, krn);
+		return ptr;
+	} else {		// processes
+		void* heapStart = sdk_prc_getHeapPointer();		
+		uint8_t* ptr = malloc_ex(size, heapStart);
+		show_mem_info(heapStart, krn);
+		return ptr;
+	}
+}
+
+void* realloc(void* oldptr, size_t size){
+	return _realloc_impl(oldptr, size, is_kernel());
+}
+
+void* _realloc_impl( void* oldptr, size_t size, int krn)
+{
+	if (krn == 1){	// kernel
+		uint8_t* newptr = realloc_ex(oldptr, size, kernel_heap);
+		return newptr;
+	} else {		// processes
+		void* heapStart = sdk_prc_getHeapPointer();		
+		uint8_t* newptr = realloc_ex(oldptr, size, heapStart);
+		return newptr;
+	}
+}
+
+void* calloc(size_t size){
+	return _calloc_impl(size, is_kernel());
+}
+
+void* _calloc_impl( size_t size, int krn)
+{
+	void* p = malloc(size);
 	
 	if (p) memset(p, 0, size);
 	return p;
 }
 
-
-void _free_impl(void* ptr
-#if MEMDEBUG
-	, int line, const char* file
-#endif
-)
-{
-	tlsf_free(_mem_tdata, USER_TO_INTERNAL(ptr));
+void free(void* ptr){
+	_free_impl(ptr, is_kernel());
 }
 
-static void _mem_walker(void* ptr, size_t size, int used, void* user)
+void _free_impl(void* ptr, int krn)
 {
-	if (used)
-	{
-#if MEMDEBUG
-		allocdbginfo_st* dbg = (allocdbginfo_st*)ptr;
-		size_t usersize = SIZE_INTERNAL_TO_USER(size);
-		uint8_t* userptr = INTERNAL_TO_USER(ptr);
-		LOGMEM(
-			"\t0x%X:%d bytes (user:0x%X:%d bytes), %s:%d\n", ptr,
-			(unsigned int)size, userptr, (unsigned int)usersize,
-			dbg->file, dbg->line);		
-#else
-		LOGMEM(
-			"\t0x%X:%d bytes", ptr, (unsigned int)size);		
-#endif
+	if (krn == 1){	// kernel
+		free_ex(ptr, kernel_heap);
+	} else {		// processes
+		void* heapStart = sdk_prc_getHeapPointer();		
+		free_ex(ptr, heapStart);
 	}
-	else
-	{
-		LOGMEM("\t0x%X size=%d, FREE \n", ptr, (unsigned int)size);
-	}
-}
-
-void _mem_debug(void)
-{
-	assert( tlsf_check(_mem_tdata)==0 );
-	LOGMEM("MEMDEBUG START");
-	tlsf_walk_pool( tlsf_get_pool(_mem_tdata), _mem_walker, NULL);
-	LOGMEM("MEMDEBUG END");
-}
-
-typedef struct MemStats
-{
-	size_t used;
-	size_t free;
-	size_t maxalloc;
-} MemStats;
-
-static void _mem_stats_walker(void* ptr, size_t size, int used, void* cookie )
-{
-	MemStats* stats = cookie;
-	
-	if (used) {
-		stats->used += size;
-	} else {
-		stats->free += size;
-		if (size > stats->maxalloc)
-			stats->maxalloc = size;		
-	}
-}
-
-void _getmemstats(size_t* totalUsed, size_t* totalFree, size_t* maxAlloc)
-{
-	MemStats stats;
-	memset(&stats, 0, sizeof(stats));
-	
-	tlsf_walk_pool( tlsf_get_pool(_mem_tdata), _mem_stats_walker, &stats);
-	if (totalUsed)
-		*totalUsed = stats.used;
-	if (totalFree)
-		*totalFree = stats.free;
-	if (maxAlloc)
-		*maxAlloc = stats.maxalloc - (SIZE_USER_TO_INTERNAL(1)-1);
 }

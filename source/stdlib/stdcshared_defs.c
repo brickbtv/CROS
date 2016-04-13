@@ -10,6 +10,6 @@ void stdcshared_init( DebugLogFunc logfunc, void* heapStart, size_t heapSize )
 	if (heapSize)
 	{
 		memset(heapStart,0,heapSize);
-		_mem_init(heapStart, heapSize);
+		_mem_init(heapStart, heapSize, 1);
 	}
 }
