@@ -44,32 +44,45 @@ int memCback(const char * fmt, ...){
 }
 
 int align(unsigned int pointer){
-	return pointer % 4;
+	return 4 - pointer % 4;
 }
 
 /*!
 *	Initialize stdlib memory allocation. 
 */
 void krn_initMalloc(void){
-	static char test[1024 * 100+10];
-	unsigned int align_offset = (unsigned int)&test[0];
+	static char kernel_hp[1024 * 100+10];
+	unsigned int align_offset = (unsigned int)&kernel_hp[0];
 	int a = align(align_offset);
 	
-	stdcshared_init(memCback, (void*)&test[a], 1024 * 100);
+	stdcshared_init(memCback, (void*)&kernel_hp[a], 1024 * 100);
 }
 
 
 /*!
 *	Preparing kernel execution context.
 */
+bool krn_inited = false;
+
 void* krn_init(void){	
 	krn_debugLog("==============================");
 	krn_initMalloc();
 	
-	#define APPSTACKSIZE 1024
-	processKernel = prc_create("kernel", APPSTACKSIZE, 1024*10, (uint32_t*) &krn_start, USERMODE_SUPERVISOR);
+	#define APPSTACKSIZE 1024*10
+	processKernel = prc_create("kernel", APPSTACKSIZE, 1024*20, (uint32_t*) &krn_start, USERMODE_SUPERVISOR);
+	
+	krn_autorun();
 		
+	krn_inited = true;
 	return &processKernel->context;
+}
+
+/*!
+*	@internal @private
+*	used for kernel malloc impl
+*/
+bool krn_is_init(){
+	return krn_inited;
 }
 
 /*! 
@@ -119,8 +132,14 @@ void krn_start(void){
 						);
 						
 	hw_scr_printf(&scr_info, "%d", hw_cpu_retRamAmount());
-						
-	krn_autorun();
+					
+	/*
+		messages list should be initializated inside Idle process,
+		because it uses malloc with it's own dynamic memory pool
+	*/
+	prc_initMessagesList();
+					
+	//krn_autorun();
 
 	prc_startScheduler();
 }
@@ -150,9 +169,10 @@ void krn_sleep(unsigned int ms){
 extern const int krn_prevIntrBusAndReason;
 
 Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
-	if (krn_getIdleProcess()->sync_lock)
-		return prc_getCurrentProcess()->context;
-	
+	if (krn_getIdleProcess() != prc_getCurrentProcess())
+		if (krn_getIdleProcess()->sync_lock)
+			return prc_getCurrentProcess()->context;
+		
 	// Check for double faults (kernel crashes)
 	// They are detecter by checking if we were serving an interrupt before
 	if (krn_prevIntrBusAndReason!=NO_INTERRUPT && (krn_currIntrBusAndReason >> 24) != 0)

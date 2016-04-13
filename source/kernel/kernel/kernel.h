@@ -16,6 +16,7 @@ extern const int krn_currIntrBusAndReason;
 int memCback(const char * fmt, ...);
 Process * krn_getIdleProcess(void);
 
+bool krn_is_init();
 void krn_sleep(unsigned int ms);
 void krn_halt(void);
 #endif
