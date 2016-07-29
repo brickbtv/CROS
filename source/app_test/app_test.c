@@ -17,7 +17,7 @@ int run(){
 
 void app_test(void){
 	mount_drive_and_mkfs_if_needed(0);
-	app_texteditor("/ABC.TXT");
+	app_texteditor("/CONFIG/MAIL.C");
 
 	Canvas * canvas = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);

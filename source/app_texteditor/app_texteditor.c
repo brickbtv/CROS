@@ -120,7 +120,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					// cut right part 
 					char* new_line = (char*)malloc(strlen(&current_line()[cursor_x]) + 1);
 					strcpy(new_line, &current_line()[cursor_x]);
-					
+					current_line()[cursor_x] = 0;
 					list_node_t* line_node = list_node_new(new_line);
 					list_node_t* line_ins_after = list_at(text_lines, cursor_y);
 					list_insertafter(text_lines, line_ins_after, line_node);
@@ -135,18 +135,24 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					sdk_scr_printfXY(cv, cursor_x, cursor_y + view_start_line + 1, "%c", current_line()[cursor_x]);
 				
 					if (value == KEY_UP){
-						if (cursor_y > 0)
+						if (cursor_y > 0){
 							cursor_y--;
+							if (cursor_x > strlen(current_line()))
+								cursor_x = strlen(current_line());
+						}	
 					} 
 					if (value == KEY_DOWN){
-						cursor_y++;
+						if (cursor_y < list_size(text_lines) - 1)							
+							cursor_y++;
+							if (cursor_x > strlen(current_line()))
+								cursor_x = strlen(current_line());	
 					} 
 					if (value == KEY_LEFT){
 						if (cursor_x > 0)
 							cursor_x--;
 					} 
 					if (value == KEY_RIGHT){
-						if (cursor_x < 80)
+						if (cursor_x < 80 && cursor_x < strlen(current_line()))
 							cursor_x++;
 					} 					
 					

@@ -222,3 +222,7 @@ list_remove(list_t *self, list_node_t *node) {
   LIST_FREE(node);
   --self->len;
 }
+
+int list_size(list_t *self){
+	return self->len;
+}
