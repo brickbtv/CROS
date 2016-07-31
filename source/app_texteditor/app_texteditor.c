@@ -59,7 +59,8 @@ bool preprocess_file(const char* path){
 				list_rpush(text_lines, line_node);
 				
 				old_pos = pos;
-				pos = find(buf, '\n', pos);
+				pos = find(buf, '\n', pos+1);
+				sdk_debug_logf("%s: %d", buf, pos)
 			}
 		} while(rb == DEF_BUF_SIZE);
 	} else {
@@ -107,9 +108,25 @@ char * current_line(){
 	return list_at(text_lines, cursor_y)->val;
 }
 
+int insPress = 0;
+
 void msgHandlerTexteditor(int type, int reason, int value){
 	switch (type){
 		case SDK_PRC_MESSAGE_KYB: 
+			if (reason == KEY_STATE_KEYPRESSED){
+				if (value == KEY_INSERT){
+					insPress  = 1;
+					break;
+				}
+			}
+		
+			if (reason == KEY_STATE_KEYRELEASED){
+				if (value == KEY_INSERT){
+					insPress  = 0;
+					break;
+				}
+			}
+		
 			if (reason == KEY_STATE_KEYTYPED){
 				if (value == KEY_BACKSPACE){
 					
@@ -158,6 +175,25 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					
 					// letters
 					if (value >= 0x20 && value <= 0x7E){
+						if (insPress  == true && value == 's'){
+							sdk_debug_log("saving");
+							
+							FILE * file = fs_open_file(path, 'w');
+							
+							list_iterator_t * it = list_iterator_new(text_lines, LIST_HEAD);
+							list_node_t *node;
+							while ((node = list_iterator_next(it))){
+								char end_line[2];
+								end_line[0] = '\n';
+								end_line[1] = 0;
+								fs_write_file(file, node->val);
+								fs_write_file(file, end_line);
+							}
+							fs_close_file(file);
+							list_iterator_destroy(it);
+							break;
+						}
+					
 						// shift text
 						for (int i = strlen(current_line()); i >= cursor_x && i >= 0; i--){
 							current_line()[i + 1] = current_line()[i];
