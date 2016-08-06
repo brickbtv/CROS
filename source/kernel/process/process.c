@@ -31,7 +31,7 @@ bool prc_setupMemory(Process * prc, unsigned int stackSize,
 *	Draft of multiprocessing stuff
 */
 Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
-						uint32_t * entryPoint, Usermode mode){
+						uint32_t * entryPoint, Usermode mode, uint32_t * arg_line){
 	if (krn_is_init() == TRUE)
 		krn_getIdleProcess()->sync_lock = TRUE;
 	
@@ -47,6 +47,15 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	prc->pid = totalPIDs++;
 	
 	prc->context = malloc (sizeof(Ctx));
+	
+	// copy argument line
+	if (arg_line != 0){
+		krn_debugLogf("arg line: %s",  (char*)arg_line);
+		int arg_line_size = (strlen((char*) arg_line) + 2) * sizeof(char);
+		prc->arg_line = malloc(arg_line_size);
+		memset(prc->arg_line, 0, arg_line_size);
+		strcpy(prc->arg_line, (char*)arg_line);
+	}
 	
 	// allocate screen buffer
 	ScreenInfo info = hw_scr_screenInfo();
@@ -68,6 +77,8 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	prc->context->gregs[CPU_REG_SP] = (uint32_t)&prc->stack[stackSize - 1];
 	prc->context->gregs[CPU_REG_PC] = (uint32_t)entryPoint;
 	prc->context->flags = mode;
+	
+	prc->context->gregs[0] = (unsigned int) prc->arg_line;
 	
 	// insert process to scheduler
 	if (listPrcLoop == NULL){				// empty scheduler

@@ -69,7 +69,7 @@ void* krn_init(void){
 	krn_initMalloc();
 	
 	#define APPSTACKSIZE 1024*10
-	processKernel = prc_create("kernel", APPSTACKSIZE, 1024*20, (uint32_t*) &krn_start, USERMODE_SUPERVISOR);
+	processKernel = prc_create("kernel", APPSTACKSIZE, 1024*20, (uint32_t*) &krn_start, USERMODE_SUPERVISOR, 0);
 	
 	krn_autorun();
 		

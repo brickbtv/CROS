@@ -40,7 +40,7 @@ bool preprocess_file(const char* path){
 			}
 			
 			// splitting
-			int old_pos = 0;
+			int old_pos = -1;
 			int pos = find(buf, '\n', 0);
 			
 			if (pos == -1){
@@ -51,16 +51,20 @@ bool preprocess_file(const char* path){
 			}
 			
 			while (pos != -1){
-				char* line = (char*) malloc(pos + 1);
+				char* line = (char*) malloc(pos - old_pos + 1);
 				
-				strncpy(line, &buf[old_pos], pos);
+				strncpy(line, &buf[old_pos + 1], pos);
 				
 				list_node_t* line_node = list_node_new(line);
 				list_rpush(text_lines, line_node);
 				
 				old_pos = pos;
 				pos = find(buf, '\n', pos+1);
-				sdk_debug_logf("%s: %d", buf, pos)
+				sdk_debug_logf(":%d : %s", pos, line);
+				
+				if (old_pos == pos || pos == -1){
+					break;
+				}
 			}
 		} while(rb == DEF_BUF_SIZE);
 	} else {

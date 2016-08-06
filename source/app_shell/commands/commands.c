@@ -19,7 +19,7 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		" 'cd NAME' - change directory\n"
 		" 'rm NAME' - remove file or directory\n");
 	} else if (strcmp(input, "nano") == 0){
-		sdk_prc_create_process(app_texteditor);
+		//sdk_prc_create_process(app_texteditor);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;
 		int i;

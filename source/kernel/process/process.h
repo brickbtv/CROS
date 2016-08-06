@@ -21,6 +21,8 @@ typedef struct Process{
 	char name[50];
 	unsigned int pid;
 	
+	char * arg_line;
+	
 	char * stack;
 	char * heap;
 	Ctx * context;
@@ -59,7 +61,7 @@ typedef struct PrcMessage{
 }PrcMessage;
 
 Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
-						uint32_t * entryPoint, Usermode mode);
+						uint32_t * entryPoint, Usermode mode, uint32_t * arg_line);
 void prc_startScheduler(void);
 Process * prc_getCurrentProcess(void);
 void prc_skipCurrentProc(void);

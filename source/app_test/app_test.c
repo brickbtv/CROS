@@ -14,6 +14,8 @@
 
 #include "app_texteditor/app_texteditor.h"
 
+#include "stdlib/details/memdetails.h"
+
 int run(){
 	sdk_debug_log("IT's MY TRIUMPH");
 	return 0;
@@ -22,7 +24,9 @@ int run(){
 void app_test(void){
 	mount_drive_and_mkfs_if_needed(0);
 	
-	sdk_prc_create_process(app_texteditor);
+	char * args = malloc(40);
+	strcpy(args, "/CONFIG/MAIL.C");
+	sdk_prc_create_process((unsigned int)app_texteditor, args);
 	
 	/*app_texteditor("/CONFIG/MAIL.C");
 

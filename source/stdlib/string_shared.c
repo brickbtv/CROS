@@ -13,7 +13,6 @@ int strlen(const char* str)
 	return end - str;
 }
 
-// added by brick_btv (copied from my mind)
 char* strcpy(char* dest, const char *src)
 {
 	assert(dest && src);
@@ -22,7 +21,6 @@ char* strcpy(char* dest, const char *src)
 	return dest;
 }
 
-// added by brick_btv 
 int find (const char* str, const char ch, int start_pos)
 {
 	assert(str);

@@ -19,7 +19,9 @@ void syscall_prc_create_process(void){
 	Process * prc = prc_getCurrentProcess();
 	
 	uint32_t entry_point = prc->context->gregs[0];	
-	prc_create("app_test", 1024*10, 1024*20, (uint32_t*)entry_point, USERMODE_USER);
+	uint32_t arg_line = prc->context->gregs[1];	
+	
+	prc_create("app_test", 1024*10, 1024*20, (uint32_t*)entry_point, USERMODE_USER, (uint32_t *)arg_line);
 	
 	
 	krn_getIdleProcess()->sync_lock = FALSE;

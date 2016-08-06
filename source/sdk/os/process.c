@@ -5,8 +5,8 @@
 #include <details/memdetails.h>
 #include "debug.h"
 
-void sdk_prc_create_process(unsigned int entry_point){
-	return app_syscall1(syscall_prc_create_process, (unsigned int)entry_point);
+void sdk_prc_create_process(unsigned int entry_point, char * arg_line){
+	app_syscall2(syscall_prc_create_process, (unsigned int)entry_point, (unsigned int)&arg_line[0]);
 }
 
 unsigned int sdk_prc_sleep(unsigned int ms){
