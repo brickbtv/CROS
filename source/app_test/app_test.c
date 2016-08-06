@@ -10,6 +10,10 @@
 
 #include "filesystem/filesystem.h"
 
+#include "sdk/os/process.h"
+
+#include "app_texteditor/app_texteditor.h"
+
 int run(){
 	sdk_debug_log("IT's MY TRIUMPH");
 	return 0;
@@ -17,7 +21,10 @@ int run(){
 
 void app_test(void){
 	mount_drive_and_mkfs_if_needed(0);
-	app_texteditor("/CONFIG/MAIL.C");
+	
+	sdk_prc_create_process(app_texteditor);
+	
+	/*app_texteditor("/CONFIG/MAIL.C");
 
 	Canvas * canvas = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
@@ -37,7 +44,7 @@ void app_test(void){
 	short fs = ram[0];
 	sdk_scr_printf(canvas, "func_start %x\n", fs & 0x0000FFFF);
 	
-	
+	*/
 	
 	while(1){
 		

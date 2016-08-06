@@ -40,6 +40,7 @@ swi");
 
 typedef enum SYSCALL_CBACKS{
 	// processes
+	syscall_prc_create_process,
 	syscall_prc_sleep,
 	syscall_prc_getCurrentProcessScreenInfo,
 	syscall_prc_getCurrentProcessHeapPointer,

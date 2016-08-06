@@ -8,6 +8,8 @@ typedef enum SDK_PRC_MESSAGE{
 	SDK_PRC_MESSAGE_NIC = 1
 }SDK_PRC_MESSAGE;
 
+void * sdk_prc_create_process(void * entry_point);
+
 unsigned int sdk_prc_sleep(unsigned int ms);
 unsigned int * sdk_prc_getCanvas();
 void * sdk_prc_getHeapPointer();

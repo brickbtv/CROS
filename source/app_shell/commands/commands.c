@@ -1,8 +1,12 @@
 #include "commands.h"
 
 #include "filesystem/filesystem.h"
+#include "sdk/os/process.h"
 
 #include <string_shared.h>
+
+#include "app_texteditor/app_texteditor.h"
+
 
 void manage_command(Canvas * canvas, char * current_path, const char * input){
 	fs_getcwd(current_path, 256);
@@ -14,6 +18,8 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		" 'mkfile NAME' - make new file\n"
 		" 'cd NAME' - change directory\n"
 		" 'rm NAME' - remove file or directory\n");
+	} else if (strcmp(input, "nano") == 0){
+		sdk_prc_create_process(app_texteditor);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;
 		int i;

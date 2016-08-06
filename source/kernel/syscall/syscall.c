@@ -13,6 +13,18 @@
 //////////////////////
 //	PROCESSES 		//
 //////////////////////
+void syscall_prc_create_process(void){
+	krn_getIdleProcess()->sync_lock = TRUE;
+
+	Process * prc = prc_getCurrentProcess();
+	
+	uint32_t entry_point = prc->context->gregs[0];	
+	prc_create("app_test", 1024*10, 1024*20, (uint32_t*)entry_point, USERMODE_USER);
+	
+	
+	krn_getIdleProcess()->sync_lock = FALSE;
+}
+
 void syscall_prc_sleep(void){
 	Process * prc = prc_getCurrentProcess();
 	
@@ -169,6 +181,7 @@ void syscall_dkc_isReady(void){
 F_SYSCALL syscalls_cbacks[] = 
 {
 	// processes 
+	syscall_prc_create_process,
 	syscall_prc_sleep,
 	syscall_prc_getCurrentProcessScreenInfo,
 	syscall_prc_getCurrentProcessHeapPointer,

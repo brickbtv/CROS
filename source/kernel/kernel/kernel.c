@@ -55,7 +55,7 @@ void krn_initMalloc(void){
 	unsigned int align_offset = (unsigned int)&kernel_hp[0];
 	int a = align(align_offset);
 	
-	stdcshared_init(memCback, (void*)&kernel_hp[a], 1024 * 100);
+	stdcshared_init(memCback, (void*)&kernel_hp[a], 1024 * 300);
 }
 
 
@@ -172,6 +172,8 @@ Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 	if (krn_getIdleProcess() != prc_getCurrentProcess())
 		if (krn_getIdleProcess()->sync_lock)
 			return prc_getCurrentProcess()->context;
+	//else 
+	//	krn_getIdleProcess()->sync_lock = true;
 		
 	// Check for double faults (kernel crashes)
 	// They are detecter by checking if we were serving an interrupt before
@@ -189,6 +191,9 @@ Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 		hw_handleInterrupt(busAndReason, data0, data1, data2, data3);
 		busAndReason = hw_cpu_nextIRQ(-1, &data0, &data1);
 	} while (busAndReason);
+	
+	//if (krn_getIdleProcess() == prc_getCurrentProcess())
+	//	krn_getIdleProcess()->sync_lock = false;
 	
 	return prc_getCurrentProcess()->context;
 }

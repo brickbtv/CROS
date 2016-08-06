@@ -20,14 +20,14 @@ void _mem_init(void* start, size_t size, int krn)
 	
 	int allocated = init_memory_pool(size, start);
 
-	krn_debugLogf("init mem pool: %d == %d", size, allocated);
+	krn_debugLogf("init mem pool: %d == %d. Heap: %x", size, allocated, kernel_heap);
 }
 
 void show_mem_info(void* pool, int krn){
 	if (krn == 1)
-		krn_debugLogf("Stat_k: %d %d", get_used_size(pool), get_max_size(pool));
+		krn_debugLogf("Kernel used: %d", get_used_size(pool));
 	else {
-		sdk_debug_logf("Stat_a: %d %d", get_used_size(pool), get_max_size(pool));
+		sdk_debug_logf("App used: %d", get_used_size(pool));
 	}
 }
 
@@ -41,6 +41,11 @@ int is_kernel(){
 }
 
 void* malloc(size_t size){
+	/*if (is_kernel() == 1)
+		krn_debugLogf("kernel");
+	else {
+		sdk_debug_logf("app");
+	}*/
 	return _malloc_impl(size, is_kernel());
 }
 
@@ -53,6 +58,8 @@ void* _malloc_impl( size_t size, int krn)
 	} else {		// processes
 		void* heapStart = sdk_prc_getHeapPointer();		
 		uint8_t* ptr = malloc_ex(size, heapStart);
+		if (ptr == NULL)
+			sdk_debug_logf("Failed to allocate %d bytes.", size);
 		show_mem_info(heapStart, krn);
 		return ptr;
 	}

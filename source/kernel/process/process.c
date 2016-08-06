@@ -32,12 +32,16 @@ bool prc_setupMemory(Process * prc, unsigned int stackSize,
 */
 Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 						uint32_t * entryPoint, Usermode mode){
+	if (krn_is_init() == TRUE)
+		krn_getIdleProcess()->sync_lock = TRUE;
+	
+					 	
 	Process * prc = malloc(sizeof(Process));
 	memset(prc, 0, sizeof(Process));
 	
 	// allocate stack
 	prc->stack = malloc(stackSize * sizeof(char));
-	prc->heap = malloc(heapSize * sizeof(char) + 1024 * 7);
+	prc->heap = malloc(heapSize * sizeof(char) + heapSize);
 	// info
 	strcpy(prc->name, name);
 	prc->pid = totalPIDs++;
@@ -84,6 +88,9 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 		
 	// synchrinization flag
 	prc->sync_lock = FALSE;
+	
+	if (krn_is_init() == TRUE)
+		krn_getIdleProcess()->sync_lock = FALSE;
 	
 	return prc;
 }
