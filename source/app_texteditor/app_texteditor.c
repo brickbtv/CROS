@@ -50,21 +50,23 @@ bool preprocess_file(const char* path){
 				list_rpush(text_lines, onl_node);
 			}
 			
+			sdk_debug_logf("buflen: %d", strlen(buf));
+			
 			while (pos != -1){
+				//if (pos >= strlen(buf) - 5)
+				//	break;
+				
+				int g = pos - old_pos + 1;
 				char* line = (char*) malloc(pos - old_pos + 1);
 				
-				strncpy(line, &buf[old_pos + 1], pos);
+				strncpy(line, &buf[old_pos + 1], pos - old_pos - 1);
 				
 				list_node_t* line_node = list_node_new(line);
 				list_rpush(text_lines, line_node);
 				
 				old_pos = pos;
 				pos = find(buf, '\n', pos+1);
-				sdk_debug_logf(":%d : %s", pos, line);
-				
-				if (old_pos == pos || pos == -1){
-					break;
-				}
+				sdk_debug_logf("%d:%d %d: %s", old_pos, pos, g, line);
 			}
 		} while(rb == DEF_BUF_SIZE);
 	} else {
@@ -133,9 +135,15 @@ void msgHandlerTexteditor(int type, int reason, int value){
 		
 			if (reason == KEY_STATE_KEYTYPED){
 				if (value == KEY_BACKSPACE){
-					
-					if (cursor_x > 0)
+					//current_line()[strlen(current_line())] = 0;
+					if (cursor_x > 0){
 						cursor_x--;
+						strncpy(&current_line()[cursor_x], &current_line()[cursor_x + 1], strlen(current_line()) - cursor_x);
+					}
+						
+					// redraw line
+					sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, "                                ");
+					sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, current_line());
 				} else if (value == KEY_RETURN){
 					// shift text after
 					// cut right part 
