@@ -2,8 +2,12 @@
 
 #include "filesystem/filesystem.h"
 #include "sdk/os/process.h"
+#include "sdk/os/debug.h"
+
+#include "stdlib/details/memdetails.h"
 
 #include <string_shared.h>
+#include <stdio_shared.h>
 
 #include "app_texteditor/app_texteditor.h"
 
@@ -18,8 +22,11 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		" 'mkfile NAME' - make new file\n"
 		" 'cd NAME' - change directory\n"
 		" 'rm NAME' - remove file or directory\n");
-	} else if (strcmp(input, "nano") == 0){
-		//sdk_prc_create_process(app_texteditor);
+	} else if (strncmp(input, "edit ", strlen("edit ")) == 0){
+		char * args = malloc(256);
+		sprintf(args, "%s/%s", current_path, &input[strlen("edit ")]);
+		sdk_debug_logf("edit_file: %s", args);
+		sdk_prc_create_process((unsigned int)app_texteditor, args);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;
 		int i;

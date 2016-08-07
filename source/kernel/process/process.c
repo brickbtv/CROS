@@ -193,6 +193,7 @@ void clkCback(int clk){
 				currProc = listPrcLoop->head;
 			}
 			prc = currProc->val;
+			//prc_ctxswitch(prc->context);
 			
 		} while (isNeedSleep(prc)); // check sleep time
 	}
@@ -213,7 +214,7 @@ void prc_startScheduler(void){
 			krn_getIdleProcess()->sync_lock = TRUE;
 			list_node_t * node = list_lpop(prc->list_msgs);
 			//PrcMessage * msg = (PrcMessage * )node->val; // TODO: process it. do not just destroy 
-			free(node); 
+			//free(node); 
 			krn_getIdleProcess()->sync_lock = FALSE;
 		}
 		

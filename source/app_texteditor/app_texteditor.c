@@ -115,6 +115,7 @@ char * current_line(){
 }
 
 int insPress = 0;
+int exit = 0;
 
 void msgHandlerTexteditor(int type, int reason, int value){
 	switch (type){
@@ -205,6 +206,11 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							list_iterator_destroy(it);
 							break;
 						}
+						
+						if (insPress  == true && value == 'x'){
+							sdk_debug_log("exit");
+							exit = 1;
+						}
 					
 						// shift text
 						for (int i = strlen(current_line()); i >= cursor_x && i >= 0; i--){
@@ -240,7 +246,7 @@ void app_texteditor(const char* p){
 	//
 	bool prev_blink = false;
 	bool blink = false;
-	while(1){
+	while(exit == 0){
 		int time = sdk_clk_timeSinceBoot();
 		if (time % 1000 < 500){
 			blink = true;
@@ -270,4 +276,6 @@ void app_texteditor(const char* p){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}
 	}
+	
+	sdk_debug_log("i'm done");
 }
