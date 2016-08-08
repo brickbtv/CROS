@@ -275,7 +275,10 @@ void app_texteditor(const char* p){
 		if (sdk_prc_haveNewMessage()){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}
+		sdk_debug_log("TE");
 	}
 	
 	sdk_debug_log("i'm done");
+	sdk_prc_die();
+	sdk_debug_log("i'm done ! 2");
 }

@@ -109,6 +109,13 @@ list_rpop(list_t *self) {
   return node;
 }
 
+list_node_t *
+list_tail(list_t *self) {
+  if (!self->len) return NULL;
+
+  return self->tail;
+}
+
 /*
  * Return / detach the first node in the list, or NULL.
  */

@@ -94,7 +94,6 @@ void app_shell(void){
 	sdk_clk_setCountdownTimer(5, 500, true);
 	bool prev_blink = false;
 	while(1){
-		sdk_debug_logf("foc: %d", sdk_prc_is_focused());
 		if (sdk_prc_is_focused()){
 			int time = sdk_clk_timeSinceBoot();
 			if (time % 1000 < 500){
@@ -116,6 +115,7 @@ void app_shell(void){
 			}
 			
 			//sdk_prc_sleep(10);
+			sdk_debug_log("iSH");
 		}
 	}
 }

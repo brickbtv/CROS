@@ -47,3 +47,9 @@ void sdk_prc_unlock(void){
 bool sdk_prc_is_focused(void){
 	return app_syscall0(syscall_prc_is_focused);
 }
+
+void sdk_prc_die(void){
+	app_syscall0(syscall_prc_die);
+	while(1){}
+	//sdk_prc_sleep(10000);
+}

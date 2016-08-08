@@ -42,6 +42,8 @@ typedef struct Process{
 	
 	unsigned int stackBottom;
 	unsigned int stackTop;
+	
+	bool i_should_die;
 }Process;
 
 typedef struct HeapInfo{
@@ -69,6 +71,7 @@ void sendMessageToAll(PRC_MESSAGE type, int reason, int value);
 void sendMessageToFocused(PRC_MESSAGE type, int reason, int value);
 
 bool prc_is_focused();
+void prc_die();
 
 void prc_initMessagesList();
 

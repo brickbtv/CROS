@@ -14,6 +14,7 @@
 
 // Processes loop.
 list_t * listPrcLoop = NULL;
+list_t * stackFocused = NULL;
 
 static list_node_t * currProc = NULL;
 static Process * currFocusedProc;
@@ -71,7 +72,7 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	hw_scr_setTextColor(prc->screen, SCR_COLOR_GREEN);
 	hw_scr_setBackColor(prc->screen, SCR_COLOR_BLACK);
 	
-	currFocusedProc = prc;
+	prc->i_should_die = FALSE;
 	
 	// sutup context stuffs
 	prc->context->gregs[CPU_REG_SP] = (uint32_t)&prc->stack[stackSize - 1];
@@ -84,6 +85,14 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	if (listPrcLoop == NULL){				// empty scheduler
 		listPrcLoop = list_new();
 	}
+	
+	if (stackFocused == NULL){				// empty focused processes stack
+		stackFocused = list_new();
+	}
+	
+	list_rpush(stackFocused, list_node_new(prc));
+	currFocusedProc = prc;
+	
 
 	// set up events queue
 	prc->list_msgs = list_new();
@@ -118,6 +127,7 @@ bool prc_is_focused(){
 		
 	return FALSE;
 }
+
 
 /*
 *	Messages queue
@@ -212,16 +222,42 @@ void clkCback(int clk){
 		return;
 	} else {
 		Process * prc;
+		list_node_t * prev_prc;
 		do{
-			if (currProc->next != NULL){
-				currProc = currProc->next;
-			} else {
-				currProc = listPrcLoop->head;
-			}
-			prc = currProc->val;
+			prev_prc = currProc;
+			do {
+				if (currProc->next != NULL){
+					currProc = currProc->next;
+				} else {
+					currProc = listPrcLoop->head;
+				}
+				prc = currProc->val;
+				// TODO: remove dead processes from loop
+			} while (prc->i_should_die != 0);
+			// kill process
+			//if (((Process *)(prev_prc->val))->i_should_die == TRUE){
+			//	list_remove(listPrcLoop, prev_prc);
+			//}
+			
 		} while (isNeedSleep(prc)); // check sleep time
 	}
 }
+
+void prc_die(){
+	Process* prc = prc_getCurrentProcess();
+	prc->i_should_die = TRUE;
+	
+	// change focus
+	
+	if (currFocusedProc == prc){
+		list_rpop(stackFocused);
+		krn_debugLogf("CFP: %x", currFocusedProc );
+		//currFocusedProc = list_at(stackFocused, list_size(stackFocused) - 1)->val;
+		currFocusedProc = list_tail(stackFocused)->val;
+		krn_debugLogf("CFP: %x", currFocusedProc );
+	}
+}
+
 
 /*!
 *	Turn cpu into sleep. Wakes up only for processes switching.

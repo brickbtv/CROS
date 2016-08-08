@@ -23,4 +23,5 @@ void sdk_prc_lock(void);
 void sdk_prc_unlock(void);
 
 bool sdk_prc_is_focused(void);
+void sdk_prc_die(void);
 #endif

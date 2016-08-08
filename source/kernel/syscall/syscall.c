@@ -85,6 +85,10 @@ void syscall_prc_is_focused(void){
 		prc->context->gregs[0] = 0;
 }
 
+void syscall_prc_die(void){
+	prc_die();
+}
+
 //////////////////////
 //		CLOCK 		//
 //////////////////////
@@ -199,6 +203,7 @@ F_SYSCALL syscalls_cbacks[] =
 	syscall_prc_lock,
 	syscall_prc_unlock,
 	syscall_prc_is_focused,
+	syscall_prc_die,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,
