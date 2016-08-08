@@ -45,8 +45,6 @@ void syscall_prc_getCurrentProcessHeapPointer(void){
 	Process * prc = prc_getCurrentProcess();
 	if (prc)
 		prc->context->gregs[0] = (unsigned int)prc->heap;	
-	//else 
-	//	prc->context->gregs[0] = (unsigned int)0;	
 }
 
 void syscall_prc_haveNewMessages(void){
@@ -76,6 +74,15 @@ void syscall_prc_lock(void){
 void syscall_prc_unlock(void){
 	Process * prc = prc_getCurrentProcess();
 	prc->sync_lock = TRUE;
+}
+
+void syscall_prc_is_focused(void){
+	Process * prc = prc_getCurrentProcess();
+	
+	if (prc_is_focused())
+		prc->context->gregs[0] = 1;
+	else 
+		prc->context->gregs[0] = 0;
 }
 
 //////////////////////
@@ -191,6 +198,7 @@ F_SYSCALL syscalls_cbacks[] =
 	syscall_prc_getNextMessage,
 	syscall_prc_lock,
 	syscall_prc_unlock,
+	syscall_prc_is_focused,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,

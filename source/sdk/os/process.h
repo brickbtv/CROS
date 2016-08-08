@@ -21,4 +21,6 @@ void sdk_prc_handleMessage(F_PRC_MSGCBACK cback);
 
 void sdk_prc_lock(void);
 void sdk_prc_unlock(void);
+
+bool sdk_prc_is_focused(void);
 #endif

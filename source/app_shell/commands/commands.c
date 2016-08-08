@@ -16,12 +16,14 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 	fs_getcwd(current_path, 256);
 
 	if (strcmp(input, "help") == 0){
-		sdk_scr_printf(canvas, "wow! such help! much text!\n"
+		sdk_scr_printf(canvas, "    CROS help:\n"
 		" 'ls' - show files and folders in current directory\n"
 		" 'mkdir NAME' - make new directory\n"
 		" 'mkfile NAME' - make new file\n"
 		" 'cd NAME' - change directory\n"
-		" 'rm NAME' - remove file or directory\n");
+		" 'rm NAME' - remove file or directory\n"
+		" 'cat NAME' - print file content to console\n"
+		" 'edit NAME' - simple texteditor\n");
 	} else if (strncmp(input, "edit ", strlen("edit ")) == 0){
 		char * args = malloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("edit ")]);

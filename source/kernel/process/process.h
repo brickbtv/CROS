@@ -66,6 +66,9 @@ void prc_startScheduler(void);
 Process * prc_getCurrentProcess(void);
 void prc_skipCurrentProc(void);
 void sendMessageToAll(PRC_MESSAGE type, int reason, int value);
+void sendMessageToFocused(PRC_MESSAGE type, int reason, int value);
+
+bool prc_is_focused();
 
 void prc_initMessagesList();
 

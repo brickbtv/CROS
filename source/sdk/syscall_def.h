@@ -48,6 +48,7 @@ typedef enum SYSCALL_CBACKS{
 	syscall_prc_getNextMessage,
 	syscall_prc_lock,
 	syscall_prc_unlock,
+	syscall_prc_is_focused,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,

@@ -104,7 +104,7 @@ void krn_halt(void){
 * 	Used directly, because kernel executed in privileged mode.
 */
 void kybCback(KeyboardEvent event){
-	sendMessageToAll(PRC_MESSAGE_KYB, event.event_type, event.key_code);
+	sendMessageToFocused(PRC_MESSAGE_KYB, event.event_type, event.key_code);
 }
 
 ScreenInfo scr_info;
@@ -172,9 +172,7 @@ Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 	if (krn_getIdleProcess() != prc_getCurrentProcess())
 		if (krn_getIdleProcess()->sync_lock)
 			return prc_getCurrentProcess()->context;
-	//else 
-	//	krn_getIdleProcess()->sync_lock = true;
-		
+
 	// Check for double faults (kernel crashes)
 	// They are detecter by checking if we were serving an interrupt before
 	if (krn_prevIntrBusAndReason!=NO_INTERRUPT && (krn_currIntrBusAndReason >> 24) != 0)
@@ -191,9 +189,6 @@ Ctx* krn_handleInterrupt(u32 data0, u32 data1, u32 data2, u32 data3){
 		hw_handleInterrupt(busAndReason, data0, data1, data2, data3);
 		busAndReason = hw_cpu_nextIRQ(-1, &data0, &data1);
 	} while (busAndReason);
-	
-	//if (krn_getIdleProcess() == prc_getCurrentProcess())
-	//	krn_getIdleProcess()->sync_lock = false;
 	
 	return prc_getCurrentProcess()->context;
 }

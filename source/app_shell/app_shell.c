@@ -94,25 +94,28 @@ void app_shell(void){
 	sdk_clk_setCountdownTimer(5, 500, true);
 	bool prev_blink = false;
 	while(1){
-		int time = sdk_clk_timeSinceBoot();
-		if (time % 1000 < 500){
-			blink = true;
-		} else {
-			blink = false;
-		}
-		if (prev_blink != blink){
-			if (blink)
-				sdk_scr_printfXY(canvas, canvas->cur_x, canvas->cur_y, "_");
-			else 
-				sdk_scr_printfXY(canvas, canvas->cur_x, canvas->cur_y, " ");
-			canvas->cur_x--;
-			prev_blink = blink;
-		}
-	
-		if (sdk_prc_haveNewMessage()){
-			sdk_prc_handleMessage(msgHandlerShell);
-		}
+		sdk_debug_logf("foc: %d", sdk_prc_is_focused());
+		if (sdk_prc_is_focused()){
+			int time = sdk_clk_timeSinceBoot();
+			if (time % 1000 < 500){
+				blink = true;
+			} else {
+				blink = false;
+			}
+			if (prev_blink != blink){
+				if (blink)
+					sdk_scr_printfXY(canvas, canvas->cur_x, canvas->cur_y, "_");
+				else 
+					sdk_scr_printfXY(canvas, canvas->cur_x, canvas->cur_y, " ");
+				canvas->cur_x--;
+				prev_blink = blink;
+			}
 		
-		//sdk_prc_sleep(10);
+			if (sdk_prc_haveNewMessage()){
+				sdk_prc_handleMessage(msgHandlerShell);
+			}
+			
+			//sdk_prc_sleep(10);
+		}
 	}
 }

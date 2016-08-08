@@ -53,14 +53,14 @@ void* _malloc_impl( size_t size, int krn)
 {
 	if (krn == 1){	// kernel
 		uint8_t* ptr = malloc_ex(size, kernel_heap);
-		show_mem_info(kernel_heap, krn);
+		//show_mem_info(kernel_heap, krn);
 		return ptr;
 	} else {		// processes
 		void* heapStart = sdk_prc_getHeapPointer();		
 		uint8_t* ptr = malloc_ex(size, heapStart);
 		if (ptr == NULL)
 			sdk_debug_logf("Failed to allocate %d bytes.", size);
-		show_mem_info(heapStart, krn);
+		//show_mem_info(heapStart, krn);
 		return ptr;
 	}
 }

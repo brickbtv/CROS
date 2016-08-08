@@ -51,6 +51,5 @@ void app_test(void){
 	*/
 	
 	while(1){
-		
 	}
 }

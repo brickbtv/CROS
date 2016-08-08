@@ -111,6 +111,14 @@ void prc_initMessagesList(){
 	//prc->list_msgs = list_new();
 }
 
+bool prc_is_focused(){
+	Process* prc = prc_getCurrentProcess();
+	if (currFocusedProc == prc)
+		return TRUE;
+		
+	return FALSE;
+}
+
 /*
 *	Messages queue
 */
@@ -134,6 +142,24 @@ void sendMessageToAll(PRC_MESSAGE type, int reason, int value){
 		/*size_t us, fr, ma;
 		_getmemstats(&us, &fr, &ma);
 		krn_debugLogf("us: %d, fr: %d, ma: %d\n", us, fr, ma);*/
+	}
+	list_iterator_destroy(it);
+	krn_getIdleProcess()->sync_lock = FALSE;
+}
+
+void sendMessageToFocused(PRC_MESSAGE type, int reason, int value){
+	krn_getIdleProcess()->sync_lock = TRUE;
+	Process * prc;
+	list_node_t * node;
+	
+	list_iterator_t * it = list_iterator_new(listPrcLoop, LIST_HEAD);
+	while (node = list_iterator_next(it)){
+		// send to currently focused process
+		if (currFocusedProc == node->val){		
+			unsigned int msg = type << 24 | reason << 16 | value;
+			prc = node->val;
+			list_rpush(prc->list_msgs, list_node_new((void*)msg));
+		}
 	}
 	list_iterator_destroy(it);
 	krn_getIdleProcess()->sync_lock = FALSE;
@@ -193,8 +219,6 @@ void clkCback(int clk){
 				currProc = listPrcLoop->head;
 			}
 			prc = currProc->val;
-			//prc_ctxswitch(prc->context);
-			
 		} while (isNeedSleep(prc)); // check sleep time
 	}
 }
@@ -214,7 +238,7 @@ void prc_startScheduler(void){
 			krn_getIdleProcess()->sync_lock = TRUE;
 			list_node_t * node = list_lpop(prc->list_msgs);
 			//PrcMessage * msg = (PrcMessage * )node->val; // TODO: process it. do not just destroy 
-			//free(node); 
+			//free(node); 									// TODO: Heap corruption =( 
 			krn_getIdleProcess()->sync_lock = FALSE;
 		}
 		
