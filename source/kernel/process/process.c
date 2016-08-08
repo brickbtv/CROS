@@ -62,12 +62,15 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	ScreenInfo info = hw_scr_screenInfo();
 	
 	prc->screen = malloc(sizeof(ScreenInfo));
-	prc->screen->addr = info.addr;//malloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
+	prc->screen->addr = malloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
 	prc->screen->res_hor = info.res_hor;
 	prc->screen->res_ver = info.res_ver;
 	prc->screen->bytes_per_char = info.bytes_per_char;
 	prc->screen->cur_x = 0;
 	prc->screen->cur_y = 0;
+	
+	// new process should take a screen
+	hw_scr_mapScreenBuffer(prc->screen->addr);
 	
 	hw_scr_setTextColor(prc->screen, SCR_COLOR_GREEN);
 	hw_scr_setBackColor(prc->screen, SCR_COLOR_BLACK);
@@ -251,10 +254,9 @@ void prc_die(){
 	
 	if (currFocusedProc == prc){
 		list_rpop(stackFocused);
-		krn_debugLogf("CFP: %x", currFocusedProc );
-		//currFocusedProc = list_at(stackFocused, list_size(stackFocused) - 1)->val;
 		currFocusedProc = list_tail(stackFocused)->val;
-		krn_debugLogf("CFP: %x", currFocusedProc );
+		// prevous process should take a screen
+		hw_scr_mapScreenBuffer(currFocusedProc->screen->addr);
 	}
 }
 

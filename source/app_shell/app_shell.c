@@ -115,7 +115,7 @@ void app_shell(void){
 			}
 			
 			//sdk_prc_sleep(10);
-			sdk_debug_log("iSH");
+			//sdk_debug_log("iSH");
 		}
 	}
 }
