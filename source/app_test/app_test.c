@@ -25,7 +25,7 @@ void app_test(void){
 	mount_drive_and_mkfs_if_needed(0);
 	
 	char * args = malloc(40);
-	strcpy(args, "/CONFIG/MAIL.C");
+	strcpy(args, "/CONFIG/SCORE.CFG");
 	sdk_prc_create_process((unsigned int)app_texteditor, args);
 	
 	/*app_texteditor("/CONFIG/MAIL.C");

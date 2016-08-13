@@ -44,22 +44,22 @@ bool preprocess_file(const char* path){
 			int pos = find(buf, '\n', 0);
 			
 			if (pos == -1){
-				char* oneline = (char*)malloc(strlen(buf));
+				char* oneline = (char*)malloc(strlen(buf) + 25);
 				strcpy(oneline, buf);
 				list_node_t* onl_node = list_node_new(oneline);
 				list_rpush(text_lines, onl_node);
 			}
-			
-			sdk_debug_logf("buflen: %d", strlen(buf));
 			
 			while (pos != -1){
 				//if (pos >= strlen(buf) - 5)
 				//	break;
 				
 				int g = pos - old_pos + 1;
-				char* line = (char*) malloc(pos - old_pos + 1);
+				char* line = (char*) malloc(pos - old_pos + 1 + 15);
+				memset(line, 0, pos - old_pos + 1 );
 				
 				strncpy(line, &buf[old_pos + 1], pos - old_pos - 1);
+				line[strlen(line) + 1] = 0;
 				
 				list_node_t* line_node = list_node_new(line);
 				list_rpush(text_lines, line_node);
@@ -136,10 +136,20 @@ void msgHandlerTexteditor(int type, int reason, int value){
 		
 			if (reason == KEY_STATE_KEYTYPED){
 				if (value == KEY_BACKSPACE){
-					//current_line()[strlen(current_line())] = 0;
 					if (cursor_x > 0){
 						cursor_x--;
 						strncpy(&current_line()[cursor_x], &current_line()[cursor_x + 1], strlen(current_line()) - cursor_x);
+					} else {	
+						// cat current line to prevous
+						if (cursor_y > 0){
+							char * prev_line = list_at(text_lines, cursor_y-1)->val;
+							unsigned int new_cur_x = strlen(prev_line);
+							
+							prev_line = realloc(prev_line, strlen(prev_line) + strlen(current_line()) + 2);
+							
+							cursor_x = new_cur_x;
+							cursor_y--;
+						}
 					}
 						
 					// redraw line
@@ -211,7 +221,9 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							sdk_debug_log("exit");
 							exit = 1;
 						}
-					
+						
+						// TODO: where is REALLOC????
+
 						// shift text
 						for (int i = strlen(current_line()); i >= cursor_x && i >= 0; i--){
 							current_line()[i + 1] = current_line()[i];
@@ -275,10 +287,14 @@ void app_texteditor(const char* p){
 		if (sdk_prc_haveNewMessage()){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}
-		//sdk_debug_log("TE");
 	}
+	exit = 0;
+	view_start_line = 0;
+	cursor_x = 0;
+	cursor_y = 0;
+
+	list_destroy(text_lines);
 	
 	sdk_debug_log("i'm done");
 	sdk_prc_die();
-	sdk_debug_log("i'm done ! 2");
 }

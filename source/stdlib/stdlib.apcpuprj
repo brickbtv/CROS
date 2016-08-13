@@ -141,10 +141,6 @@
 		{
 			"path": ".\\extern\\tlsf\\tlsf.h",
 			"bootfile": false
-		},
-		{
-			"path": ".\\extern\\tlsf\\tlsfbits.h",
-			"bootfile": false
 		}
 	]
 }

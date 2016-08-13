@@ -251,13 +251,21 @@ void prc_die(){
 	prc->i_should_die = TRUE;
 	
 	// change focus
-	
 	if (currFocusedProc == prc){
 		list_rpop(stackFocused);
 		currFocusedProc = list_tail(stackFocused)->val;
 		// prevous process should take a screen
 		hw_scr_mapScreenBuffer(currFocusedProc->screen->addr);
 	}
+	
+	prc->sync_lock = FALSE;
+	
+	// dangerous! free impl always works baaadly =(
+	/*free(prc->screen->addr);
+	free(prc->screen);
+	
+	free(prc->stack);
+	free(prc->heap);*/
 }
 
 

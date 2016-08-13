@@ -18,16 +18,16 @@ void _mem_init(void* start, size_t size, int krn)
 	}
 	//sdk_debug_logf("hk: %x", kernel_heap);
 	
-	int allocated = init_memory_pool(size, start);
+	/*int allocated = */tlsf_create_with_pool(start, size);//init_memory_pool(size, start);
 
-	krn_debugLogf("init mem pool: %d == %d. Heap: %x", size, allocated, kernel_heap);
+//	krn_debugLogf("init mem pool: %d == %d. Heap: %x", size, allocated, kernel_heap);
 }
 
 void show_mem_info(void* pool, int krn){
-	if (krn == 1)
-		krn_debugLogf("Kernel used: %d", get_used_size(pool));
-	else {
-		sdk_debug_logf("App used: %d", get_used_size(pool));
+	if (krn == 1) {
+		//krn_debugLogf("Kernel used: %d", get_used_size(pool));
+	} else {
+		//sdk_debug_logf("App used: %d", get_used_size(pool));
 	}
 }
 
@@ -45,19 +45,27 @@ void* malloc(size_t size){
 		krn_debugLogf("kernel");
 	else {
 		sdk_debug_logf("app");
-	}*/
+	}*/	
 	return _malloc_impl(size, is_kernel());
 }
 
 void* _malloc_impl( size_t size, int krn)
 {
 	if (krn == 1){	// kernel
-		uint8_t* ptr = malloc_ex(size, kernel_heap);
+		if (tlsf_check(kernel_heap))
+			krn_debugLogf("TLSF: check failed");
+		
+		int8_t* ptr = tlsf_malloc(kernel_heap, size);
+		if (tlsf_check(kernel_heap))
+			krn_debugLogf("TLSFk: check failed");
 		//show_mem_info(kernel_heap, krn);
 		return ptr;
 	} else {		// processes
 		void* heapStart = sdk_prc_getHeapPointer();		
-		uint8_t* ptr = malloc_ex(size, heapStart);
+		if (tlsf_check(heapStart))
+			krn_debugLogf("TLSFa: check failed");
+		uint8_t* ptr = tlsf_malloc(heapStart, size);
+		tlsf_check(heapStart);
 		if (ptr == NULL)
 			sdk_debug_logf("Failed to allocate %d bytes.", size);
 		//show_mem_info(heapStart, krn);
@@ -72,11 +80,11 @@ void* realloc(void* oldptr, size_t size){
 void* _realloc_impl( void* oldptr, size_t size, int krn)
 {
 	if (krn == 1){	// kernel
-		uint8_t* newptr = realloc_ex(oldptr, size, kernel_heap);
+		uint8_t* newptr = tlsf_realloc(kernel_heap, oldptr, size);
 		return newptr;
 	} else {		// processes
 		void* heapStart = sdk_prc_getHeapPointer();		
-		uint8_t* newptr = realloc_ex(oldptr, size, heapStart);
+		uint8_t* newptr = tlsf_realloc(heapStart, oldptr, size);
 		return newptr;
 	}
 }
@@ -100,9 +108,11 @@ void free(void* ptr){
 void _free_impl(void* ptr, int krn)
 {
 	if (krn == 1){	// kernel
-		free_ex(ptr, kernel_heap);
+		tlsf_free(kernel_heap, ptr);
+		//how_mem_info(kernel_heap, 1);
 	} else {		// processes
 		void* heapStart = sdk_prc_getHeapPointer();		
-		free_ex(ptr, heapStart);
+		tlsf_free(heapStart, ptr);
+		show_mem_info(kernel_heap, 0);
 	}
 }
