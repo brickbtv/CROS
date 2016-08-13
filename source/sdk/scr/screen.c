@@ -66,9 +66,11 @@ void printfXY(Canvas * info, unsigned int x, unsigned int y, const unsigned char
 	}
 }
 
+#define MAX_STRING_LEN 1024
+
 void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const unsigned char* fmt, ...){
 	va_list ap;
-	char buf[256];
+	char buf[MAX_STRING_LEN];
 	char* out = &buf[0];
 	va_start(ap, fmt);	
 	vsprintf(buf, fmt, ap);
@@ -78,7 +80,7 @@ void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const unsig
 
 void sdk_scr_printf(Canvas * info, const unsigned char* fmt, ...){
 	va_list ap;
-	char buf[256];
+	char buf[MAX_STRING_LEN];
 	char* out = &buf[0];
 	va_start(ap, fmt);	
 	vsprintf(buf, fmt, ap);
