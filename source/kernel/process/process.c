@@ -263,12 +263,12 @@ void prc_die(){
 	
 	krn_getIdleProcess()->sync_lock = TRUE;
 	// dangerous! free impl always works baaadly =(
-	/*free(prc->screen->addr);
+	free(prc->screen->addr);
 	free(prc->screen);
 	
 	free(prc->stack);
 	_mem_destroy(prc->heap);
-	free(prc->heap);*/
+	free(prc->heap);
 	krn_getIdleProcess()->sync_lock = FALSE;
 }
 
