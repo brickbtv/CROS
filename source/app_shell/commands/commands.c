@@ -27,7 +27,15 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 	} else if (strncmp(input, "edit ", strlen("edit ")) == 0){
 		char * args = malloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("edit ")]);
-		sdk_debug_logf("edit_file: %s", args);
+	
+		FILE * file = fs_open_file(args, 'r');
+		if (file){
+			fs_close_file(file);
+		} else {
+			sdk_scr_printf(canvas, "Failed to open file.\n");
+			return;
+		}
+	
 		sdk_prc_create_process((unsigned int)app_texteditor, args);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;

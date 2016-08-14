@@ -23,6 +23,10 @@ void _mem_init(void* start, size_t size, int krn)
 //	krn_debugLogf("init mem pool: %d == %d. Heap: %x", size, allocated, kernel_heap);
 }
 
+void _mem_destroy(void* start){
+	tlsf_destroy(start);
+}
+
 void show_mem_info(void* pool, int krn){
 	if (krn == 1) {
 		//krn_debugLogf("Kernel used: %d", get_used_size(pool));
@@ -56,13 +60,13 @@ void* _malloc_impl( size_t size, int krn)
 			krn_debugLogf("TLSF: check failed");
 		
 		int8_t* ptr = tlsf_malloc(kernel_heap, size);
-		if (tlsf_check(kernel_heap))
+		if (tlsf_check_pool(kernel_heap))
 			krn_debugLogf("TLSFk: check failed");
 		//show_mem_info(kernel_heap, krn);
 		return ptr;
 	} else {		// processes
 		void* heapStart = sdk_prc_getHeapPointer();		
-		if (tlsf_check(heapStart))
+		if (tlsf_check_pool(heapStart))
 			krn_debugLogf("TLSFa: check failed");
 		uint8_t* ptr = tlsf_malloc(heapStart, size);
 		tlsf_check(heapStart);
@@ -108,11 +112,19 @@ void free(void* ptr){
 void _free_impl(void* ptr, int krn)
 {
 	if (krn == 1){	// kernel
+		if (tlsf_check_pool(kernel_heap))
+			krn_debugLogf("TLSFk: check failed");
 		tlsf_free(kernel_heap, ptr);
-		//how_mem_info(kernel_heap, 1);
+		if (tlsf_check_pool(kernel_heap))
+			krn_debugLogf("TLSFk: check failed");
+		//show_mem_info(kernel_heap, 1);
 	} else {		// processes
 		void* heapStart = sdk_prc_getHeapPointer();		
+		if (tlsf_check_pool(heapStart))
+			krn_debugLogf("TLSFa: check failed");
 		tlsf_free(heapStart, ptr);
-		show_mem_info(kernel_heap, 0);
+		if (tlsf_check_pool(heapStart))
+			krn_debugLogf("TLSFa: check failed");
+		//show_mem_info(kernel_heap, 0);
 	}
 }

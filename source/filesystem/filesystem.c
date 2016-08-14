@@ -49,8 +49,8 @@ void fs_close_file(FILE* file){
 	f_close((FIL*)file->fil);
 	
 	if (file != 0 && file->fil != 0){
-		free(file->fil);
-		free(file);
+		//free(file->fil);
+		//free(file);
 		
 		file->fil = 0;
 		file = 0;
@@ -147,4 +147,5 @@ int fs_getcwd(char * cwd_str, int str_len){
 
 unsigned int fs_getsize(FILE* file){
 	//return f_size(file->fil);
+	return 0;
 }

@@ -62,7 +62,8 @@ void syscall_prc_getNextMessage(void){
 	//PrcMessage * msg = (PrcMessage*)node->val;
 	unsigned int msg = (unsigned int)node->val;
 	prc->context->gregs[0] = msg;//(unsigned int)node->val;
-	free(node);
+	//if (node)
+	//	free(node);
 	krn_getIdleProcess()->sync_lock = FALSE;
 }
 

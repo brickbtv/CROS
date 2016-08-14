@@ -982,23 +982,23 @@ pool_t tlsf_add_pool(tlsf_t tlsf, void* mem, size_t bytes)
 
 	if (((ptrdiff_t)mem % ALIGN_SIZE) != 0)
 	{
-		//printf("tlsf_add_pool: Memory must be aligned by %u bytes.\n",
-		//	(unsigned int)ALIGN_SIZE);
+		krn_debugLogf("tlsf_add_pool: Memory must be aligned by %u bytes.\n",
+			(unsigned int)ALIGN_SIZE);
 		return 0;
 	}
 
 	if (pool_bytes < block_size_min || pool_bytes > block_size_max)
 	{
-/*	
+
 #if defined (TLSF_64BIT)
-		printf("tlsf_add_pool: Memory size must be between 0x%x and 0x%x00 bytes.\n", 
+		krn_debugLogf("tlsf_add_pool: Memory size must be between 0x%x and 0x%x00 bytes.\n", 
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)((pool_overhead + block_size_max) / 256));
 #else
-		printf("tlsf_add_pool: Memory size must be between %u and %u bytes.\n", 
+		krn_debugLogf("tlsf_add_pool: Memory size must be between %u and %u bytes.\n", 
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)(pool_overhead + block_size_max));
-#endif*/
+#endif
 		return 0;
 	}
 
@@ -1063,7 +1063,7 @@ int test_ffs_fls()
 
 	if (rv)
 	{
-		//printf("test_ffs_fls: %x ffs/fls tests failed.\n", rv);
+		krn_debugLogf("test_ffs_fls: %x ffs/fls tests failed.\n", rv);
 	}
 	return rv;
 }
@@ -1080,8 +1080,8 @@ tlsf_t tlsf_create(void* mem)
 
 	if (((tlsfptr_t)mem % ALIGN_SIZE) != 0)
 	{
-		//printf("tlsf_create: Memory must be aligned to %u bytes.\n",
-		//	(unsigned int)ALIGN_SIZE);
+		krn_debugLogf("tlsf_create: Memory must be aligned to %u bytes.\n",
+			(unsigned int)ALIGN_SIZE);
 		return 0;
 	}
 

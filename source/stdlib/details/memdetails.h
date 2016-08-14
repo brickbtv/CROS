@@ -5,8 +5,9 @@
 
 
 
-// Called by the OS to initialize a process's head
+// Called by the OS to initialize a process's heap
 void _mem_init(void* start, size_t size, int krn);
+void _mem_destroy(void* start);
 //
 // NOTE: Don't use these directly . Use the macros bellow (e.g: malloc)
 //

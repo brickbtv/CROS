@@ -50,12 +50,15 @@ int align(unsigned int pointer){
 /*!
 *	Initialize stdlib memory allocation. 
 */
+
+#define KRN_HEAP_BASE 1024 * 1000
+
 void krn_initMalloc(void){
-	static char kernel_hp[1024 * 100+10];
+	static char kernel_hp[KRN_HEAP_BASE+10];
 	unsigned int align_offset = (unsigned int)&kernel_hp[0];
 	int a = align(align_offset);
 	
-	stdcshared_init(memCback, (void*)&kernel_hp[a], 1024 * 300);
+	stdcshared_init(memCback, (void*)&kernel_hp[a], KRN_HEAP_BASE);
 }
 
 
