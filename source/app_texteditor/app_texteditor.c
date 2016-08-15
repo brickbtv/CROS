@@ -18,7 +18,7 @@ Canvas* cv;
 list_t* text_lines;
 
 #define LINE_LEN 80
-#define LINES_COUNT 20
+#define LINES_COUNT 24
 
 bool preprocess_file(const char* path){
 	/*
@@ -87,28 +87,37 @@ void draw_header(){
 	sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
 }
 
+void draw_bottom(){
+	sdk_scr_setBackColor(cv, SCR_COLOR_BLUE);
+	for(int i = 0; i < LINE_LEN; i++)
+		sdk_scr_putchar(cv, i, 24, ' ');
+	sdk_scr_printfXY(cv, 0, 24, " INS^S - save    INS^X - quit");
+	sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
+}
+
 void redraw_text_area(int start_line){
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
 	draw_header();
+	draw_bottom();
 
-	for (int i = start_line; i < LINES_COUNT-1; i++){
+	for (int i = start_line; i < start_line + LINES_COUNT-1; i++){
 		list_node_t* line = list_at(text_lines, i);
 		if (line)
-			sdk_scr_printfXY(cv, 0, i + 1, line->val);
+			sdk_scr_printfXY(cv, 0, i - start_line + 1, line->val);
 	}
 	view_start_line = start_line;
 }
 
 char * current_line(){
-	return list_at(text_lines, cursor_y)->val;
+	return list_at(text_lines, cursor_y + view_start_line)->val;
 }
 
 list_node_t * current_line_node(){
-	return list_at(text_lines, cursor_y);
+	return list_at(text_lines, cursor_y + view_start_line);
 }
 
 list_node_t * next_line_node(){
-	return list_at(text_lines, cursor_y + 1);
+	return list_at(text_lines, cursor_y + 1 + view_start_line);
 }
 
 
@@ -175,13 +184,18 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					strcpy(new_line, &current_line()[cursor_x]);
 					current_line()[cursor_x] = 0;
 					list_node_t* line_node = list_node_new(new_line);
-					list_node_t* line_ins_after = list_at(text_lines, cursor_y);
+					list_node_t* line_ins_after = list_at(text_lines, cursor_y + view_start_line);
 					list_insertafter(text_lines, line_ins_after, line_node);
 					
 					cursor_y++;
 					cursor_x = 0;
 					
-					redraw_text_area(view_start_line);					
+					int offset = 0;
+					if (cursor_y > LINES_COUNT - 2){
+						view_start_line ++;
+						cursor_y -= 2;
+					}
+					redraw_text_area(view_start_line);		
 				} else {
 					// disable blinking for prevous cursor position
 					sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);	
@@ -235,19 +249,19 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							exit = 1;
 						}
 						
-						// TODO: where is REALLOC????
-
 						// shift text
-						for (int i = strlen(current_line()); i >= cursor_x && i >= 0; i--){
-							current_line()[i + 1] = current_line()[i];
-						}				
+						char * cl = current_line();
+						
+						for (int i = strlen(cl); i >= cursor_x && i >= 0; i--){
+							cl[i + 1] = cl[i];
+						}
 						// add letter
-						current_line()[cursor_x] = value;
+						cl[cursor_x] = value;
 						cursor_x++;
-						sdk_debug_logf("%s", current_line());
+						sdk_debug_logf("%s", cl);
 						
 						// redraw line
-						sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, current_line());
+						sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, cl);
 					}
 				}
 			}
@@ -307,7 +321,5 @@ void app_texteditor(const char* p){
 	cursor_y = 0;
 
 	list_destroy(text_lines);
-	
-	sdk_debug_log("i'm done");
 	sdk_prc_die();
 }
