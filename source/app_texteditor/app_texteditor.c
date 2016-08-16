@@ -20,6 +20,13 @@ list_t* text_lines;
 #define LINE_LEN 80
 #define LINES_COUNT 24
 
+typedef struct Cursor{
+	unsigned int x;
+	unsigned int y;
+}Cursor;
+
+Cursor cursor;
+
 bool preprocess_file(const char* path){
 	/*
 		Preprocessing split input file for \n symbols.
@@ -71,9 +78,6 @@ bool preprocess_file(const char* path){
 
 unsigned int view_start_line = 0;
 
-unsigned int cursor_x = 0;
-unsigned int cursor_y = 0;
-
 char path[256];
 
 void draw_header(){
@@ -95,6 +99,22 @@ void draw_bottom(){
 	sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
 }
 
+unsigned int text_cursor_y(){
+	return cursor.y - 1 + view_start_line;
+}
+
+char * current_line(){
+	return list_at(text_lines, text_cursor_y())->val;
+}
+
+list_node_t * current_line_node(){
+	return list_at(text_lines, text_cursor_y());
+}
+
+list_node_t * next_line_node(){
+	return list_at(text_lines, text_cursor_y() + 1);
+}
+
 void redraw_text_area(int start_line){
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
 	draw_header();
@@ -106,20 +126,9 @@ void redraw_text_area(int start_line){
 			sdk_scr_printfXY(cv, 0, i - start_line + 1, line->val);
 	}
 	view_start_line = start_line;
+	
+	sdk_debug_logf("cl: %s", current_line());
 }
-
-char * current_line(){
-	return list_at(text_lines, cursor_y + view_start_line)->val;
-}
-
-list_node_t * current_line_node(){
-	return list_at(text_lines, cursor_y + view_start_line);
-}
-
-list_node_t * next_line_node(){
-	return list_at(text_lines, cursor_y + 1 + view_start_line);
-}
-
 
 int insPress = 0;
 int exit = 0;
@@ -130,48 +139,61 @@ void msgHandlerTexteditor(int type, int reason, int value){
 			// CTRL rplsmnt by INSERT
 			if (value == KEY_INSERT){
 				if (reason == KEY_STATE_KEYPRESSED)
-					insPress  = 1;
+					insPress = 1;
 				else if (reason == KEY_STATE_KEYRELEASED)
-					insPress  = 0;
-					
+					insPress = 0;
+				
 				break;
 			}
-		
+			
 			if (reason == KEY_STATE_KEYTYPED){
+				if (insPress == 1){
+					if (value == KEY_UP){
+						redraw_text_area(--view_start_line);
+						cursor.y++;
+						break;
+					} 
+					if (value == KEY_DOWN){
+						redraw_text_area(++view_start_line);
+						cursor.y--;
+						break;
+					} 
+				}
+				
 				if (value == KEY_BACKSPACE){
-					if (cursor_x > 0){
-						cursor_x--;
-						strncpy(&current_line()[cursor_x], &current_line()[cursor_x + 1], strlen(current_line()) - cursor_x);
+					if (cursor.x > 0){
+						cursor.x--;
+						strncpy(&current_line()[cursor.x], &current_line()[cursor.x + 1], strlen(current_line()) - cursor.x);
 						// redraw line
-						sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, "                                ");
-						sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, current_line());
+						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, "                                ");
+						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, current_line());
 					} else {	
 						// cat current line to prevous
-						if (cursor_y > 0){
-							char * prev_line = list_at(text_lines, cursor_y-1)->val;
+						if (cursor.y > 0){
+							char * prev_line = list_at(text_lines, cursor.y-1)->val;
 							unsigned int new_cur_x = strlen(prev_line);
 							
 							strcpy(&prev_line[new_cur_x], current_line());
 							list_remove(text_lines, current_line_node());
 							
-							cursor_x = new_cur_x;
-							cursor_y--;
+							cursor.x = new_cur_x;
+							cursor.y--;
 							
 							redraw_text_area(view_start_line);
 						}
 					}
 				} else if (value == KEY_DELETE){
-					if (cursor_x < strlen(current_line())){
-						strncpy(&current_line()[cursor_x], &current_line()[cursor_x + 1], strlen(current_line()) - cursor_x);
+					if (cursor.x < strlen(current_line())){
+						strncpy(&current_line()[cursor.x], &current_line()[cursor.x + 1], strlen(current_line()) - cursor.x);
 						// redraw line
-						sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, "                                ");
-						sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, current_line());
+						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, "                                ");
+						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, current_line());
 					} else {	
 						// cat next line to current
-						if (cursor_y < list_size(text_lines)){
+						if (cursor.y < list_size(text_lines)){
 							char * next_line = next_line_node()->val;
 														
-							strcpy(&current_line()[cursor_x], next_line);
+							strcpy(&current_line()[cursor.x], next_line);
 							list_remove(text_lines, next_line_node());
 														
 							redraw_text_area(view_start_line);
@@ -180,47 +202,57 @@ void msgHandlerTexteditor(int type, int reason, int value){
 				} else if (value == KEY_RETURN){
 					// shift text after
 					// cut right part 
-					char* new_line = (char*)calloc(strlen(&current_line()[cursor_x]) + 1);
-					strcpy(new_line, &current_line()[cursor_x]);
-					current_line()[cursor_x] = 0;
+					char* new_line = (char*)calloc(strlen(&current_line()[cursor.x]) + 1);
+					strcpy(new_line, &current_line()[cursor.x]);
+					current_line()[cursor.x] = 0;
 					list_node_t* line_node = list_node_new(new_line);
-					list_node_t* line_ins_after = list_at(text_lines, cursor_y + view_start_line);
+					list_node_t* line_ins_after = list_at(text_lines, cursor.y + view_start_line);
 					list_insertafter(text_lines, line_ins_after, line_node);
 					
-					cursor_y++;
-					cursor_x = 0;
+					cursor.y++;
+					cursor.x = 0;
 					
 					int offset = 0;
-					if (cursor_y > LINES_COUNT - 2){
+					if (cursor.y > LINES_COUNT - 2){
 						view_start_line ++;
-						cursor_y -= 2;
+						cursor.y --;
 					}
 					redraw_text_area(view_start_line);		
 				} else {
 					// disable blinking for prevous cursor position
-					sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);	
-					sdk_scr_printfXY(cv, cursor_x, cursor_y + view_start_line + 1, "%c", current_line()[cursor_x]);
+					//sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);	
+					//sdk_scr_printfXY(cv, cursor.x, cursor.y + view_start_line + 1, "%c", current_line()[cursor.x]);
 				
 					if (value == KEY_UP){
-						if (cursor_y > 0){
-							cursor_y--;
-							if (cursor_x > strlen(current_line()))
-								cursor_x = strlen(current_line());
-						}	
+						if (cursor.y > 0){
+							cursor.y--;
+							if (cursor.x > strlen(current_line()))
+								cursor.x = strlen(current_line());
+						} else {
+							if (cursor.y > LINES_COUNT - 2){
+								redraw_text_area(--view_start_line);
+								cursor.y ++;
+							}
+						}
 					} 
 					if (value == KEY_DOWN){
-						if (cursor_y < list_size(text_lines) - 1)							
-							cursor_y++;
-							if (cursor_x > strlen(current_line()))
-								cursor_x = strlen(current_line());	
+						if (cursor.y < list_size(text_lines) - 1)							
+							cursor.y++;
+							if (cursor.x > strlen(current_line()))
+								cursor.x = strlen(current_line());	
+						
+						if (cursor.y > LINES_COUNT - 2 && text_cursor_y() < list_size(text_lines) - 1){
+							redraw_text_area(++view_start_line);
+							cursor.y --;
+						}
 					} 
 					if (value == KEY_LEFT){
-						if (cursor_x > 0)
-							cursor_x--;
+						if (cursor.x > 0)
+							cursor.x--;
 					} 
 					if (value == KEY_RIGHT){
-						if (cursor_x < 80 && cursor_x < strlen(current_line()))
-							cursor_x++;
+						if (cursor.x < 80 && cursor.x < strlen(current_line()))
+							cursor.x++;
 					} 					
 					
 					// letters
@@ -252,16 +284,16 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						// shift text
 						char * cl = current_line();
 						
-						for (int i = strlen(cl); i >= cursor_x && i >= 0; i--){
+						for (int i = strlen(cl); i >= cursor.x && i >= 0; i--){
 							cl[i + 1] = cl[i];
 						}
 						// add letter
-						cl[cursor_x] = value;
-						cursor_x++;
+						cl[cursor.x] = value;
+						cursor.x++;
 						sdk_debug_logf("%s", cl);
 						
 						// redraw line
-						sdk_scr_printfXY(cv, 0, cursor_y + view_start_line + 1, cl);
+						sdk_scr_printfXY(cv, 0, cursor.y, cl);
 					}
 				}
 			}
@@ -270,6 +302,12 @@ void msgHandlerTexteditor(int type, int reason, int value){
 }
 
 void app_texteditor(const char* p){	
+	cursor.x = 0;
+	cursor.y = 1;
+	exit = 0;
+	view_start_line = 0;
+	insPress = 0;
+
 	text_lines = list_new();
 
 	preprocess_file(p);
@@ -300,11 +338,13 @@ void app_texteditor(const char* p){
 				sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
 			}
 			
-			char bl_char = current_line()[cursor_x];
+			char bl_char = current_line()[cursor.x];
 			if (bl_char == 0)
 				bl_char = ' ';
 				
-			sdk_scr_printfXY(cv, cursor_x, cursor_y + view_start_line + 1, "%c", bl_char);
+			sdk_debug_logf("cy: %d %d", cursor.y, view_start_line);
+			
+			sdk_scr_printfXY(cv, cursor.x, cursor.y, "%c", bl_char);
 			sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
 			sdk_scr_setTextColor(cv, SCR_COLOR_GREEN);
 			
@@ -315,11 +355,7 @@ void app_texteditor(const char* p){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}
 	}
-	exit = 0;
-	view_start_line = 0;
-	cursor_x = 0;
-	cursor_y = 0;
-
+	
 	list_destroy(text_lines);
 	sdk_prc_die();
 }
