@@ -286,6 +286,9 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							exit = 1;
 						}
 						
+						if (cursor.x >= 80 - 1 || strlen(current_line()) >= 80-1)
+							break;
+						
 						// shift text
 						char * cl = current_line();
 						
