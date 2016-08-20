@@ -36,6 +36,7 @@ bool preprocess_file(const char* path){
 	// step 1
 	#define DEF_BUF_SIZE 256
 	char buf[DEF_BUF_SIZE];
+	memset(buf, 0, sizeof(char) * DEF_BUF_SIZE);
 	unsigned int rb;
 	
 	FILE * file = fs_open_file(path, 'r');
@@ -115,6 +116,10 @@ list_node_t * next_line_node(){
 	return list_at(text_lines, text_cursor_y() + 1);
 }
 
+list_node_t * prev_line_node(){
+	return list_at(text_lines, text_cursor_y() - 1);
+}
+
 void redraw_text_area(int start_line){
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
 	draw_header();
@@ -169,8 +174,8 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, current_line());
 					} else {	
 						// cat current line to prevous
-						if (cursor.y > 0){
-							char * prev_line = list_at(text_lines, cursor.y-1)->val;
+						if (cursor.y > 1){
+							char * prev_line = prev_line_node()->val;
 							unsigned int new_cur_x = strlen(prev_line);
 							
 							strcpy(&prev_line[new_cur_x], current_line());
@@ -206,7 +211,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					strcpy(new_line, &current_line()[cursor.x]);
 					current_line()[cursor.x] = 0;
 					list_node_t* line_node = list_node_new(new_line);
-					list_node_t* line_ins_after = list_at(text_lines, cursor.y + view_start_line);
+					list_node_t* line_ins_after = list_at(text_lines, cursor.y + view_start_line - 1);
 					list_insertafter(text_lines, line_ins_after, line_node);
 					
 					cursor.y++;
@@ -236,7 +241,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						}
 					} 
 					if (value == KEY_DOWN){
-						if (cursor.y < list_size(text_lines) - 1)							
+						if (cursor.y < list_size(text_lines))							
 							cursor.y++;
 							if (cursor.x > strlen(current_line()))
 								cursor.x = strlen(current_line());	
@@ -311,6 +316,7 @@ void app_texteditor(const char* p){
 	text_lines = list_new();
 
 	preprocess_file(p);
+	memset(path, 0, sizeof(char) * 256);
 	strcpy(path, p);
 	
 	// interface	
