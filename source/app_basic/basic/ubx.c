@@ -28,9 +28,70 @@
  * SUCH DAMAGE.
  *
  */
-#ifndef __VARTYPE_H__
-#define __VARTYPE_H__
 
-#define VARIABLE_TYPE char
+#include <time.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "ubasic.h"
 
-#endif /* __VARTYPE_H__ */
+/*---------------------------------------------------------------------------*/
+value_t peek(value_t arg) {
+    return arg;
+}
+
+/*---------------------------------------------------------------------------*/
+void poke(value_t arg, value_t value) {
+    assert(arg == value);
+}
+
+/*---------------------------------------------------------------------------*/
+void run(const char program[]) {
+  ubasic_init_peek_poke(program, &peek, &poke);
+
+  do {
+    ubasic_run();
+  } while(!ubasic_finished());
+}
+
+/*---------------------------------------------------------------------------*/
+
+static char *buf;
+
+int main(int argc, char *argv[])
+{
+  int fd, l;
+  struct stat s;
+
+  if (argc != 2) {
+    write(2, argv[0], strlen(argv[0]));
+    write(2, ": program\n", 10);
+    exit(1);
+  }
+  fd = open(argv[1], O_RDONLY);
+  if (fd == -1 || fstat(fd, &s) == -1) {
+    perror(argv[1]);
+    exit(1);
+  }
+  /* Align to the next quad */
+  buf = sbrk((s.st_size|3) + 1);
+  if (buf == (char *)-1) {
+    write(2, "Out of memory.\n",15);
+    exit(1);
+  }
+  l = read(fd, buf, s.st_size);
+  if (l != s.st_size) {
+    perror(argv[1]);
+    exit(1);
+  }
+  close(fd);
+  buf[l] = 0;
+  run(buf);
+  return 0;
+}

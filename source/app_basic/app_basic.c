@@ -6,22 +6,28 @@
 #include <stdlib/string_shared.h>
 #include <stdlib/details/memdetails.h>
 
+#include <filesystem/filesystem.h>
 
 void app_basic(const char* path){
-	char program[] = 
-"10 print \"dd\"\n\
-20 for i = 1 to 10\n\
-30 print i\n\
-40 next i\n\
-50 print \"end\"\n\
-60 end\n\
-100 print \"subroutine\"\n\
-110 return\n";
+/*	char program[] = 
+"10 for i = 0 to 126\n\
+20 for j = 0 to 126\n\
+30 for k = 0 to 10\n\
+40 let a = i * j * k\n\
+45 print a, i, j, k\n\
+50 next k\n\
+60 next j\n\
+70 next i\n\
+80 stop\n";
+*/
+	FILE * file = fs_open_file(path, 'r');
+	int rb = 0;
+	
+	char program[2048];
+	memset(program, 0, 2048 * sizeof(char));
+	fs_read_file(file, program, 512, &rb);		
 
-
-	char * pr = (char*)calloc(1024);
-	strcpy(pr, program);
-	ubasic_init(pr);
+	ubasic_init(program);
 
 	do {
 		ubasic_run();

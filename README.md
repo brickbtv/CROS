@@ -13,16 +13,18 @@ APCPU instruction set - is a part of G4 game https://bitbucket.org/ruifig/g4devk
     * Keyboard
     * Disk drive (http://elm-chan.org/fsw/ff/00index_e.html)
     * Clock
+* uBASIC interpreter (from @EtchedPixels fork: https://github.com/EtchedPixels/ubasic)
     
 ## Base apps
 * Command shell
     * 'ls' - show files and folders in current directory
-    * 'mkdir NAME' - make new directory
-    * 'mkfile NAME' - make new file
-    * 'cd NAME' - change directory
+    * 'mkdir DIR_NAME' - make new directory
+    * 'mkfile FILE_NAME' - make new file
+    * 'cd FILE_NAME' - change directory
     * 'rm NAME' - remove file or directory
-    * 'cat NAME' - print file content to console
-    * 'edit NAME' - simple texteditor
+    * 'cat FILE_NAME' - print file content to console
+    * 'edit FILE_NAME' - simple texteditor
+	* 'basic FILE_NAME' - uBASIC interpreter
 * Chat
     * server app
     * client app
@@ -36,6 +38,6 @@ Current implementation isn't optimized. APCPU VM should be configured with this 
 :exclamation: Also, there is main requirement: Disk should be mounted to VM.
 
 ## Known troubles
-* Memory leaks: 'free(...)' function gives unexpected asserts in TLSF code after process finish. Currently, most of 'free' functions is commented (except libraries code, they works fine with dynamic memory allocation/deallocation).
+* Memory leaks: 'free(...)' function gives unexpected asserts in TLSF code after process finish. Currently, most of 'free' functions is commented.
 * Clock callbacks works incorrect in some reason
-* Process crash currently crashed the OS 
+* Process crash is currently crashed the OS 

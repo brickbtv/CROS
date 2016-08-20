@@ -1,7 +1,7 @@
 #ifndef _stdint_shared_h_
 #define _stdint_shared_h_
 
-typedef unsigned char uint8_t;
+typedef unsigned int uint8_t;
 typedef unsigned char u8;
 typedef signed char int8_t;
 typedef signed char s8;

@@ -36,7 +36,8 @@
 
 #define printf(...) sdk_debug_logf(__VA_ARGS__)
 #define exit(c) sdk_prc_die()
-
+#define strncasecmp(a,b,c) strncmp(a,b,c)
+#define write
 
 #if DEBUG_BASIC
 #define DEBUG_PRINTF(...)  printf(__VA_ARGS__)
@@ -44,13 +45,20 @@
 #define DEBUG_PRINTF(...)
 #endif
 
-#include "tokenizer.h"
+#include <stdio_shared.h>
+#include <stdint_shared.h>
 #include <string_shared.h>
 #include <ctype_shared.h>
-
 #include <stdlib_shared.h>
+//#include <unistd.h>
 
-const char *ptr, *nextptr;
+#include "ubasic.h"
+#include "tokenizer.h"
+
+static char const *ptr, *nextptr;
+static char const *saved_ptr, *saved_next;
+static int saved_token;
+
 
 #define MAX_NUMLEN 6
 
@@ -59,7 +67,7 @@ struct keyword_token {
   int token;
 };
 
-static int current_token = TOKENIZER_ERROR;
+uint8_t current_token = TOKENIZER_ERROR;
 
 static const struct keyword_token keywords[] = {
   {"let", TOKENIZER_LET},
@@ -70,71 +78,81 @@ static const struct keyword_token keywords[] = {
   {"for", TOKENIZER_FOR},
   {"to", TOKENIZER_TO},
   {"next", TOKENIZER_NEXT},
-  {"goto", TOKENIZER_GOTO},
-  {"gosub", TOKENIZER_GOSUB},
+  {"step", TOKENIZER_STEP},
+  {"go", TOKENIZER_GO},
+  {"sub", TOKENIZER_SUB},
   {"return", TOKENIZER_RETURN},
   {"call", TOKENIZER_CALL},
   {"rem", TOKENIZER_REM},
-  {"peek", TOKENIZER_PEEK},
   {"poke", TOKENIZER_POKE},
-  {"end", TOKENIZER_END},
+  {"peek", TOKENIZER_PEEK},
+  {"int", TOKENIZER_INT},
+  {"abs", TOKENIZER_ABS},
+  {"sgn", TOKENIZER_SGN},
+  {"len", TOKENIZER_LEN},
+  {"code", TOKENIZER_CODE},
+  {"val", TOKENIZER_VAL},
+  {"stop", TOKENIZER_STOP},
+  {"and", TOKENIZER_AND},
+  {"or", TOKENIZER_OR},
+  {"dim", TOKENIZER_DIM},
+/* FIXME  {"not", TOKENIZER_NOT}, */
+  {"data", TOKENIZER_DATA},
+  {"randomize", TOKENIZER_RANDOMIZE},
+  {"option", TOKENIZER_OPTION},
+  {"base", TOKENIZER_BASE},
+  {"input", TOKENIZER_INPUT},
+  {"restore", TOKENIZER_RESTORE},
+  {"tab", TOKENIZER_TAB},
+  {"left$", TOKENIZER_LEFTSTR},
+  {"right$", TOKENIZER_RIGHTSTR},
+  {"mid$", TOKENIZER_MIDSTR},
+  {"chr$", TOKENIZER_CHRSTR},
+  {"mod", TOKENIZER_MOD},
   {NULL, TOKENIZER_ERROR}
 };
 
 /*---------------------------------------------------------------------------*/
-static int
-singlechar(void)
+static uint8_t doublechar(void)
 {
-  if(*ptr == '\n') {
-    return TOKENIZER_CR;
-  } else if(*ptr == ',') {
-    return TOKENIZER_COMMA;
-  } else if(*ptr == ';') {
-    return TOKENIZER_SEMICOLON;
-  } else if(*ptr == '+') {
-    return TOKENIZER_PLUS;
-  } else if(*ptr == '-') {
-    return TOKENIZER_MINUS;
-  } else if(*ptr == '&') {
-    return TOKENIZER_AND;
-  } else if(*ptr == '|') {
-    return TOKENIZER_OR;
-  } else if(*ptr == '*') {
-    return TOKENIZER_ASTR;
-  } else if(*ptr == '/') {
-    return TOKENIZER_SLASH;
-  } else if(*ptr == '%') {
-    return TOKENIZER_MOD;
-  } else if(*ptr == '(') {
-    return TOKENIZER_LEFTPAREN;
-  } else if(*ptr == '#') {
-    return TOKENIZER_HASH;
-  } else if(*ptr == ')') {
-    return TOKENIZER_RIGHTPAREN;
-  } else if(*ptr == '<') {
-    return TOKENIZER_LT;
-  } else if(*ptr == '>') {
-    return TOKENIZER_GT;
-  } else if(*ptr == '=') {
-    return TOKENIZER_EQ;
-  }
+  /* Special case the paired single char symbols */
+  if (*ptr == '>' && ptr[1] == '=')
+    return TOKENIZER_GE;
+  if (*ptr == '<' && ptr[1] == '=')
+    return TOKENIZER_LE;
+  if (*ptr == '<' && ptr[1] == '>')
+    return TOKENIZER_NE;
+  if (*ptr == '*' && ptr[1] == '*')
+    return TOKENIZER_POWER;
+  return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+static uint8_t singlechar(void)
+{
+  if (strchr("\n,;+-&|*/(#)<>=^:?", *ptr))
+    return *ptr;
+  /* Not semantically meaningful */
   return 0;
 }
 /*---------------------------------------------------------------------------*/
-static int
-get_next_token(void)
+static uint8_t get_next_token(void)
 {
   struct keyword_token const *kt;
   int i;
+  uint8_t t;
 
-  DEBUG_PRINTF("get_next_token(): %s '%x'\n", ptr, ptr);
+  DEBUG_PRINTF("get_next_token(): '%s'\n", ptr);
 
   if(*ptr == 0) {
     return TOKENIZER_ENDOFINPUT;
   }
 
-  if(isdigit(*ptr)) {
-    for(i = 0; i < MAX_NUMLEN; ++i) {
+  if ((isdigit(*ptr)) || (*ptr == '-' && isdigit(ptr[1]))) {
+    i = 0;
+    if (*ptr == '-')
+      i = 1;
+    for(; i < MAX_NUMLEN; ++i) {
       if(!isdigit(ptr[i])) {
         if(i > 0) {
           nextptr = ptr + i;
@@ -151,63 +169,79 @@ get_next_token(void)
     }
     DEBUG_PRINTF("get_next_token: error due to too long number\n");
     return TOKENIZER_ERROR;
-  } else if(singlechar()) {
+  } else if((t = doublechar()) != 0) {
+    nextptr = ptr + 2;
+    return t;
+  } else if((t = singlechar()) != 0) {
     nextptr = ptr + 1;
-    return singlechar();
+    return t;
   } else if(*ptr == '"') {
     nextptr = ptr;
     do {
       ++nextptr;
+      if (!*nextptr || *nextptr == '\n')
+        ubasic_tokenizer_error();
     } while(*nextptr != '"');
     ++nextptr;
     return TOKENIZER_STRING;
   } else {
     for(kt = keywords; kt->keyword != NULL; ++kt) {
-      if(strncmp(ptr, kt->keyword, strlen(kt->keyword)) == 0) {
+      if(strncasecmp(ptr, kt->keyword, strlen(kt->keyword)) == 0) {
         nextptr = ptr + strlen(kt->keyword);
         return kt->token;
       }
     }
   }
 
-  if(*ptr >= 'a' && *ptr <= 'z') {
+  if ((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z')) {
     nextptr = ptr + 1;
-    return TOKENIZER_VARIABLE;
+    if (*nextptr == '$') {
+      nextptr++;
+      return TOKENIZER_STRINGVAR;
+    }
+    if (isdigit(*nextptr))	/* A0-A9/B0-B9/etc */
+      nextptr++;
+    return TOKENIZER_INTVAR;
   }
 
 
   return TOKENIZER_ERROR;
 }
 /*---------------------------------------------------------------------------*/
-void
-tokenizer_goto(const char *program)
+void tokenizer_goto(const char *program)
 {
   ptr = program;
   current_token = get_next_token();
 }
 /*---------------------------------------------------------------------------*/
-void
-tokenizer_init(const char *program)
+void tokenizer_init(const char *program)
 {
   tokenizer_goto(program);
   current_token = get_next_token();
 }
 /*---------------------------------------------------------------------------*/
-int
-tokenizer_token(void)
+void tokenizer_push(void)
 {
-  return current_token;
+  saved_ptr = ptr;
+  saved_next = nextptr;
+  saved_token = current_token;
 }
 /*---------------------------------------------------------------------------*/
-void
-tokenizer_next(void)
+void tokenizer_pop(void)
+{
+  ptr = saved_ptr;
+  nextptr = saved_next;
+  current_token = saved_token;
+}
+/*---------------------------------------------------------------------------*/
+void tokenizer_next(void)
 {
 
   if(tokenizer_finished()) {
     return;
   }
 
-  DEBUG_PRINTF("tokenizer_next: %x\n", nextptr);
+  DEBUG_PRINTF("tokenizer_next: %p\n", nextptr);
   ptr = nextptr;
 
   while(*ptr == ' ') {
@@ -215,67 +249,89 @@ tokenizer_next(void)
   }
   current_token = get_next_token();
 
-  if(current_token == TOKENIZER_REM) {
-      while(!(*nextptr == '\n' || tokenizer_finished())) {
-        ++nextptr;
-      }
-      if(*nextptr == '\n') {
-        ++nextptr;
-      }
-      tokenizer_next();
-  }
-
   DEBUG_PRINTF("tokenizer_next: '%s' %d\n", ptr, current_token);
   return;
 }
+
 /*---------------------------------------------------------------------------*/
-VARIABLE_TYPE
-tokenizer_num(void)
+
+void tokenizer_newline(void)
+{
+   while(!(*nextptr == '\n' || tokenizer_finished())) {
+     ++nextptr;
+  }
+  tokenizer_next();
+}
+
+/*---------------------------------------------------------------------------*/
+value_t tokenizer_num(void)
 {
   return atoi(ptr);
 }
 /*---------------------------------------------------------------------------*/
-void
-tokenizer_string(char *dest, int len)
+int tokenizer_string_len(void)
 {
   char *string_end;
-  int string_len;
 
-  if(tokenizer_token() != TOKENIZER_STRING) {
-    return;
+  if(current_token != TOKENIZER_STRING) {
+    write(2, "strlbotch\n", 10);
+    exit(1);
   }
   string_end = strchr(ptr + 1, '"');
-  if(string_end == NULL) {
+  /* Pass -1 back so we can keep the notional split between the tokenizer
+     and core code cleaner */
+  if(string_end == NULL)
+    ubasic_tokenizer_error();
+  return string_end - ptr - 1;
+}
+
+/*---------------------------------------------------------------------------*/
+char const *tokenizer_string(void)
+{
+  return ptr + 1;
+}
+
+/*---------------------------------------------------------------------------*/
+void tokenizer_string_func(stringfunc_t func, void *ctx)
+{
+  const char *string_end, *p;
+
+  if(current_token != TOKENIZER_STRING) {
     return;
   }
-  string_len = string_end - ptr - 1;
-  if(len < string_len) {
-    string_len = len;
-  }
-  memcpy(dest, ptr + 1, string_len);
-  dest[string_len] = 0;
+  p = ptr + 1;
+  string_end = strchr(p, '"');
+  if(string_end == NULL)
+    ubasic_tokenizer_error();
+  while(p != string_end)
+    func(*p++, ctx);
 }
+
 /*---------------------------------------------------------------------------*/
-void
-tokenizer_error_print(void)
+void tokenizer_error_print(void)
 {
-  DEBUG_PRINTF("tokenizer_error_print: '%s'\n", ptr);
+  ubasic_tokenizer_error();
 }
 /*---------------------------------------------------------------------------*/
-int
-tokenizer_finished(void)
+int tokenizer_finished(void)
 {
   return *ptr == 0 || current_token == TOKENIZER_ENDOFINPUT;
 }
 /*---------------------------------------------------------------------------*/
-int
-tokenizer_variable_num(void)
+int tokenizer_variable_num(void)
 {
-  return *ptr - 'a';
+  if (ptr[1] == '$')
+    return STRINGFLAG | (toupper(*ptr) - 'A');
+  /* FIXME: hard code to use &~0x20 as we already know it is a letter */
+  if (!isdigit(ptr[1]))
+    return toupper(*ptr) - 'A';
+  else {
+    /* One day we'll need long vars and brains, until then.. */
+    return (toupper(*ptr) - '@') * 11 + ptr[1] - '0';
+  }
 }
 /*---------------------------------------------------------------------------*/
-char const *
-tokenizer_pos(void)
+char const *tokenizer_pos(void)
 {
     return ptr;
 }

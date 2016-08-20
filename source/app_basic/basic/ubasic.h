@@ -30,16 +30,36 @@
 #ifndef __UBASIC_H__
 #define __UBASIC_H__
 
-#include "vartype.h"
+typedef uint16_t	line_t;
+typedef int16_t		value_t;
+typedef uint16_t	var_t;
 
-typedef VARIABLE_TYPE (*peek_func)(VARIABLE_TYPE);
-typedef void (*poke_func)(VARIABLE_TYPE, VARIABLE_TYPE);
+typedef value_t (*peek_func)(value_t);
+typedef void (*poke_func)(value_t, value_t);
+
+enum type {
+  TYPE_INTEGER = 'I',
+  TYPE_STRING = 'S'
+};
+
+struct typevalue {
+  enum type type;
+  union {
+    value_t i;
+    uint8_t *p;
+  } d;
+};
+
 
 void ubasic_init(const char *program);
+void ubasic_init_peek_poke(const char *program, peek_func peek, poke_func poke);
 void ubasic_run(void);
+void ubasic_tokenizer_error(void);
 int ubasic_finished(void);
 
-VARIABLE_TYPE ubasic_get_variable(int varnum);
-void ubasic_set_variable(int varum, VARIABLE_TYPE value);
+extern line_t line_num;
+
+void ubasic_get_variable(int varnum, struct typevalue *v, int nsubs, struct typevalue *subs);
+void ubasic_set_variable(int varum, struct typevalue *value, int nsubs, struct typevalue *subs);
 
 #endif /* __UBASIC_H__ */

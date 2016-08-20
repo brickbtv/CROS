@@ -53,10 +53,12 @@ int atoi(const char *str){
     // Iterate through all digits of input string and update result
     for (; str[i] != '\0'; ++i)
     {
-        if (isNumericChar(str[i]) == false)
-            return 0; // You may add some lines to write error message
+        if (isNumericChar(str[i]) != false)
+			res = res*10 + str[i] - '0';
+		else
+			return sign * res;
+         //   return 0; // You may add some lines to write error message
                       // to error stream
-        res = res*10 + str[i] - '0';
     }
   
     // Return result with sign

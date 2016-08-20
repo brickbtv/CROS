@@ -37,8 +37,18 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		}
 	
 		sdk_prc_create_process((unsigned int)app_texteditor, args);
-	} else if (strcmp(input, "basic") == 0){
+	} else if (strncmp(input, "basic ", strlen("basic ")) == 0){
 		char * args = calloc(256);
+		sprintf(args, "%s/%s", current_path, &input[strlen("basic ")]);
+	
+		FILE * file = fs_open_file(args, 'r');
+		if (file){
+			fs_close_file(file);
+		} else {
+			sdk_scr_printf(canvas, "Failed to open file.\n");
+			return;
+		}
+		
 		sdk_prc_create_process((unsigned int)app_basic, args);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;
