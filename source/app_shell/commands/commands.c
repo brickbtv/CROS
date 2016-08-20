@@ -10,7 +10,7 @@
 #include <stdio_shared.h>
 
 #include "app_texteditor/app_texteditor.h"
-
+#include "app_basic/app_basic.h"
 
 void manage_command(Canvas * canvas, char * current_path, const char * input){
 	fs_getcwd(current_path, 256);
@@ -25,7 +25,7 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		" 'cat NAME' - print file content to console\n"
 		" 'edit NAME' - simple texteditor\n");
 	} else if (strncmp(input, "edit ", strlen("edit ")) == 0){
-		char * args = malloc(256);
+		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("edit ")]);
 	
 		FILE * file = fs_open_file(args, 'r');
@@ -37,6 +37,9 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		}
 	
 		sdk_prc_create_process((unsigned int)app_texteditor, args);
+	} else if (strcmp(input, "basic") == 0){
+		char * args = calloc(256);
+		sdk_prc_create_process((unsigned int)app_basic, args);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;
 		int i;

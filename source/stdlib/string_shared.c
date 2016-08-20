@@ -41,6 +41,15 @@ int find (const char* str, const char ch, int start_pos)
 	return -1;
 }
 
+
+char *strchr(const char *s, int ch) {
+	while (*s && *s != (char) ch) 
+		s++;
+	if (*s == (char) ch) 
+		return (char *) s;
+	return NULL;
+}
+
 // copied from http://linux.die.net/man/3/strncpy
 char* strncpy(char *dest, const char *src, size_t num)
 {

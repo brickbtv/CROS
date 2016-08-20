@@ -51,6 +51,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\ctype_shared.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\ctype_shared.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\limits_shared.h",
 			"bootfile": false
 		},

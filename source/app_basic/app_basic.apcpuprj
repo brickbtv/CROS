@@ -1,0 +1,78 @@
+{
+	"format": "Project",
+	"version": 1,
+	"name": "app_basic",
+	"type": 2,
+	"globalconfiguration": {
+		"name": "Global",
+		"includePaths": [
+
+		],
+		"defines": [
+
+		],
+		"compilerOptions": "",
+		"linkerextralibs": ""
+	},
+	"configurations": [
+		{
+			"name": "Debug",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"DEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -g -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		},
+		{
+			"name": "Release",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"NDEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -k -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		}
+	],
+	"dependencies": [
+
+	],
+	"files": [
+		{
+			"path": ".\\app_basic.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_basic.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\basic\\tokenizer.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\basic\\tokenizer.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\basic\\ubasic.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\basic\\ubasic.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\basic\\vartype.h",
+			"bootfile": false
+		}
+	]
+}

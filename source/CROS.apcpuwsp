@@ -10,6 +10,7 @@
 		".\\filesystem\\filesystem.apcpuprj",
 		".\\app_test\\app_test.apcpuprj",
 		".\\app_shell\\app_shell.apcpuprj",
-		".\\app_texteditor\\app_texteditor.apcpuprj"
+		".\\app_texteditor\\app_texteditor.apcpuprj",
+		".\\app_basic\\app_basic.apcpuprj"
 	]
 }

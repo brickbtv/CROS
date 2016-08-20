@@ -98,6 +98,6 @@ __reg("r2")int count )
 INLINEASM("\t\
 memcpy [r0],[r1],r2");
 
-
+char *strchr(const char *s, int ch) ;
 
 #endif

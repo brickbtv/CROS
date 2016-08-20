@@ -51,7 +51,8 @@
 		"filesystem",
 		"app_test",
 		"app_shell",
-		"app_texteditor"
+		"app_texteditor",
+		"app_basic"
 	],
 	"files": [
 		{

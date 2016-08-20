@@ -24,6 +24,7 @@ void itoa(int value, char *str, int base);
  * 
  */
 char *ftoa(float f, int *status);
+int atoi(const char *string);
 
 #define FLT_MAX 3.402823466e+38F
 #define FLT_MIN 1.175494351e-38F
