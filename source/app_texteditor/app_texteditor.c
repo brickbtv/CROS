@@ -132,8 +132,6 @@ void redraw_text_area(int start_line){
 			sdk_scr_printfXY(cv, 0, i - start_line + 1, line->val);
 	}
 	view_start_line = start_line;
-	
-	sdk_debug_logf("cl: %s", current_line());
 }
 
 int insPress = 0;
@@ -306,8 +304,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						// add letter
 						cl[cursor.x] = value;
 						cursor.x++;
-						sdk_debug_logf("%s", cl);
-						
+												
 						// redraw line
 						sdk_scr_printfXY(cv, 0, cursor.y, cl);
 					}
@@ -350,9 +347,6 @@ void app_texteditor(const char* p){
 	draw_header();
 	redraw_text_area(0);
 	
-	//
-	
-	
 	while(exit == 0){
 		int time = sdk_clk_timeSinceBoot();
 		if (time % 1000 < 500){
@@ -372,17 +366,7 @@ void app_texteditor(const char* p){
 			if (bl_char == 0)
 				bl_char = ' ';
 				
-			/*char pr_bl_char = ((char*)list_at(text_lines, cursor_prev_pos.y - 1 + view_start_line)->val)[cursor_prev_pos.x];
-			if (pr_bl_char == 0)
-				pr_bl_char = ' ';
-				*/
-			//sdk_debug_logf("cy: %d %d", cursor.y, view_start_line);
-			
-			/*sdk_scr_printfXY(cv, cursor_prev_pos.x, cursor_prev_pos.y, "%c", pr_bl_char);*/
 			sdk_scr_printfXY(cv, cursor.x, cursor.y, "%c", bl_char);
-			
-			/*cursor_prev_pos.x = cursor.x;
-			cursor_prev_pos.y = cursor.y;*/
 			
 			sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
 			sdk_scr_setTextColor(cv, SCR_COLOR_GREEN);

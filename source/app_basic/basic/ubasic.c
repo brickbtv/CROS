@@ -143,7 +143,6 @@ void write(int wut, char * line, int len){
 	memset(buf, 0, 128);
 	strncpy(buf, line, len);
 	sdk_scr_printf(canvas_basic, "%s", line)
-	sdk_debug_logf("%d: %s", wut, line);
 }
 
 int read(int wut, char * buf, int len){

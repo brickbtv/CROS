@@ -25,8 +25,10 @@ void app_basic(const char* path){
 	
 	char program[2048];
 	memset(program, 0, 2048 * sizeof(char));
-	fs_read_file(file, program, 512, &rb);		
-
+	fs_read_file(file, program, 2048, &rb);	
+	
+	fs_close_file(file);
+	
 	ubasic_init(program);
 
 	do {
