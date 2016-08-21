@@ -37,12 +37,12 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 		krn_getIdleProcess()->sync_lock = TRUE;
 	
 					 	
-	Process * prc = malloc(sizeof(Process));
-	memset(prc, 0, sizeof(Process));
+	Process * prc = calloc(sizeof(Process));
+	//memset(prc, 0, sizeof(Process));
 	
 	// allocate stack
-	prc->stack = malloc(stackSize * sizeof(char));
-	prc->heap = malloc(heapSize * sizeof(char) + heapSize);
+	prc->stack = calloc(stackSize * sizeof(char));
+	prc->heap = calloc(heapSize * sizeof(char) + heapSize);
 	// info
 	strcpy(prc->name, name);
 	prc->pid = totalPIDs++;
@@ -53,16 +53,16 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	if (arg_line != 0){
 		krn_debugLogf("arg line: %s",  (char*)arg_line);
 		int arg_line_size = (strlen((char*) arg_line) + 2) * sizeof(char);
-		prc->arg_line = malloc(arg_line_size);
-		memset(prc->arg_line, 0, arg_line_size);
+		prc->arg_line = calloc(arg_line_size);
+		//memset(prc->arg_line, 0, arg_line_size);
 		strcpy(prc->arg_line, (char*)arg_line);
 	}
 	
 	// allocate screen buffer
 	ScreenInfo info = hw_scr_screenInfo();
 	
-	prc->screen = malloc(sizeof(ScreenInfo));
-	prc->screen->addr = malloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
+	prc->screen = calloc(sizeof(ScreenInfo));
+	prc->screen->addr = calloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
 	prc->screen->res_hor = info.res_hor;
 	prc->screen->res_ver = info.res_ver;
 	prc->screen->bytes_per_char = info.bytes_per_char;
