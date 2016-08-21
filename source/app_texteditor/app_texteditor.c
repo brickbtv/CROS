@@ -237,24 +237,24 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					//sdk_scr_printfXY(cv, cursor.x, cursor.y + view_start_line + 1, "%c", current_line()[cursor.x]);
 				
 					if (value == KEY_UP){
-						if (cursor.y > 0){
+						if (cursor.y > 1){
 							cursor.y--;
 							if (cursor.x > strlen(current_line()))
 								cursor.x = strlen(current_line());
 						} else {
-							if (cursor.y > LINES_COUNT - 2){
+							if (cursor.y > 0 && view_start_line > 0){
 								redraw_text_area(--view_start_line);
 								cursor.y ++;
 							}
 						}
 					} 
 					if (value == KEY_DOWN){
-						if (cursor.y < list_size(text_lines))							
+						if (cursor.y < list_size(text_lines) - view_start_line - 1)							
 							cursor.y++;
 							if (cursor.x > strlen(current_line()))
 								cursor.x = strlen(current_line());	
 						
-						if (cursor.y > LINES_COUNT - 2 && text_cursor_y() < list_size(text_lines) - 1){
+						if (cursor.y > LINES_COUNT - 1 && text_cursor_y() < list_size(text_lines) - 1){
 							redraw_text_area(++view_start_line);
 							cursor.y --;
 						}
