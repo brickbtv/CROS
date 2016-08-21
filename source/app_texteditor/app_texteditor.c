@@ -26,6 +26,7 @@ typedef struct Cursor{
 }Cursor;
 
 Cursor cursor;
+Cursor cursor_prev_pos;
 
 bool preprocess_file(const char* path){
 	/*
@@ -137,10 +138,17 @@ void redraw_text_area(int start_line){
 
 int insPress = 0;
 int exit = 0;
+bool blink = false;
+bool prev_blink = false;
 
 void msgHandlerTexteditor(int type, int reason, int value){
 	switch (type){
 		case SDK_PRC_MESSAGE_KYB: 
+			// saving prev cursor pos
+			cursor_prev_pos.x = cursor.x;
+			cursor_prev_pos.y = cursor.y;
+			
+		
 			// CTRL rplsmnt by INSERT
 			if (value == KEY_INSERT){
 				if (reason == KEY_STATE_KEYPRESSED)
@@ -307,11 +315,24 @@ void msgHandlerTexteditor(int type, int reason, int value){
 			}
 			break;
 	}
+	
+	// redraw blinbking
+	if (cursor.x != cursor_prev_pos.x || cursor.y != cursor_prev_pos.y){
+		char pr_bl_char = ((char*)list_at(text_lines, cursor_prev_pos.y - 1 + view_start_line)->val)[cursor_prev_pos.x];
+		if (pr_bl_char == 0)
+			pr_bl_char = ' ';
+		sdk_scr_printfXY(cv, cursor_prev_pos.x, cursor_prev_pos.y, "%c", pr_bl_char);
+		blink = true;
+		prev_blink = false;
+	}
 }
 
 void app_texteditor(const char* p){	
 	cursor.x = 0;
 	cursor.y = 1;
+	cursor_prev_pos.x = 0;
+	cursor_prev_pos.y = 1;
+	
 	exit = 0;
 	view_start_line = 0;
 	insPress = 0;
@@ -330,8 +351,8 @@ void app_texteditor(const char* p){
 	redraw_text_area(0);
 	
 	//
-	bool prev_blink = false;
-	bool blink = false;
+	
+	
 	while(exit == 0){
 		int time = sdk_clk_timeSinceBoot();
 		if (time % 1000 < 500){
@@ -351,9 +372,18 @@ void app_texteditor(const char* p){
 			if (bl_char == 0)
 				bl_char = ' ';
 				
-			sdk_debug_logf("cy: %d %d", cursor.y, view_start_line);
+			/*char pr_bl_char = ((char*)list_at(text_lines, cursor_prev_pos.y - 1 + view_start_line)->val)[cursor_prev_pos.x];
+			if (pr_bl_char == 0)
+				pr_bl_char = ' ';
+				*/
+			//sdk_debug_logf("cy: %d %d", cursor.y, view_start_line);
 			
+			/*sdk_scr_printfXY(cv, cursor_prev_pos.x, cursor_prev_pos.y, "%c", pr_bl_char);*/
 			sdk_scr_printfXY(cv, cursor.x, cursor.y, "%c", bl_char);
+			
+			/*cursor_prev_pos.x = cursor.x;
+			cursor_prev_pos.y = cursor.y;*/
+			
 			sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
 			sdk_scr_setTextColor(cv, SCR_COLOR_GREEN);
 			
