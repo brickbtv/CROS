@@ -31,7 +31,7 @@
  *
  */
 
-#define DEBUG_BASIC 0
+#define DEBUG_BASIC0
 
 #include <sdk/scr/screen.h>
 #include <sdk/os/debug.h>
@@ -114,6 +114,8 @@ static int data_seek;
 
 static unsigned int array_base = 0;
 
+static int chpos = 0;
+
 #define __linux__ 1 
 
 #if defined(__linux__)
@@ -142,7 +144,7 @@ void write(int wut, char * line, int len){
 	char buf[128];
 	memset(buf, 0, 128);
 	strncpy(buf, line, len);
-	sdk_scr_printf(canvas_basic, "%s", line)
+	sdk_scr_printf(canvas_basic, "%s", line);
 }
 
 int read(int wut, char * buf, int len){
@@ -150,9 +152,27 @@ int read(int wut, char * buf, int len){
 	return 1;
 }
 
+void revert_start_state(void){
+	canvas_basic = 0;
+	program_ptr = NULL;
+
+	line_index_head = NULL;
+	line_index_current = NULL;
+
+	nullstr[0] = 0;
+
+	peek_function = NULL;
+	poke_function = NULL;
+
+	array_base = 0;
+	
+	chpos = 0;
+}
+
 /*---------------------------------------------------------------------------*/
 void ubasic_init(const char *program)
 {
+	revert_start_state();
   int i;
   program_ptr = program;
   for_stack_ptr = gosub_stack_ptr = 0;
@@ -731,7 +751,7 @@ static void index_free(void) {
       DEBUG_PRINTF("Freeing index for line %p.\n", (void *)line_index_current);
       line_index_head = line_index_current;
       line_index_current = line_index_current->next;
-      free(line_index_head);
+	  free(line_index_head);
     } while (line_index_current != NULL);
     line_index_head = NULL;
   }
@@ -850,7 +870,7 @@ static void go_statement(void)
 }
 /*---------------------------------------------------------------------------*/
 
-static int chpos = 0;
+
 
 static void charout(char c, void *unused)
 {

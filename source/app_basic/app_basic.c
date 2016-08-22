@@ -1,5 +1,7 @@
 #include "app_basic.h"
 #include <sdk/os/process.h>
+#include <sdk/scr/screen.h>
+#include <sdk/kyb/keyboard.h>
 
 #include "basic/ubasic.h"
 
@@ -8,18 +10,20 @@
 
 #include <filesystem/filesystem.h>
 
+int exit_basic = 0;
+
+void msgBasicHandlerShell(int type, int reason, int value){
+	switch (type){
+		case SDK_PRC_MESSAGE_KYB: 
+			if (reason == KEY_STATE_KEYTYPED){
+				exit_basic = 1;
+		}
+	}
+}
+
 void app_basic(const char* path){
-/*	char program[] = 
-"10 for i = 0 to 126\n\
-20 for j = 0 to 126\n\
-30 for k = 0 to 10\n\
-40 let a = i * j * k\n\
-45 print a, i, j, k\n\
-50 next k\n\
-60 next j\n\
-70 next i\n\
-80 stop\n";
-*/
+	exit_basic = 0;
+	
 	FILE * file = fs_open_file(path, 'r');
 	int rb = 0;
 	
@@ -34,6 +38,16 @@ void app_basic(const char* path){
 	do {
 		ubasic_run();
 	} while(!ubasic_finished());
+
+	// wait for user input
+	sdk_scr_printf(sdk_prc_getCanvas(), "Program is finished. Press any key to exit...");
+	while(exit_basic == 0){
+		if (sdk_prc_haveNewMessage()){
+			sdk_prc_handleMessage(msgBasicHandlerShell);
+		}
+		
+		sdk_prc_sleep(500);
+	}
 
 	sdk_prc_die();
 }

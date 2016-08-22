@@ -47,7 +47,7 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	strcpy(prc->name, name);
 	prc->pid = totalPIDs++;
 	
-	prc->context = malloc (sizeof(Ctx));
+	prc->context = calloc (sizeof(Ctx));
 	
 	// copy argument line
 	if (arg_line != 0){
