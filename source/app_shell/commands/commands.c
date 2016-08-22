@@ -11,6 +11,8 @@
 
 #include "app_texteditor/app_texteditor.h"
 #include "app_basic/app_basic.h"
+#include "app_chat/app_chat.h"
+#include "app_chat/server.h"
 
 void manage_command(Canvas * canvas, char * current_path, const char * input){
 	fs_getcwd(current_path, 256);
@@ -23,7 +25,9 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		" 'cd NAME' - change directory\n"
 		" 'rm NAME' - remove file or directory\n"
 		" 'cat NAME' - print file content to console\n"
-		" 'edit NAME' - simple texteditor\n");
+		" 'edit NAME' - simple texteditor\n"
+		" 'chat' - simple chat application\n"
+		" 'chat_server' - simple chat server for 'chat' app\n");
 	} else if (strncmp(input, "edit ", strlen("edit ")) == 0){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("edit ")]);
@@ -50,6 +54,10 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		}
 		
 		sdk_prc_create_process((unsigned int)app_basic, args);
+	} else if (strcmp(input, "chat") == 0){
+		sdk_prc_create_process((unsigned int)app_chat, 0);
+	} else if (strcmp(input, "chat_server") == 0){
+		sdk_prc_create_process((unsigned int)app_chat_server, 0);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;
 		int i;
@@ -107,5 +115,7 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		} else {
 			sdk_scr_printf(canvas, "Failed to open file.\n");
 		}
+	} else {
+		sdk_scr_printf(canvas, "Unknown command. Type 'help' for commands list.\n");
 	}
 }
