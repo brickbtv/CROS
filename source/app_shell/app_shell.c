@@ -41,7 +41,9 @@ void msgHandlerShell(int type, int reason, int value){
 					sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
 					manage_command(canvas, current_path, input);
 					sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
-					
+					while (!sdk_prc_is_focused()){
+						sdk_prc_sleep(1000);
+					}
 					memset(input, 0, 1024 * sizeof(char));
 					symb = 0;
 				} else {

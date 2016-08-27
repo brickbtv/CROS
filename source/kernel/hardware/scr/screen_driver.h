@@ -2,7 +2,7 @@
 #define _SCREEN_DRIVER_H_
 
 typedef struct ScreenInfo{
-	unsigned short* addr;
+	unsigned int* addr;
 	unsigned int res_hor;
 	unsigned int res_ver;
 	unsigned int bytes_per_char;

@@ -32,7 +32,7 @@ bool prc_setupMemory(Process * prc, unsigned int stackSize,
 *	Draft of multiprocessing stuff
 */
 Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
-						uint32_t * entryPoint, Usermode mode, uint32_t * arg_line){
+						uint32_t * entryPoint, Usermode mode, uint32_t * arg_line, uint32_t * exist_canvas){
 	if (krn_is_init() == TRUE)
 		krn_getIdleProcess()->sync_lock = TRUE;
 	
@@ -62,12 +62,20 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	ScreenInfo info = hw_scr_screenInfo();
 	
 	prc->screen = calloc(sizeof(ScreenInfo));
-	prc->screen->addr = calloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
-	prc->screen->res_hor = info.res_hor;
-	prc->screen->res_ver = info.res_ver;
-	prc->screen->bytes_per_char = info.bytes_per_char;
-	prc->screen->cur_x = 0;
-	prc->screen->cur_y = 0;
+	if (exist_canvas == NULL){
+		prc->screen->addr = calloc(info.res_hor * info.res_ver * info.bytes_per_char*2);
+		prc->screen->res_hor = info.res_hor;
+		prc->screen->res_ver = info.res_ver;
+		prc->screen->bytes_per_char = info.bytes_per_char;
+		prc->screen->cur_x = 0;
+		prc->screen->cur_y = 0;
+		prc->exist_canvas = FALSE;
+	} else {
+		prc->screen = (ScreenInfo *)exist_canvas;
+		prc->exist_canvas = TRUE;
+	}
+	
+	
 	
 	// new process should take a screen
 	hw_scr_mapScreenBuffer(prc->screen->addr);
@@ -262,13 +270,16 @@ void prc_die(){
 	
 	
 	krn_getIdleProcess()->sync_lock = TRUE;
-	// dangerous! free impl always works baaadly =(
-	free(prc->screen->addr);
-	free(prc->screen);
+	
+	if (prc->exist_canvas == FALSE){	
+		free(prc->screen->addr);
+		free(prc->screen);
+	}
 	
 	free(prc->stack);
 	_mem_destroy(prc->heap);
 	free(prc->heap);
+	
 	krn_getIdleProcess()->sync_lock = FALSE;
 }
 

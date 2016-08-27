@@ -40,7 +40,7 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 			return;
 		}
 	
-		sdk_prc_create_process((unsigned int)app_texteditor, args);
+		sdk_prc_create_process((unsigned int)app_texteditor, args, 0);
 	} else if (strncmp(input, "basic ", strlen("basic ")) == 0){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("basic ")]);
@@ -53,11 +53,11 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 			return;
 		}
 		
-		sdk_prc_create_process((unsigned int)app_basic, args);
+		sdk_prc_create_process((unsigned int)app_basic, args, canvas);
 	} else if (strcmp(input, "chat") == 0){
-		sdk_prc_create_process((unsigned int)app_chat, 0);
+		sdk_prc_create_process((unsigned int)app_chat, 0, 0);
 	} else if (strcmp(input, "chat_server") == 0){
-		sdk_prc_create_process((unsigned int)app_chat_server, 0);
+		sdk_prc_create_process((unsigned int)app_chat_server, 0, 0);
 	} else if (strcmp(input, "ls") == 0){
 		FILEINFO fno;
 		int i;

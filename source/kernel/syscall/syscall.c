@@ -20,8 +20,9 @@ void syscall_prc_create_process(void){
 	
 	uint32_t entry_point = prc->context->gregs[0];	
 	uint32_t arg_line = prc->context->gregs[1];	
+	uint32_t * exist_canvas = (uint32_t *)prc->context->gregs[2];	
 	
-	prc_create("app_test", 1024*10, 1024*20, (uint32_t*)entry_point, USERMODE_USER, (uint32_t *)arg_line);
+	prc_create("app_test", 1024*10, 1024*20, (uint32_t*)entry_point, USERMODE_USER, (uint32_t *)arg_line, exist_canvas);
 	
 	
 	krn_getIdleProcess()->sync_lock = FALSE;

@@ -5,8 +5,8 @@
 #include <details/memdetails.h>
 #include "debug.h"
 
-void sdk_prc_create_process(unsigned int entry_point, char * arg_line){
-	app_syscall2(syscall_prc_create_process, (unsigned int)entry_point, (unsigned int)&arg_line[0]);
+void sdk_prc_create_process(unsigned int entry_point, char * arg_line, unsigned int * parent_canvas){
+	app_syscall3(syscall_prc_create_process, (unsigned int)entry_point, (unsigned int)&arg_line[0], (unsigned int)parent_canvas);
 }
 
 unsigned int sdk_prc_sleep(unsigned int ms){

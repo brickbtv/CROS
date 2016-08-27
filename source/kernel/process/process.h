@@ -35,6 +35,7 @@ typedef struct Process{
 	list_t * list_msgs;
 	
 	bool sync_lock;
+	bool exist_canvas;
 	
 	unsigned int firstPage;
 	unsigned int numPages;
@@ -63,7 +64,7 @@ typedef struct PrcMessage{
 }PrcMessage;
 
 Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
-						uint32_t * entryPoint, Usermode mode, uint32_t * arg_line);
+						uint32_t * entryPoint, Usermode mode, uint32_t * arg_line, uint32_t * exist_canvas);
 void prc_startScheduler(void);
 Process * prc_getCurrentProcess(void);
 void prc_skipCurrentProc(void);

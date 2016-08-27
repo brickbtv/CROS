@@ -247,7 +247,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						}
 					} 
 					if (value == KEY_DOWN){
-						if (cursor.y < list_size(text_lines) - view_start_line - 1)							
+						if (cursor.y < list_size(text_lines) - view_start_line)							
 							cursor.y++;
 							if (cursor.x > strlen(current_line()))
 								cursor.x = strlen(current_line());	

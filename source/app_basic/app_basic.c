@@ -40,7 +40,7 @@ void app_basic(const char* path){
 	} while(!ubasic_finished());
 
 	// wait for user input
-	sdk_scr_printf(sdk_prc_getCanvas(), "Program is finished. Press any key to exit...");
+	sdk_scr_printf(sdk_prc_getCanvas(), "Program is finished. Press any key to exit...\n");
 	while(exit_basic == 0){
 		if (sdk_prc_haveNewMessage()){
 			sdk_prc_handleMessage(msgBasicHandlerShell);
