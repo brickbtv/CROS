@@ -69,10 +69,6 @@
 		{
 			"path": ".\\basic\\ubasic.h",
 			"bootfile": false
-		},
-		{
-			"path": ".\\basic\\vartype.h",
-			"bootfile": false
 		}
 	]
 }

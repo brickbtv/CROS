@@ -18,7 +18,9 @@
 		{
 			"name": "Debug",
 			"includePaths": [
-
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
 			],
 			"defines": [
 				"DEBUG"
@@ -29,7 +31,9 @@
 		{
 			"name": "Release",
 			"includePaths": [
-
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
 			],
 			"defines": [
 				"NDEBUG"
@@ -42,6 +46,13 @@
 
 	],
 	"files": [
-
+		{
+			"path": ".\\timers.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\timers.h",
+			"bootfile": false
+		}
 	]
 }

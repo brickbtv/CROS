@@ -211,9 +211,16 @@ ctxswitch [r0]");
 /*!
 *	Timing processing
 */
-void clkCback(int clk){	
-	if (clk != KRN_TIMER)
-		return;
+void clkAppCback(int clk){
+	if (clk == KRN_APP_RESERVED_TIMER){
+		sendMessageToAll(PRC_MESSAGE_CLK, 0, 0);
+	}
+}
+
+void clkKrnCback(int clk){	
+	if (clk != KRN_TIMER){
+		return;	
+	}
 		
 	/* if process need lock. skip scheduler
 	
@@ -288,7 +295,8 @@ void prc_die(){
 *	Turn cpu into sleep. Wakes up only for processes switching.
 */
 void prc_startScheduler(void){
-	hw_clk_setTimerCback(KRN_TIMER, clkCback);
+	hw_clk_setTimerCback(KRN_TIMER, clkKrnCback);
+	hw_clk_setTimerCback(KRN_APP_RESERVED_TIMER, clkAppCback);
 	hw_clk_setCountdownTimer(KRN_TIMER, PRC_CTXSWITCH_RATE_MS, true, true);
 
 	while (TRUE){
@@ -324,5 +332,5 @@ Process * prc_getCurrentProcess(void){
 *	TODO: it's hack
 */
 void prc_skipCurrentProc(void){
-	clkCback(KRN_TIMER);
+	clkKrnCback(KRN_TIMER);
 }

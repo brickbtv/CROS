@@ -7,6 +7,7 @@
 
 // reserved. used for multiprocessing
 #define KRN_TIMER 0
+#define KRN_APP_RESERVED_TIMER 1
 
 #define KERNEL_STACKSIZE (1024*10)
 #define KERNEL_HEAPSIZE (1024*10)

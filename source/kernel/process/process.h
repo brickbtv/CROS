@@ -54,7 +54,8 @@ typedef struct HeapInfo{
 
 typedef enum PRC_MESSAGE{
 	PRC_MESSAGE_KYB = 0,
-	PRC_MESSAGE_NIC = 1
+	PRC_MESSAGE_NIC = 1,
+	PRC_MESSAGE_CLK = 2
 }PRC_MESSAGE;
 
 typedef struct PrcMessage{

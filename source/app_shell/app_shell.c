@@ -10,6 +10,7 @@
 #include "commands/commands.h"
 
 #include <string_shared.h>
+#include <timers_and_clocks/timers.h>
 
 static char input[1024];
 static int symb = 0;
@@ -18,9 +19,28 @@ static char current_path[256];
 static int path_lenght = 0;
 static bool blink = true;
 
+int pr_d0 = 0;
+int pr_d1 = 0;
+
+void timerCback0(unsigned int tn){
+	unsigned int tsb = sdk_clk_timeSinceBoot();
+	int delta = tsb - pr_d0;
+	sdk_debug_logf("TIMER: %d, DELTA: %d", tn, delta);
+	pr_d0 = tsb;
+}
+
+void timerCback1(unsigned int tn){
+	unsigned int tsb = sdk_clk_timeSinceBoot();
+	int delta = tsb - pr_d1;
+	sdk_debug_logf("TIMER: %d, DELTA: %d", tn, delta);
+	pr_d1 = tsb;
+}
 
 void msgHandlerShell(int type, int reason, int value){
 	switch (type){
+		case SDK_PRC_MESSAGE_CLK:
+			timers_handleMessage(type, reason, value);
+			break;
 		case SDK_PRC_MESSAGE_KYB: 
 			if (reason == KEY_STATE_KEYTYPED){
 				if (value == 0x01){
@@ -80,6 +100,11 @@ int mount_drive_and_mkfs_if_needed(Canvas * canvas){
 }
 
 void app_shell(void){
+	pr_d0 = sdk_clk_timeSinceBoot();
+	pr_d1 = sdk_clk_timeSinceBoot();
+	timers_add_timer(0, 1000, timerCback0);
+	timers_add_timer(1, 1000, timerCback1);
+
 	canvas = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
 	
