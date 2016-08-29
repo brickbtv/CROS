@@ -9,7 +9,7 @@
 
 list_t * timers_list = NULL;
 
-int getNearestTimer(){
+int getNearestFinishedTimer(){
 	list_node_t * node;
 	list_iterator_t * it = list_iterator_new(timers_list, LIST_HEAD);
 	int nearest = 1000000;
@@ -19,11 +19,13 @@ int getNearestTimer(){
 		STR_TIMER * timer = (STR_TIMER *)node->val;
 		int to_go = timer->ms - (current - timer->last_tick);
 		//sdk_debug_logf("TOGO: %d", to_go)
-		if (to_go < nearest){
+		if (to_go < nearest && to_go <= 0){
 			nearest = to_go;
 			nearest_id = timer->timer_number;
+			break;
 		}
 	}
+	list_iterator_destroy(it);
 	
 	return nearest_id;
 }
@@ -40,26 +42,31 @@ int getNearestTimerDelta(){
 		if (nearest < 0 || to_go < nearest)
 			nearest = to_go;		
 	}
+	list_iterator_destroy(it);
 	
 	return nearest;
 }
 
 void timers_handleMessage(int type, int reason, int value){
 	if (type == SDK_PRC_MESSAGE_CLK){
-		int nearest_id = getNearestTimer();
-		if (nearest_id >= 0){
-			// process timer
-			list_node_t * node;
-			list_iterator_t * it = list_iterator_new(timers_list, LIST_HEAD);
-			while(node = list_iterator_next(it)){
-				STR_TIMER * timer = (STR_TIMER*)node->val;
-				if (timer->timer_number == nearest_id){
-					timer->last_tick = sdk_clk_timeSinceBoot();
-					(*timer->cback)(timer->timer_number);
-					break;
+		int nearest_id = getNearestFinishedTimer();
+		while (nearest_id >= 0){
+			if (nearest_id >= 0){
+				// process timer
+				list_node_t * node;
+				list_iterator_t * it = list_iterator_new(timers_list, LIST_HEAD);
+				while(node = list_iterator_next(it)){
+					STR_TIMER * timer = (STR_TIMER*)node->val;
+					if (timer->timer_number == nearest_id){
+						timer->last_tick = sdk_clk_timeSinceBoot();
+						(*timer->cback)(timer->timer_number);
+						break;
+					}
 				}
-			}
-		}	
+				list_iterator_destroy(it);
+			}	
+			nearest_id = getNearestFinishedTimer();
+		}
 	
 		// set next timer
 		int nearest = getNearestTimerDelta();
@@ -99,4 +106,5 @@ void timers_del_timer(unsigned int timer_number){
 		}
 	}
 	list_remove(timers_list, node);
+	list_iterator_destroy(it);
 }

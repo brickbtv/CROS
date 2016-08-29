@@ -39,6 +39,9 @@ Current implementation isn't optimized. APCPU VM should be configured with this 
 :exclamation: Also, there is main requirement: Disk should be mounted to VM.
 
 ## Known troubles
-* Memory leaks: 'free(...)' function gives unexpected asserts in TLSF code after process finish. Currently, most of 'free' functions is commented.
-* Clock callbacks works incorrect in some reason
+
+You can visit https://github.com/brickbtv/CROS/issues page, to get more info
+
+* ~~Memory leaks: 'free(...)' function gives unexpected asserts in TLSF code after process finish. Currently, most of 'free' functions is commented.~~
+* ~~Clock callbacks works incorrect in some reason~~
 * Process crash is currently crashed the OS (only for debugging. all you need to avoid crashed - update 'assert' macros with sdk_prc_die() function)

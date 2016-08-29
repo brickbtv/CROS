@@ -103,7 +103,7 @@ void app_shell(void){
 	pr_d0 = sdk_clk_timeSinceBoot();
 	pr_d1 = sdk_clk_timeSinceBoot();
 	timers_add_timer(0, 1000, timerCback0);
-	timers_add_timer(1, 1000, timerCback1);
+	timers_add_timer(1, 1100, timerCback1);
 
 	canvas = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
