@@ -1,10 +1,10 @@
 #include "autorun.h"
 
 #include "process/process.h"
-#include "app_chat/app_chat.h"
-#include "app_chat/server.h"
-#include "app_test/app_test.h"
-#include "app_shell/app_shell.h"
+#include "applications/app_chat/app_chat.h"
+#include "applications/app_chat/server.h"
+#include "applications/app_test/app_test.h"
+#include "applications/app_shell/app_shell.h"
 
 #include <stdint_shared.h>
 

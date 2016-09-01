@@ -1,0 +1,126 @@
+{
+	"format": "Project",
+	"version": 1,
+	"name": "applications",
+	"type": 2,
+	"globalconfiguration": {
+		"name": "Global",
+		"includePaths": [
+
+		],
+		"defines": [
+
+		],
+		"compilerOptions": "",
+		"linkerextralibs": ""
+	},
+	"configurations": [
+		{
+			"name": "Debug",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"DEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -g -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		},
+		{
+			"name": "Release",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"NDEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -k -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		}
+	],
+	"dependencies": [
+
+	],
+	"files": [
+		{
+			"path": ".\\app_basic\\app_basic.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_basic\\app_basic.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_chat\\app_chat.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_chat\\app_chat.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_shell\\app_shell.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_shell\\app_shell.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_test\\app_test.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_test\\app_test.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_texteditor\\app_texteditor.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_texteditor\\app_texteditor.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_shell\\commands\\commands.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_shell\\commands\\commands.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_basic\\printf.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_chat\\server.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_chat\\server.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_basic\\basic\\tokenizer.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_basic\\basic\\tokenizer.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_basic\\basic\\ubasic.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_basic\\basic\\ubasic.h",
+			"bootfile": false
+		}
+	]
+}

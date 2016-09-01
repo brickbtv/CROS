@@ -6,12 +6,8 @@
 		".\\kernel\\kernel.apcpuprj",
 		".\\stdlib\\stdlib.apcpuprj",
 		".\\sdk\\sdk.apcpuprj",
-		".\\app_chat\\app_chat.apcpuprj",
 		".\\filesystem\\filesystem.apcpuprj",
-		".\\app_test\\app_test.apcpuprj",
-		".\\app_shell\\app_shell.apcpuprj",
-		".\\app_texteditor\\app_texteditor.apcpuprj",
-		".\\app_basic\\app_basic.apcpuprj",
-		".\\timers_and_clocks\\timers_and_clocks.apcpuprj"
+		".\\timers_and_clocks\\timers_and_clocks.apcpuprj",
+		".\\applications\\applications.apcpuprj"
 	]
 }

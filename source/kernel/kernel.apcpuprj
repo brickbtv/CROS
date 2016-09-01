@@ -49,11 +49,8 @@
 		"sdk",
 		"app_chat",
 		"filesystem",
-		"app_test",
-		"app_shell",
-		"app_texteditor",
-		"app_basic",
-		"timers_and_clocks"
+		"timers_and_clocks",
+		"applications"
 	],
 	"files": [
 		{
