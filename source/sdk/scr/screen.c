@@ -28,8 +28,8 @@ void processScroll(Canvas * info){
 	short linesize_bytes = info->res_hor;
 	short * src = (info->addr + linesize_bytes);
 	
-	memmove(info->addr, src, fullsize - linesize_bytes * 2);
-	memset(info->addr + linesize_bytes * (info->res_ver - 1), 0, info->res_hor);
+	memmove(info->addr, src, fullsize - linesize_bytes * sizeof(short));
+	memset(info->addr + linesize_bytes * (info->res_ver - 1), 0, info->res_hor * sizeof(short));
 	
 	info->cur_y --;
 }

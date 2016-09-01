@@ -54,8 +54,8 @@ void useScroll(ScreenInfo * info){
 	short linesize_bytes = info->res_hor;
 	short * src = (info->addr + linesize_bytes);
 	
-	memmove(info->addr, src, fullsize - linesize_bytes * 2);
-	memset(info->addr + linesize_bytes * (info->res_ver - 1), 0, info->res_hor);
+	memmove(info->addr, src, fullsize - linesize_bytes * sizeof(short));
+	memset(info->addr + linesize_bytes * (info->res_ver-10), 44, info->res_hor * sizeof(short));
 	
 	info->cur_y --;
 }
@@ -73,11 +73,6 @@ void canvasPrintfXY(ScreenInfo * info, unsigned int x, unsigned int y, const cha
 	info->cur_y = y;
 	
 	while (*ch){
-	
-		if (info->cur_y >= info->res_ver){
-			useScroll(info);
-		}
-	
 		switch(*ch){
 			case '\n':
 				info->cur_x = 0;
@@ -95,6 +90,10 @@ void canvasPrintfXY(ScreenInfo * info, unsigned int x, unsigned int y, const cha
 				info->cur_x += 1;
 				ch++;		
 		}		
+		
+		if (info->cur_y >= info->res_ver){
+			useScroll(info);
+		}
 	}
 }
 
