@@ -12,7 +12,7 @@ void krn_drawLogo(ScreenInfo * scr_info){
 		}
 	}
 	
-	for (int x = 0; x < 80; x++){
+	for (int x = 0; x < scr_info->res_hor; x++){
 		hw_scr_setTextColor(scr_info, logo_line_color_arr[x%3]);
 		hw_scr_putchar(scr_info, x, 7, logo_line_arr[x%4]);
 	}

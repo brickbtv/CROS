@@ -55,9 +55,9 @@ void msgHandlerShell(int type, int reason, int value){
 					memset(input, 0, 128 * sizeof(char));
 					symb = 0;
 				} else {
-					if (symb >= 80 - strlen(current_path) - 1)	// command line can't be longer
+					if (symb >= canvas->res_hor - strlen(current_path) - 1)	// command line can't be longer
 						break;
-						
+										
 					input[symb++] = value;
 				}
 				sdk_scr_printfXY(canvas, path_lenght, canvas->cur_y, "%s>%s", current_path, input);

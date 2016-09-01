@@ -6,19 +6,14 @@
 #include "sdk/kyb/keyboard.h"
 #include "sdk/clk/clock.h"
 
-#include "utils/filesystem/filesystem.h"
+#include <utils/filesystem/filesystem.h>
 
 #include <string_shared.h>
 #include <containers/list.h>
 
-#define MAX_FILE_CHARS_PER_LINE 80
-
 Canvas* cv;
 
 list_t* text_lines;
-
-#define LINE_LEN 80
-#define LINES_COUNT 24
 
 typedef struct Cursor{
 	unsigned int x;
@@ -55,14 +50,14 @@ bool preprocess_file(const char* path){
 			int pos = find(buf, '\n', 0);
 			
 			if (pos == -1){
-				char* oneline = (char*)calloc(LINE_LEN);
+				char* oneline = (char*)calloc(cv->res_hor);
 				strcpy(oneline, buf);
 				list_node_t* onl_node = list_node_new(oneline);
 				list_rpush(text_lines, onl_node);
 			}
 			
 			while (pos != -1){				
-				char* line = (char*) calloc(LINE_LEN);
+				char* line = (char*) calloc(cv->res_hor);
 				strncpy(line, &buf[old_pos + 1], pos - old_pos - 1);
 				
 				list_rpush(text_lines, list_node_new(line));
@@ -85,17 +80,17 @@ char path[256];
 void draw_header(){
 	sdk_scr_setBackColor(cv, SCR_COLOR_BLUE);
 	
-	for(int i = 0; i < LINE_LEN; i++)
+	for(int i = 0; i < cv->res_hor; i++)
 		sdk_scr_putchar(cv, i, 0, ' ');
 
-	sdk_scr_printfXY(cv, (LINE_LEN - strlen(path))/2, 0, "%s\n", path);
+	sdk_scr_printfXY(cv, (cv->res_hor - strlen(path))/2, 0, "%s\n", path);
 	
 	sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
 }
 
 void draw_bottom(){
 	sdk_scr_setBackColor(cv, SCR_COLOR_BLUE);
-	for(int i = 0; i < LINE_LEN; i++)
+	for(int i = 0; i < cv->res_hor; i++)
 		sdk_scr_putchar(cv, i, 24, ' ');
 	sdk_scr_printfXY(cv, 0, 24, " INS^S - save    INS^X - quit");
 	sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
@@ -126,7 +121,7 @@ void redraw_text_area(int start_line){
 	draw_header();
 	draw_bottom();
 
-	for (int i = start_line; i < start_line + LINES_COUNT-1; i++){
+	for (int i = start_line; i < start_line + cv->res_ver-2; i++){
 		list_node_t* line = list_at(text_lines, i);
 		if (line)
 			sdk_scr_printfXY(cv, 0, i - start_line + 1, line->val);
@@ -224,7 +219,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					cursor.x = 0;
 					
 					int offset = 0;
-					if (cursor.y > LINES_COUNT - 2){
+					if (cursor.y > cv->res_ver - 3){
 						view_start_line ++;
 						cursor.y --;
 					}
@@ -252,7 +247,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							if (cursor.x > strlen(current_line()))
 								cursor.x = strlen(current_line());	
 						
-						if (cursor.y > LINES_COUNT - 1 && text_cursor_y() < list_size(text_lines) - 1){
+						if (cursor.y > cv->res_ver - 2 && text_cursor_y() < list_size(text_lines) - 1){
 							redraw_text_area(++view_start_line);
 							cursor.y --;
 						}
@@ -262,7 +257,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							cursor.x--;
 					} 
 					if (value == KEY_RIGHT){
-						if (cursor.x < 80 && cursor.x < strlen(current_line()))
+						if (cursor.x < cv->res_hor && cursor.x < strlen(current_line()))
 							cursor.x++;
 					} 					
 					
@@ -292,7 +287,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							exit = 1;
 						}
 						
-						if (cursor.x >= 80 - 1 || strlen(current_line()) >= 80-1)
+						if (cursor.x >= cv->res_hor - 1 || strlen(current_line()) >= cv->res_hor-1)
 							break;
 						
 						// shift text
@@ -325,6 +320,8 @@ void msgHandlerTexteditor(int type, int reason, int value){
 }
 
 void app_texteditor(const char* p){	
+	cv = (Canvas*)sdk_prc_getCanvas();
+	
 	cursor.x = 0;
 	cursor.y = 1;
 	cursor_prev_pos.x = 0;
@@ -341,7 +338,6 @@ void app_texteditor(const char* p){
 	strcpy(path, p);
 	
 	// interface	
-	cv = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
 	
 	draw_header();
