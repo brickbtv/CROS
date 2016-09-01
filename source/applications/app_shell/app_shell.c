@@ -19,21 +19,8 @@ static char current_path[256];
 static int path_lenght = 0;
 static bool blink = true;
 
-int pr_d0 = 0;
-int pr_d1 = 0;
-
-void timerCback0(unsigned int tn){
-	unsigned int tsb = sdk_clk_timeSinceBoot();
-	int delta = tsb - pr_d0;
-	sdk_debug_logf("TIMER: %d, DELTA: %d", tn, delta);
-	pr_d0 = tsb;
-}
-
-void timerCback1(unsigned int tn){
-	unsigned int tsb = sdk_clk_timeSinceBoot();
-	int delta = tsb - pr_d1;
-	sdk_debug_logf("TIMER: %d, DELTA: %d", tn, delta);
-	pr_d1 = tsb;
+void blinkCBack(unsigned int tn){
+	blink = ! blink;
 }
 
 void msgHandlerShell(int type, int reason, int value){
@@ -100,10 +87,7 @@ int mount_drive_and_mkfs_if_needed(Canvas * canvas){
 }
 
 void app_shell(void){
-	pr_d0 = sdk_clk_timeSinceBoot();
-	pr_d1 = sdk_clk_timeSinceBoot();
-	timers_add_timer(0, 1000, timerCback0);
-	timers_add_timer(1, 1100, timerCback1);
+	timers_add_timer(0, 500, blinkCBack);
 
 	canvas = (Canvas*)sdk_prc_getCanvas();
 	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
@@ -123,12 +107,7 @@ void app_shell(void){
 	bool prev_blink = false;
 	while(1){
 		if (sdk_prc_is_focused()){
-			int time = sdk_clk_timeSinceBoot();
-			if (time % 1000 < 500){
-				blink = true;
-			} else {
-				blink = false;
-			}
+
 			if (prev_blink != blink){
 				if (blink)
 					sdk_scr_printfXY(canvas, canvas->cur_x, canvas->cur_y, "_");
@@ -141,9 +120,7 @@ void app_shell(void){
 			if (sdk_prc_haveNewMessage()){
 				sdk_prc_handleMessage(msgHandlerShell);
 			}
-			
-			//sdk_prc_sleep(10);
-			//sdk_debug_log("iSH");
+
 		}
 	}
 }

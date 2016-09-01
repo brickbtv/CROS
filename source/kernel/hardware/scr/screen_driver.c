@@ -52,7 +52,7 @@ void useScroll(ScreenInfo * info){
 	// move one line;
 	short fullsize = info->res_hor * info->res_ver * info->bytes_per_char;
 	short linesize_bytes = info->res_hor;
-	unsigned int * src = (info->addr + linesize_bytes);
+	short * src = (info->addr + linesize_bytes);
 	
 	memmove(info->addr, src, fullsize - linesize_bytes * 2);
 	memset(info->addr + linesize_bytes * (info->res_ver - 1), 0, info->res_hor);
@@ -61,7 +61,7 @@ void useScroll(ScreenInfo * info){
 }
 
 void hw_scr_putchar(ScreenInfo * info, unsigned int x, unsigned int y, const unsigned char ch){
-	unsigned int * canvas = info->addr;
+	short * canvas = info->addr;
 	
 	*(canvas + y * info->res_hor + x) =  info->back_color | info->text_color | ch;
 }
@@ -122,7 +122,7 @@ void hw_scr_clearScreen(ScreenInfo * info, unsigned int color){
 	unsigned int size = info->res_hor * info->res_ver;
 	short space = color << 12 | info->text_color << 8 | ' ';
 	
-	unsigned int * canvas = info->addr;
+	short * canvas = info->addr;
 	
 	for (short i = 0; i < size; i++){
 		*(canvas + i) = space;
