@@ -1,5 +1,5 @@
 #include "filesystem.h"
-#include "filesystem/fatfs/src/ff.h"
+#include "fatfs/src/ff.h"
 
 #include <details/memdetails.h>
 #include <string_shared.h>

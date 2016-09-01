@@ -6,8 +6,7 @@
 		".\\kernel\\kernel.apcpuprj",
 		".\\stdlib\\stdlib.apcpuprj",
 		".\\sdk\\sdk.apcpuprj",
-		".\\filesystem\\filesystem.apcpuprj",
-		".\\timers_and_clocks\\timers_and_clocks.apcpuprj",
-		".\\applications\\applications.apcpuprj"
+		".\\applications\\applications.apcpuprj",
+		".\\utils\\utils.apcpuprj"
 	]
 }

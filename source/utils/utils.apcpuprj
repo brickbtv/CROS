@@ -1,0 +1,98 @@
+{
+	"format": "Project",
+	"version": 1,
+	"name": "utils",
+	"type": 2,
+	"globalconfiguration": {
+		"name": "Global",
+		"includePaths": [
+
+		],
+		"defines": [
+
+		],
+		"compilerOptions": "",
+		"linkerextralibs": ""
+	},
+	"configurations": [
+		{
+			"name": "Debug",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"DEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -g -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		},
+		{
+			"name": "Release",
+			"includePaths": [
+				"$(ProjectDir)",
+				"$(SolutionDir)",
+				"$(SolutionDir)\/stdlib"
+			],
+			"defines": [
+				"NDEBUG"
+			],
+			"compilerOptions": "-c99 -O2 -k -size -unroll-size=0 -dontwarn=323 -dontwarn=208 -dontwarn=153",
+			"linkerextralibs": ""
+		}
+	],
+	"dependencies": [
+
+	],
+	"files": [
+		{
+			"path": ".\\filesystem\\fatfs\\src\\diskio.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\fatfs\\src\\diskio.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\fatfs\\src\\ff.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\fatfs\\src\\ff.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\fatfs\\src\\ffconf.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\filesystem.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\filesystem.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\fatfs\\src\\integer.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\fatfs\\src\\option\\syscall.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\timers_and_clocks\\timers.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\timers_and_clocks\\timers.h",
+			"bootfile": false
+		},
+		{
+			"path": ".\\filesystem\\fatfs\\src\\option\\unicode.c",
+			"bootfile": false
+		}
+	]
+}

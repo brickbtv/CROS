@@ -47,10 +47,8 @@
 	"dependencies": [
 		"stdlib",
 		"sdk",
-		"app_chat",
-		"filesystem",
-		"timers_and_clocks",
-		"applications"
+		"applications",
+		"utils"
 	],
 	"files": [
 		{

@@ -8,7 +8,7 @@
 
 #include "app_texteditor/app_texteditor.h"
 
-#include "filesystem/filesystem.h"
+#include "utils/filesystem/filesystem.h"
 
 #include "sdk/os/process.h"
 
