@@ -21,7 +21,12 @@ int state = 0;
 GuiCharmap * p_canvas;
 GuiCharmap * p_charmap;
 
+GuiCharmap * p_main_color;
+GuiCharmap * p_back_color;
+
 Cursor bpcur, bprevcur;
+
+unsigned int selected_color
 
 int paint_y_offset = 2;
 int paint_x_offset = 1;
@@ -42,8 +47,13 @@ void paintBlinkCBack(unsigned int tn){
 	if (tn == 2){
 		p_canvas->blink = !p_canvas->blink;
 		p_charmap->blink = !p_charmap->blink;
+		p_main_color->blink = !p_main_color->blink;
+		p_back_color->blink = !p_back_color->blink;
+		
 		gui_charmap_draw_blink(p_canvas, paint_canvas);
 		gui_charmap_draw_blink(p_charmap, paint_canvas);
+		gui_charmap_draw_blink(p_back_color, paint_canvas);
+		gui_charmap_draw_blink(p_main_color, paint_canvas);
 	}
 }
 
@@ -53,18 +63,21 @@ void appPaintMsgHandler(int type, int reason, int value){
 			timers_handleMessage(type, reason, value);
 			break;
 		case SDK_PRC_MESSAGE_KYB:
-			if (reason == KEY_STATE_KEYTYPED){
-				if (state < 2){
-					if (value >= '0' && value <= '9'){
-						
-					}
-				}
-				
+			if (reason == KEY_STATE_KEYTYPED){				
 				gui_charmap_handleMessage(p_canvas, value, 'w', 's', 'a', 'd');
 				gui_charmap_handleMessage(p_charmap, value, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT);
+				gui_charmap_handleMessage(p_main_color, value, 'w', 's', 'i', 'o');
+				gui_charmap_handleMessage(p_back_color, value, 'w', 's', 'k', 'l');
 				
 				gui_charmap_draw_blink(p_canvas, paint_canvas);
 				gui_charmap_draw_blink(p_charmap, paint_canvas);
+				gui_charmap_draw_blink(p_back_color, paint_canvas);
+				gui_charmap_draw_blink(p_main_color, paint_canvas);
+				
+				if (value == ' '){
+					short value = gui_charmap_get_symbol(p_charmap);
+					gui_charmap_set_symbol(p_canvas, p_canvas->cur.x, p_canvas->cur.y, value);
+				}
 			}
 			break;
 	}
@@ -85,6 +98,8 @@ void app_paint(const char * path){
 	
 	short * map = calloc(width * height * sizeof(short));
 	short * map_brushes = calloc(256 * sizeof(short));
+	short * map_colors = calloc(16 * sizeof(short));
+	short * map_back_colors = calloc(8 * sizeof(short));
 	
 	short back_ch = SCR_COLOR_BLUE << 12 | SCR_COLOR_WHITE << 8 | ',';
 	
@@ -93,9 +108,29 @@ void app_paint(const char * path){
 		
 	for (short i = 0; i < 256; i++)
 		map_brushes[i] = SCR_COLOR_BLACK << 12 | SCR_COLOR_WHITE << 8 | i;
+		
+	for (short i = 0; i < 16; i++){
+		char color = i;
+		if (color == SCR_COLOR_WHITE)
+			color = SCR_COLOR_BLACK;
+		map_colors[i] = SCR_COLOR_WHITE << 12 | color << 8 | 8;
+	}
+	
+	for (short i = 0; i < 8; i++){
+		char color = i;
+		if (color == SCR_COLOR_RED)
+			color = SCR_COLOR_BLUE;
+		map_back_colors[i] = i << 12 | (8-color) << 8 | 7;
+	}
 	
 	p_canvas = gui_charmap_new(map, paint_x_offset, paint_y_offset, width, height);	
 	p_charmap = gui_charmap_new(map_brushes, paint_brush_x_offset, paint_brush_y_offset, brushes_width, brushes_height);
+	p_main_color = gui_charmap_new(map_colors, paint_brush_x_offset + 8, 1 + brushes_height + 3, 16, 1);
+	p_back_color = gui_charmap_new(map_back_colors, paint_brush_x_offset + 8, 1 + brushes_height + 5, 8, 1);
+	
+	// selecting default colors
+	p_main_color->cur.x = 7;
+	
 	
 	sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
 
@@ -104,9 +139,15 @@ void app_paint(const char * path){
 	
 	gui_draw_area(paint_canvas, "Canvas", 0, 1, width + 2, height + 2);
 	gui_draw_area(paint_canvas, "Brushes", paint_canvas->res_hor - brushes_width - 2, 1, brushes_width + 2, brushes_height + 2);
+	gui_draw_area(paint_canvas, "Colors", paint_canvas->res_hor - brushes_width - 2, 1 + brushes_height + 2, brushes_width + 2, 5);
 	
 	gui_charmap_redraw(p_canvas, paint_canvas);
 	gui_charmap_redraw(p_charmap, paint_canvas);
+	
+	sdk_scr_printfXY(paint_canvas, paint_canvas->res_hor - brushes_width + 1, 1 + brushes_height + 3, "Main: ");
+	sdk_scr_printfXY(paint_canvas, paint_canvas->res_hor - brushes_width + 1, 1 + brushes_height + 5, "Back: ");
+	gui_charmap_redraw(p_main_color, paint_canvas);
+	gui_charmap_redraw(p_back_color, paint_canvas);
 	
 	while (paint_run){
 		while (sdk_prc_haveNewMessage())

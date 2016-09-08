@@ -80,3 +80,11 @@ void gui_charmap_draw_blink(GuiCharmap * charmap, Canvas * paint_canvas){
 	*(canvas + (charmap->cur.y + charmap->yoffset) * paint_canvas->res_hor + charmap->cur.x + charmap->xoffset) = 
 		charmap->blink ? sel_ch_colored : charmap->map[charmap->cur.x + charmap->cur.y * charmap->width];
 }
+
+short gui_charmap_get_symbol(GuiCharmap * charmap){
+	return charmap->map[charmap->cur.x + charmap->cur.y * charmap->width];
+}
+
+short gui_charmap_set_symbol(GuiCharmap * charmap, unsigned int x, unsigned int y, short value){
+	charmap->map[x + y * charmap->width] = value;
+}
