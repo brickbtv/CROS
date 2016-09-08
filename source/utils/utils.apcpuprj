@@ -47,6 +47,14 @@
 	],
 	"files": [
 		{
+			"path": ".\\gui\\charmap\\charmap.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\gui\\charmap\\charmap.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\filesystem\\fatfs\\src\\diskio.c",
 			"bootfile": false
 		},

@@ -12,14 +12,11 @@
 #include <string_shared.h>
 #include <containers/list.h>
 
+#include <utils/gui/gui.h>
+
 Canvas* cv;
 
 list_t* text_lines;
-
-typedef struct Cursor{
-	unsigned int x;
-	unsigned int y;
-}Cursor;
 
 Cursor cursor;
 Cursor cursor_prev_pos;
