@@ -75,13 +75,11 @@ void appPaintMsgHandler(int type, int reason, int value){
 				gui_charmap_draw_blink(p_main_color, paint_canvas);
 				
 				if (value == ' '){
-					char value = (char)gui_charmap_get_symbol(p_charmap);
+					unsigned char value = (unsigned char)gui_charmap_get_symbol(p_charmap);
 					char main_color = (gui_charmap_get_symbol(p_main_color) >> 8) % 16;
 					char back_color = gui_charmap_get_symbol(p_back_color) >> 12;
-					
-					sdk_debug_logf("mc, %x=", main_color);
-					
-					short new_val = back_color << 12 | main_color << 8 | (char)value;					
+										
+					short new_val = (back_color << 12) | (main_color << 8) | value;					
 					gui_charmap_set_symbol(p_canvas, p_canvas->cur.x, p_canvas->cur.y, new_val);
 				}
 			}

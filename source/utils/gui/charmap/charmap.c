@@ -66,7 +66,7 @@ void gui_charmap_handleMessage(GuiCharmap * charmap, int value, char u, char d, 
 
 void gui_charmap_draw_blink(GuiCharmap * charmap, Canvas * paint_canvas){
 	short * canvas = paint_canvas->addr;
-	char sel_ch = (char)charmap->map[charmap->cur.x + charmap->cur.y * charmap->width];
+	unsigned char sel_ch = (unsigned char)charmap->map[charmap->cur.x + charmap->cur.y * charmap->width];
 	
 	short origin_char = charmap->map[charmap->cur.x + charmap->cur.y * charmap->width];
 	
