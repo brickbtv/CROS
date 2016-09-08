@@ -63,6 +63,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_paint\\app_paint.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_paint\\app_paint.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_shell\\app_shell.c",
 			"bootfile": false
 		},
