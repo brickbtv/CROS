@@ -75,6 +75,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\gui\\gui.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\gui\\gui.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\filesystem\\fatfs\\src\\integer.h",
 			"bootfile": false
 		},

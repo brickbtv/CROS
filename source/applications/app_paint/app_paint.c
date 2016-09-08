@@ -9,6 +9,8 @@
 
 #include <utils/filesystem/filesystem.h>
 #include <utils/timers_and_clocks/timers.h>
+#include <utils/gui/gui.h>
+
 #include <stdlib/string_shared.h>
 
 Canvas * paint_canvas;
@@ -25,7 +27,8 @@ typedef struct PCursor{
 
 PCursor pcur, prevcur;
 
-int paint_y_offset = 1;
+int paint_y_offset = 2;
+int paint_x_offset = 1;
 
 bool open_file(const char * path){
 	FILE * file = fs_open_file(path, 'r');
@@ -44,13 +47,11 @@ void draw_blink(){
 	
 	char txt = origin_char >> 12;
 	char bg = origin_char >> 8;
-	
-	sdk_debug_logf("%x, %x, %x", origin_char, txt, bg);
-	
+		
 	short sel_ch_colored = bg << 12 | txt << 8 | sel_ch;
 	
-	*(canvas + (prevcur.y + paint_y_offset) * paint_canvas->res_hor + prevcur.x) = map[prevcur.x + prevcur.y * width];
-	*(canvas + (pcur.y + paint_y_offset) * paint_canvas->res_hor + pcur.x) = blink?sel_ch_colored:map[pcur.x + pcur.y * width];
+	*(canvas + (prevcur.y + paint_y_offset) * paint_canvas->res_hor + prevcur.x + paint_x_offset) = map[prevcur.x + prevcur.y * width];
+	*(canvas + (pcur.y + paint_y_offset) * paint_canvas->res_hor + pcur.x + paint_x_offset) = blink?sel_ch_colored:map[pcur.x + pcur.y * width];
 }
 
 void paintBlinkCBack(unsigned int tn){
@@ -64,10 +65,15 @@ void redraw(){
 	for (int y = 0; y < height; y++)
 		for (int x = 0; x < width; x++){
 			short * canvas = paint_canvas->addr;
-			*(canvas + (y + paint_y_offset) * paint_canvas->res_hor + x) = map[x + y * width];
+			*(canvas + (y + paint_y_offset) * paint_canvas->res_hor + x + paint_x_offset) = map[x + y * width];
 		}
 }
 
+void draw_brushes(){
+	for (short i = 0; i < 256; i++){
+		*(paint_canvas->addr + (paint_canvas->res_hor * (2 + i / 32)  + 1) + paint_canvas->res_hor - 34 + i % 32) = SCR_COLOR_BLACK << 12 | SCR_COLOR_WHITE << 8 | i;
+	}
+}
 
 void appPaintMsgHandler(int type, int reason, int value){
 	switch (type){
@@ -127,7 +133,7 @@ void app_paint(const char * path){
 	timers_add_timer(2, 500, paintBlinkCBack);
 	
 	paint_canvas = (Canvas *)sdk_prc_getCanvas();
-	
+		
 	pcur.x = 0;
 	pcur.y = 0;
 	
@@ -144,9 +150,15 @@ void app_paint(const char * path){
 		map[i] = back_ch;
 	
 	sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
-	sdk_scr_printf(paint_canvas, "WOoops");
-		
+	//sdk_scr_printf(paint_canvas, "WOoops");
+	
+	gui_draw_header(paint_canvas, "CROS Paint"/*path*/);
+	gui_draw_bottom(paint_canvas, "");
+	
+	gui_draw_area(paint_canvas, "Canvas", 0, 1, 22, 12);
+	gui_draw_area(paint_canvas, "Brushes", paint_canvas->res_hor - 34, 1, 34, 10);
 	redraw();
+	draw_brushes();
 	
 	while (paint_run){
 		while (sdk_prc_haveNewMessage())

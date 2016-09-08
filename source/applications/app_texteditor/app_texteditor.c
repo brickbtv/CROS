@@ -1,12 +1,13 @@
 #include "app_texteditor.h"
 
-#include "sdk/scr/screen.h"
-#include "sdk/os/process.h"
-#include "sdk/os/debug.h"
-#include "sdk/kyb/keyboard.h"
-#include "sdk/clk/clock.h"
+#include <sdk/scr/screen.h>
+#include <sdk/os/process.h>
+#include <sdk/os/debug.h>
+#include <sdk/kyb/keyboard.h>
+#include <sdk/clk/clock.h>
 
 #include <utils/filesystem/filesystem.h>
+#include <utils/gui/gui.h>
 
 #include <string_shared.h>
 #include <containers/list.h>
@@ -77,25 +78,6 @@ unsigned int view_start_line = 0;
 
 char path[256];
 
-void draw_header(){
-	sdk_scr_setBackColor(cv, SCR_COLOR_BLUE);
-	
-	for(int i = 0; i < cv->res_hor; i++)
-		sdk_scr_putchar(cv, i, 0, ' ');
-
-	sdk_scr_printfXY(cv, (cv->res_hor - strlen(path))/2, 0, "%s\n", path);
-	
-	sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
-}
-
-void draw_bottom(){
-	sdk_scr_setBackColor(cv, SCR_COLOR_BLUE);
-	for(int i = 0; i < cv->res_hor; i++)
-		sdk_scr_putchar(cv, i, 24, ' ');
-	sdk_scr_printfXY(cv, 0, 24, " INS^S - save    INS^X - quit");
-	sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
-}
-
 unsigned int text_cursor_y(){
 	return cursor.y - 1 + view_start_line;
 }
@@ -118,8 +100,8 @@ list_node_t * prev_line_node(){
 
 void redraw_text_area(int start_line){
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
-	draw_header();
-	draw_bottom();
+	gui_draw_header(cv, path);
+	gui_draw_bottom(cv, " INS^S - save    INS^X - quit");
 
 	for (int i = start_line; i < start_line + cv->res_ver-2; i++){
 		list_node_t* line = list_at(text_lines, i);
@@ -340,7 +322,7 @@ void app_texteditor(const char* p){
 	// interface	
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
 	
-	draw_header();
+	gui_draw_header(cv, path);
 	redraw_text_area(0);
 	
 	while(exit == 0){
