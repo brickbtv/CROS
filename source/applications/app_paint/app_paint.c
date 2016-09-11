@@ -13,6 +13,7 @@
 #include <utils/gui/charmap/charmap.h>
 
 #include <stdlib/string_shared.h>
+#include <stdlib/stdlib_shared.h>
 
 Canvas * paint_canvas;
 bool paint_run = true;
@@ -26,7 +27,7 @@ GuiCharmap * p_back_color;
 
 Cursor bpcur, bprevcur;
 
-unsigned int selected_color
+unsigned int selected_color;
 
 int paint_y_offset = 2;
 int paint_x_offset = 1;
@@ -34,13 +35,33 @@ int paint_x_offset = 1;
 int paint_brush_y_offset = 2;
 int paint_brush_x_offset = 1;
 
-bool open_file(const char * path){
+char canvas_size_input[20];
+
+int width = 20;
+int height = 10;
+
+short * open_file(const char * path){
 	FILE * file = fs_open_file(path, 'r');
+	if (!file)
+		return NULL;
 	char buf[256];
 	int rb;
+	short * picture = NULL;
+	int size = -1;
 	while (fs_read_file(file, buf, 256, &rb)){
-		// TODO:
+		if (picture == NULL){
+			picture = calloc(rb * sizeof(char));
+			size += rb;
+		} else {
+			size += rb;
+			short * tmp = calloc(size * sizeof(char));
+			memcpy(tmp, picture, size * sizeof(char));
+			free(picture);
+			picture = tmp;
+		}	
 	}
+	
+	return picture;
 }
 
 void paintBlinkCBack(unsigned int tn){
@@ -63,6 +84,41 @@ void appPaintMsgHandler(int type, int reason, int value){
 			timers_handleMessage(type, reason, value);
 			break;
 		case SDK_PRC_MESSAGE_KYB:
+			if (state == 0){
+				if (reason == KEY_STATE_KEYTYPED){
+					if ((value >= '0' && value <= '9') || value == 'x'){
+						canvas_size_input[strlen(canvas_size_input)] = value;
+						sdk_scr_printf(paint_canvas, "%c", value);
+						sdk_debug_logf("%s", canvas_size_input);
+					}
+					
+					if (value == KEY_RETURN){
+						int x_start_pos = find(canvas_size_input, 'x', 0);
+						if (x_start_pos > 0){						
+							char c_w[20];
+							char c_h[20];
+							strncpy(c_w, canvas_size_input, x_start_pos);
+							strncpy(c_h, &canvas_size_input[x_start_pos + 1], strlen(canvas_size_input) - x_start_pos - 1);
+							
+							width = atoi(c_w);
+							height = atoi(c_h);
+							
+							if (height == 0){
+								sdk_scr_printf(paint_canvas, "\nIncorrect height. Try again:\n")
+								memset(canvas_size_input, 0, 20);
+								break;
+							}
+							
+							state = 3;
+						} else {
+							sdk_scr_printf(paint_canvas, "\nCan't find 'x' symbol. Try again:\n")
+							memset(canvas_size_input, 0, 20);
+						}
+					}
+				}
+				break;
+			}
+			
 			if (reason == KEY_STATE_KEYTYPED){				
 				gui_charmap_handleMessage(p_canvas, value, 'w', 's', 'a', 'd');
 				gui_charmap_handleMessage(p_charmap, value, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT);
@@ -88,17 +144,49 @@ void appPaintMsgHandler(int type, int reason, int value){
 }
 
 void app_paint(const char * path){
-	timers_add_timer(2, 1000, paintBlinkCBack);
+	state = 0;
 	
-	paint_canvas = (Canvas *)sdk_prc_getCanvas();
+	/* state:
+		0 - path is empty
+		1 - path exists
+		2 - path exists, but it's not a picture file format
+		3 - entered new file size 
+	*/
 	
-	paint_brush_x_offset = paint_canvas->res_hor - 34 + 1;
+	if (strlen(path) == 0){
+		state = 0;
+	}
+	
+	short * pic = open_file(path);
+	if (pic != NULL){
+		// read format		
+	}
 
-	int width = 20;
-	int height = 10;
+	paint_canvas = (Canvas *)sdk_prc_getCanvas();
+	sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
+
+	if (state == 0){	// new picture
+	
+		width = 20;
+		height = 10;
+	
+		sdk_scr_printfXY(paint_canvas, 0, 0, "Enter new file resolution in 'WIDTHxHEIGHT' format. Like '20x10':\n");
+		while (state == 0){
+			while (sdk_prc_haveNewMessage())
+				sdk_prc_handleMessage(appPaintMsgHandler);
+		}
+		
+		sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
+	}
+	
+	timers_add_timer(2, 1000, paintBlinkCBack);
+		
+	paint_brush_x_offset = paint_canvas->res_hor - 34 + 1;
 	
 	int brushes_width = 32;
 	int brushes_height = 8;
+	
+	memset(canvas_size_input, 0, 20);
 	
 	short * map = calloc(width * height * sizeof(short));
 	short * map_brushes = calloc(256 * sizeof(short));
@@ -134,9 +222,6 @@ void app_paint(const char * path){
 	
 	// selecting default colors
 	p_main_color->cur.x = 7;
-	
-	
-	sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
 
 	gui_draw_header(paint_canvas, "CROS Paint"/*path*/);
 	gui_draw_bottom(paint_canvas, "");
