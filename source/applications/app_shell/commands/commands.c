@@ -13,6 +13,7 @@
 #include "app_basic/app_basic.h"
 #include "app_chat/app_chat.h"
 #include "app_chat/server.h"
+#include "app_paint/app_paint.h"
 
 void manage_command(Canvas * canvas, char * current_path, const char * input){
 	fs_getcwd(current_path, 256);
@@ -41,6 +42,19 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		}
 	
 		sdk_prc_create_process((unsigned int)app_texteditor, args, 0);
+	} else if (strncmp(input, "paint ", strlen("paint ")) == 0){
+		char * args = calloc(256);
+		sprintf(args, "%s/%s", current_path, &input[strlen("paint ")]);
+	
+		FILE * file = fs_open_file(args, 'r');
+		if (file){
+			fs_close_file(file);
+		} else {
+			sdk_scr_printf(canvas, "Failed to open file.\n");
+			return;
+		}
+	
+		sdk_prc_create_process((unsigned int)app_paint, args, 0);
 	} else if (strncmp(input, "basic ", strlen("basic ")) == 0){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("basic ")]);

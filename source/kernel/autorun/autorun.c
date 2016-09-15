@@ -8,6 +8,6 @@
 *	List of system applications, which starts with the system. Obviously. Srsly.
 */
 void krn_autorun(void){
-	//Process * prc = prc_create("app_shell", 1024*10, 1024*20, (uint32_t*)app_shell, USERMODE_USER, 0, 0);
-	Process * prc = prc_create("app_paint", 1024*10, 1024*20, (uint32_t*)app_paint, USERMODE_USER, "", 0);
+	Process * prc = prc_create("app_shell", 1024*10, 1024*20, (uint32_t*)app_shell, USERMODE_USER, 0, 0);
+	//Process * prc = prc_create("app_paint", 1024*10, 1024*20, (uint32_t*)app_paint, USERMODE_USER, "", 0);
 }

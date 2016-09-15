@@ -14,6 +14,7 @@
 
 #include <stdlib/string_shared.h>
 #include <stdlib/stdlib_shared.h>
+#include <stdlib/stdio_shared.h>
 
 Canvas * paint_canvas;
 bool paint_run = true;
@@ -39,28 +40,34 @@ char canvas_size_input[20];
 
 int width = 20;
 int height = 10;
+char paint_path[256];
 
-short * open_file(const char * path){
+char * open_file(const char * path, int * len){
 	FILE * file = fs_open_file(path, 'r');
 	if (!file)
 		return NULL;
 	char buf[256];
 	int rb;
-	short * picture = NULL;
+	char * picture = NULL;
 	int size = -1;
-	while (fs_read_file(file, buf, 256, &rb)){
+	fs_read_file(file, buf, 256, &rb);
+	while (rb > 0){
+		sdk_debug_logf("rb: %d", rb);
 		if (picture == NULL){
 			picture = calloc(rb * sizeof(char));
+			memcpy(picture, buf, rb);
 			size += rb;
 		} else {
 			size += rb;
 			short * tmp = calloc(size * sizeof(char));
-			memcpy(tmp, picture, size * sizeof(char));
+			memcpy(tmp, picture, (size - rb) * sizeof(char));
 			free(picture);
 			picture = tmp;
+			memcpy(&picture[size-rb], buf, rb * sizeof(char));
 		}	
+		fs_read_file(file, buf, 256, &rb);
 	}
-	
+	*len = size;
 	return picture;
 }
 
@@ -77,6 +84,8 @@ void paintBlinkCBack(unsigned int tn){
 		gui_charmap_draw_blink(p_main_color, paint_canvas);
 	}
 }
+
+int is_ins_pressed = 0;
 
 void appPaintMsgHandler(int type, int reason, int value){
 	switch (type){
@@ -104,19 +113,56 @@ void appPaintMsgHandler(int type, int reason, int value){
 							height = atoi(c_h);
 							
 							if (height == 0){
-								sdk_scr_printf(paint_canvas, "\nIncorrect height. Try again:\n")
+								sdk_scr_printf(paint_canvas, "\nIncorrect height. Try again:\n");
 								memset(canvas_size_input, 0, 20);
 								break;
 							}
 							
 							state = 3;
 						} else {
-							sdk_scr_printf(paint_canvas, "\nCan't find 'x' symbol. Try again:\n")
+							sdk_scr_printf(paint_canvas, "\nCan't find 'x' symbol. Try again:\n");
 							memset(canvas_size_input, 0, 20);
 						}
 					}
 				}
 				break;
+			} else {
+				// CTRL rplsmnt by INSERT
+				if (value == KEY_INSERT){
+					if (reason == KEY_STATE_KEYPRESSED)
+						is_ins_pressed = 1;
+					else if (reason == KEY_STATE_KEYRELEASED)
+						is_ins_pressed = 0;
+					
+					break;
+				}
+				
+				// saving
+				if (value == 's' && is_ins_pressed == 1) {
+					short * map = p_canvas->map;
+					FILE * file = fs_open_file(paint_path, 'w');
+					
+					// header
+					char size[20];
+					sprintf(size, "%dx%d", width, height);
+					fs_write_file(file, size);
+					fs_write_file(file, ";");
+					
+					// body
+					for (int i = 0; i < width * height; i++){
+						short pixel = map[i];
+						char low_byte = (char) pixel;
+						char high_byte = pixel >> 8;
+						char buf[2] = {high_byte, low_byte};
+						fs_write_file(file, buf);
+						sdk_debug_logf("%x %x %x", pixel, high_byte, low_byte);
+					}
+					fs_close_file(file);
+				}
+				
+				if (value == 'x' && is_ins_pressed == 1){
+					paint_run = 0;
+				}
 			}
 			
 			if (reason == KEY_STATE_KEYTYPED){				
@@ -145,11 +191,13 @@ void appPaintMsgHandler(int type, int reason, int value){
 
 void app_paint(const char * path){
 	state = 0;
+	paint_run = 1;
+	memset(paint_path, 0, 256 * sizeof(char));
+	strcpy(paint_path, path);
 	
 	/* state:
 		0 - path is empty
 		1 - path exists
-		2 - path exists, but it's not a picture file format
 		3 - entered new file size 
 	*/
 	
@@ -157,9 +205,53 @@ void app_paint(const char * path){
 		state = 0;
 	}
 	
-	short * pic = open_file(path);
+	short * map;
+	
+	int len = 0;
+	char * pic = open_file(path, &len);
+	sdk_debug_logf("LEN: %d", len);
 	if (pic != NULL){
-		// read format		
+		// read format
+		int size_pos = find(pic, ';', 0);
+		sdk_debug_logf("LEN: %d", len);
+				
+		if (size_pos > 0){
+			int x_start_pos = find(pic, 'x', 0);
+			if (x_start_pos > 0){						
+				char c_w[20];
+				char c_h[20];
+				strncpy(c_w, pic, x_start_pos);
+				strncpy(c_h, &pic[x_start_pos + 1], size_pos - x_start_pos - 1);
+				
+				width = atoi(c_w);
+				height = atoi(c_h);
+				
+				if (height == 0){
+					sdk_debug_logf("\nIncorrect height. Try again:\n");
+					///memset(pic, 0, 20);
+				}
+				
+				map = calloc(width * height * sizeof(short));
+				
+				int count = 0;
+				
+				for (int i = size_pos + 1; i < len - 1; i+=5, count++){
+					//sdk_debug_logf("%c", pic[i]);
+					char high_byte = pic[i];
+					char low_byte = pic[i+1];
+					short pixel = high_byte << 8 | low_byte;
+					map[count] = pixel;
+					sdk_debug_logf("L:%d %d %d %d", count, high_byte, low_byte, pixel);
+				}
+				
+				state = 3;
+			} else {
+				sdk_debug_logf("\nCan't find 'x' symbol. Try again:\n");
+				////memset(pic, 0, 20);
+			}
+		
+			//state = 1;
+		} 
 	}
 
 	paint_canvas = (Canvas *)sdk_prc_getCanvas();
@@ -188,15 +280,18 @@ void app_paint(const char * path){
 	
 	memset(canvas_size_input, 0, 20);
 	
-	short * map = calloc(width * height * sizeof(short));
 	short * map_brushes = calloc(256 * sizeof(short));
 	short * map_colors = calloc(16 * sizeof(short));
 	short * map_back_colors = calloc(8 * sizeof(short));
 	
 	short back_ch = SCR_COLOR_BLUE << 12 | SCR_COLOR_WHITE << 8 | ' ';
 	
-	for (int i = 0; i < width * height; i++)
-		map[i] = back_ch;
+	if (map == 0){
+		map = calloc(width * height * sizeof(short));
+	
+		for (int i = 0; i < width * height; i++)
+			map[i] = back_ch;
+	}
 		
 	for (short i = 0; i < 256; i++)
 		map_brushes[i] = SCR_COLOR_BLACK << 12 | SCR_COLOR_WHITE << 8 | i;
@@ -224,7 +319,7 @@ void app_paint(const char * path){
 	p_main_color->cur.x = 7;
 
 	gui_draw_header(paint_canvas, "CROS Paint"/*path*/);
-	gui_draw_bottom(paint_canvas, "");
+	gui_draw_bottom(paint_canvas, "    INS^s save    INS^x exit");
 	
 	gui_draw_area(paint_canvas, "Canvas", 0, 1, width + 2, height + 2);
 	gui_draw_area(paint_canvas, "Brushes", paint_canvas->res_hor - brushes_width - 2, 1, brushes_width + 2, brushes_height + 2);
@@ -242,4 +337,5 @@ void app_paint(const char * path){
 		while (sdk_prc_haveNewMessage())
 			sdk_prc_handleMessage(appPaintMsgHandler);
 	}
+	sdk_prc_die();
 }
