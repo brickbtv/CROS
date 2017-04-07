@@ -39,6 +39,14 @@ void ScreenClass_putchar(void * this, unsigned int x, unsigned int y, const unsi
 	sdk_scr_putchar(((ScreenClass*)this)->_canvas, x, y, ch);
 }
 
+int getScreenWidth(void * this){
+	return ((ScreenClass*)this)->_canvas->res_hor;
+}
+
+int getScreenHeight(void * this){
+	return ((ScreenClass*)this)->_canvas->res_ver;
+}
+
 ScreenClass * ScreenClass_ctor(ScreenClass * this, Canvas * canvas){
 	this->_canvas = canvas;
 	
@@ -48,6 +56,8 @@ ScreenClass * ScreenClass_ctor(ScreenClass * this, Canvas * canvas){
 	this->printf = ScreenClass_printf;
 	this->clearScreen = ScreenClass_clearScreen;
 	this->putchar = ScreenClass_putchar;
+	this->getScreenWidth = getScreenWidth;
+	this->getScreenHeight = getScreenHeight;
 	
 	return this;
 }

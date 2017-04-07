@@ -15,6 +15,9 @@ CLASS ScreenClass{
 
 	void (* clearScreen)(void * this, CanvasColor color);
 	void (* putchar)(void * this, unsigned int x, unsigned int y, const unsigned char ch);
+	
+	int (* getScreenWidth)(void * this);
+	int (* getScreenHeight)(void * this);
 }ScreenClass;
 
 ScreenClass * ScreenClass_ctor(ScreenClass * this, Canvas * canvas);

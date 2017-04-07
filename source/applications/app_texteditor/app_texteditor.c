@@ -1,6 +1,5 @@
 #include "app_texteditor.h"
 
-#include <sdk/scr/screen.h>
 #include <sdk/os/process.h>
 #include <sdk/os/debug.h>
 #include <sdk/kyb/keyboard.h>
@@ -8,14 +7,14 @@
 
 #include <utils/filesystem/filesystem.h>
 #include <utils/gui/GuiClass.h>
+#include <sdk/scr/ScreenClass.h>
 
 #include <string_shared.h>
 #include <containers/list.h>
 
 #include <utils/gui/gui.h>
 
-Canvas* cv;
-
+ScreenClass * screen;
 GuiClass * gui;
 
 list_t* text_lines;
@@ -50,14 +49,14 @@ bool preprocess_file(const char* path){
 			int pos = find(buf, '\n', 0);
 			
 			if (pos == -1){
-				char* oneline = (char*)calloc(cv->res_hor);
+				char* oneline = (char*)calloc(screen->getScreenWidth(screen));
 				strcpy(oneline, buf);
 				list_node_t* onl_node = list_node_new(oneline);
 				list_rpush(text_lines, onl_node);
 			}
 			
 			while (pos != -1){				
-				char* line = (char*) calloc(cv->res_hor);
+				char* line = (char*) calloc(screen->getScreenWidth(screen));
 				strncpy(line, &buf[old_pos + 1], pos - old_pos - 1);
 				
 				list_rpush(text_lines, list_node_new(line));
@@ -98,14 +97,14 @@ list_node_t * prev_line_node(){
 }
 
 void redraw_text_area(int start_line){
-	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
+	screen->clearScreen(screen, SCR_COLOR_BLACK);
 	gui->draw_header(gui, path);
 	gui->draw_bottom(gui, " INS^S - save    INS^X - quit");
 
-	for (int i = start_line; i < start_line + cv->res_ver-2; i++){
+	for (int i = start_line; i < start_line + screen->getScreenWidth(screen)-2; i++){
 		list_node_t* line = list_at(text_lines, i);
 		if (line)
-			sdk_scr_printfXY(cv, 0, i - start_line + 1, line->val);
+			screen->printfXY(screen, 0, i - start_line + 1, line->val);
 	}
 	view_start_line = start_line;
 }
@@ -152,8 +151,8 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						cursor.x--;
 						strncpy(&current_line()[cursor.x], &current_line()[cursor.x + 1], strlen(current_line()) - cursor.x);
 						// redraw line
-						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, "                                ");
-						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, current_line());
+						screen->printfXY(screen, 0, text_cursor_y() + 1, "                                ");
+						screen->printfXY(screen, 0, text_cursor_y() + 1, current_line());
 					} else {	
 						// cat current line to prevous
 						if (cursor.y > 1){
@@ -173,8 +172,8 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					if (cursor.x < strlen(current_line())){
 						strncpy(&current_line()[cursor.x], &current_line()[cursor.x + 1], strlen(current_line()) - cursor.x);
 						// redraw line
-						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, "                                ");
-						sdk_scr_printfXY(cv, 0, text_cursor_y() + 1, current_line());
+						screen->printfXY(screen, 0, text_cursor_y() + 1, "                                ");
+						screen->printfXY(screen, 0, text_cursor_y() + 1, current_line());
 					} else {	
 						// cat next line to current
 						if (cursor.y < list_size(text_lines)){
@@ -200,7 +199,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					cursor.x = 0;
 					
 					int offset = 0;
-					if (cursor.y > cv->res_ver - 3){
+					if (cursor.y > screen->getScreenHeight(screen) - 3){
 						view_start_line ++;
 						cursor.y --;
 					}
@@ -228,7 +227,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							if (cursor.x > strlen(current_line()))
 								cursor.x = strlen(current_line());	
 						
-						if (cursor.y > cv->res_ver - 2 && text_cursor_y() < list_size(text_lines) - 1){
+						if (cursor.y > screen->getScreenHeight(screen) - 2 && text_cursor_y() < list_size(text_lines) - 1){
 							redraw_text_area(++view_start_line);
 							cursor.y --;
 						}
@@ -238,7 +237,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							cursor.x--;
 					} 
 					if (value == KEY_RIGHT){
-						if (cursor.x < cv->res_hor && cursor.x < strlen(current_line()))
+						if (cursor.x < screen->getScreenWidth(screen) && cursor.x < strlen(current_line()))
 							cursor.x++;
 					} 					
 					
@@ -268,7 +267,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 							exit = 1;
 						}
 						
-						if (cursor.x >= cv->res_hor - 1 || strlen(current_line()) >= cv->res_hor-1)
+						if (cursor.x >= screen->getScreenWidth(screen) - 1 || strlen(current_line()) >= screen->getScreenWidth(screen)-1)
 							break;
 						
 						// shift text
@@ -282,7 +281,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						cursor.x++;
 												
 						// redraw line
-						sdk_scr_printfXY(cv, 0, cursor.y, cl);
+						screen->printfXY(screen, 0, cursor.y, cl);
 					}
 				}
 			}
@@ -294,14 +293,14 @@ void msgHandlerTexteditor(int type, int reason, int value){
 		char pr_bl_char = ((char*)list_at(text_lines, cursor_prev_pos.y - 1 + view_start_line)->val)[cursor_prev_pos.x];
 		if (pr_bl_char == 0)
 			pr_bl_char = ' ';
-		sdk_scr_printfXY(cv, cursor_prev_pos.x, cursor_prev_pos.y, "%c", pr_bl_char);
+		screen->printfXY(screen, cursor_prev_pos.x, cursor_prev_pos.y, "%c", pr_bl_char);
 		blink = true;
 		prev_blink = false;
 	}
 }
 
 void app_texteditor(const char* p){	
-	cv = (Canvas*)sdk_prc_getCanvas();
+	Canvas * cv = (Canvas*)sdk_prc_getCanvas();
 	
 	cursor.x = 0;
 	cursor.y = 1;
@@ -313,17 +312,19 @@ void app_texteditor(const char* p){
 	insPress = 0;
 
 	text_lines = list_new();
-
-	preprocess_file(p);
-	memset(path, 0, sizeof(char) * 256);
-	strcpy(path, p);
-	
-	// interface	
-	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
 	
 	gui = malloc(sizeof(GuiClass));
 	gui = GuiClass_ctor(gui, cv);
 	
+	screen = malloc(sizeof(ScreenClass));
+	screen = ScreenClass_ctor(screen, cv);
+		
+	screen->clearScreen(screen, SCR_COLOR_BLACK);
+
+	preprocess_file(p);
+	memset(path, 0, sizeof(char) * 256);
+	strcpy(path, p);
+		
 	gui->draw_header(gui, path);
 	redraw_text_area(0);
 	
@@ -336,20 +337,20 @@ void app_texteditor(const char* p){
 		}
 		if (prev_blink != blink){
 			if (blink){
-				sdk_scr_setBackColor(cv, SCR_COLOR_GREEN);
-				sdk_scr_setTextColor(cv, SCR_COLOR_BLACK);
+				screen->setBackColor(screen, SCR_COLOR_GREEN);
+				screen->setTextColor(screen, SCR_COLOR_BLACK);
 			} else {
-				sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
+				screen->setBackColor(screen, SCR_COLOR_BLACK);
 			}
 			
 			char bl_char = current_line()[cursor.x];
 			if (bl_char == 0)
 				bl_char = ' ';
 				
-			sdk_scr_printfXY(cv, cursor.x, cursor.y, "%c", bl_char);
+			screen->printfXY(screen, cursor.x, cursor.y, "%c", bl_char);
 			
-			sdk_scr_setBackColor(cv, SCR_COLOR_BLACK);
-			sdk_scr_setTextColor(cv, SCR_COLOR_GREEN);
+			screen->setBackColor(screen, SCR_COLOR_BLACK);
+			screen->setTextColor(screen, SCR_COLOR_GREEN);
 			
 			prev_blink = blink;
 		}
