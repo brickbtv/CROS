@@ -1,8 +1,8 @@
 #ifndef _SHELL_COMMANDS_H_
 #define _SHELL_COMMANDS_H_
 
-#include "sdk/scr/screen.h"
+#include "sdk/scr/ScreenClass.h"
 
-void manage_command(Canvas * canvas, char * current_path, const char * input);
+void manage_command(ScreenClass * canvas, char * current_path, const char * input);
 
 #endif

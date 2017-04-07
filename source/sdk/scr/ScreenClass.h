@@ -18,6 +18,8 @@ CLASS ScreenClass{
 	
 	int (* getScreenWidth)(void * this);
 	int (* getScreenHeight)(void * this);
+	
+	Canvas * (* getCanvas)(void * this);
 }ScreenClass;
 
 ScreenClass * ScreenClass_ctor(ScreenClass * this, Canvas * canvas);

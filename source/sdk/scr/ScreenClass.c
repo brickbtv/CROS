@@ -47,6 +47,10 @@ int getScreenHeight(void * this){
 	return ((ScreenClass*)this)->_canvas->res_ver;
 }
 
+Canvas * getCanvas(void * this){
+	return ((ScreenClass*)this)->_canvas;
+}
+
 ScreenClass * ScreenClass_ctor(ScreenClass * this, Canvas * canvas){
 	this->_canvas = canvas;
 	

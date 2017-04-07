@@ -15,11 +15,11 @@
 #include "app_chat/server.h"
 #include "app_paint/app_paint.h"
 
-void manage_command(Canvas * canvas, char * current_path, const char * input){
+void manage_command(ScreenClass * screen, char * current_path, const char * input){
 	fs_getcwd(current_path, 256);
 
 	if (strcmp(input, "help") == 0){
-		sdk_scr_printf(canvas, "    CROS help:\n"
+		screen->printf(screen, "    CROS help:\n"
 		" 'ls' - show files and folders in current directory\n"
 		" 'mkdir NAME' - make new directory\n"
 		" 'mkfile NAME' - make new file\n"
@@ -37,7 +37,7 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		if (file){
 			fs_close_file(file);
 		} else {
-			sdk_scr_printf(canvas, "Failed to open file.\n");
+			screen->printf(screen, "Failed to open file.\n");
 			return;
 		}
 	
@@ -50,7 +50,7 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		if (file){
 			fs_close_file(file);
 		} else {
-			sdk_scr_printf(canvas, "Failed to open file.\n");
+			screen->printf(screen, "Failed to open file.\n");
 			return;
 		}
 	
@@ -63,11 +63,11 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 		if (file){
 			fs_close_file(file);
 		} else {
-			sdk_scr_printf(canvas, "Failed to open file.\n");
+			screen->printf(screen, "Failed to open file.\n");
 			return;
 		}
 		
-		sdk_prc_create_process((unsigned int)app_basic, args, canvas);
+		sdk_prc_create_process((unsigned int)app_basic, args, screen->getCanvas());
 	} else if (strcmp(input, "chat") == 0){
 		sdk_prc_create_process((unsigned int)app_chat, 0, 0);
 	} else if (strcmp(input, "chat_server") == 0){
@@ -83,7 +83,7 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 				int res = fs_readdir(dir, &fno);                   		/* Read a directory item */
 				if (res != FS_OK || fno.fname[0] == 0) break;  			/* Break on error or end of dir */
 				
-				sdk_scr_printf(canvas, "%c %s\n", fno.ftype, fno.fname);
+				screen->printf(screen, "%c %s\n", fno.ftype, fno.fname);
 			}
 			fs_closedir(dir);
 		}
@@ -91,23 +91,23 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 	} else if (strncmp(input, "mkdir ", strlen("mkdir ")) == 0){
 		int res = fs_mkdir(&input[strlen("mkdir ")]);
 		if (res != FS_OK)
-			sdk_scr_printf(canvas, "Failed to create directory.\n");
+			screen->printf(screen, "Failed to create directory.\n");
 	} else if (strncmp(input, "mkfile ", strlen("mkfile ")) == 0){
 		FILE * file = fs_open_file(&input[strlen("mkfile ")], 'w');
 		if (file){
 			fs_close_file(file);
 		} else {
-			sdk_scr_printf(canvas, "Failed to create file.\n");
+			screen->printf(screen, "Failed to create file.\n");
 		}
 	} else if (strncmp(input, "cd ", strlen("cd ")) == 0){
 		int res = fs_chdir(&input[strlen("cd ")]);
 		if (res != FS_OK)
-			sdk_scr_printf(canvas, "Failed to change directory.\n");
+			screen->printf(screen, "Failed to change directory.\n");
 		fs_getcwd(current_path, 256);
 	} else if (strncmp(input, "rm ", strlen("rm ")) == 0){
 		int res = fs_unlink(&input[strlen("rm ")]);
 		if (res != FS_OK)
-			sdk_scr_printf(canvas, "Failed to remove file or directory.\n");
+			screen->printf(screen, "Failed to remove file or directory.\n");
 	} else if (strncmp(input, "cat ", strlen("cat ")) == 0){
 		FILE * file = fs_open_file(&input[strlen("cat ")], 'r');
 		if (file){
@@ -117,19 +117,19 @@ void manage_command(Canvas * canvas, char * current_path, const char * input){
 			memset(buff, 0, 1024);
 			fs_read_file(file, buff, 1024, &rb);
 			while(strlen(buff) > 0){
-				sdk_scr_printf(canvas, buff);
+				screen->printf(screen, buff);
 				memset(buff, 0, 1024);
 				if (rb < 1024)
 					break;
 					
 				fs_read_file(file, buff, 1024, &rb);
 			}
-			sdk_scr_printf(canvas, "\n");
+			screen->printf(screen, "\n");
 			fs_close_file(file);
 		} else {
-			sdk_scr_printf(canvas, "Failed to open file.\n");
+			screen->printf(screen, "Failed to open file.\n");
 		}
 	} else {
-		sdk_scr_printf(canvas, "Unknown command. Type 'help' for commands list.\n");
+		screen->printf(screen, "Unknown command. Type 'help' for commands list.\n");
 	}
 }

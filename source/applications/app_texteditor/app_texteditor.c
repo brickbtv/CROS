@@ -7,6 +7,7 @@
 
 #include <utils/filesystem/filesystem.h>
 #include <utils/gui/GuiClass.h>
+#include <sdk/scr/screen.h>
 #include <sdk/scr/ScreenClass.h>
 
 #include <string_shared.h>
