@@ -47,6 +47,14 @@
 	],
 	"files": [
 		{
+			"path": ".\\gui\\GuiClass.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\gui\\GuiClass.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\gui\\charmap\\charmap.c",
 			"bootfile": false
 		},

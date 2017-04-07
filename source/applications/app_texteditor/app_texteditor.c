@@ -7,7 +7,7 @@
 #include <sdk/clk/clock.h>
 
 #include <utils/filesystem/filesystem.h>
-#include <utils/gui/gui.h>
+#include <utils/gui/GuiClass.h>
 
 #include <string_shared.h>
 #include <containers/list.h>
@@ -15,6 +15,8 @@
 #include <utils/gui/gui.h>
 
 Canvas* cv;
+
+GuiClass * gui;
 
 list_t* text_lines;
 
@@ -97,8 +99,8 @@ list_node_t * prev_line_node(){
 
 void redraw_text_area(int start_line){
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
-	gui_draw_header(cv, path);
-	gui_draw_bottom(cv, " INS^S - save    INS^X - quit");
+	gui->draw_header(gui, path);
+	gui->draw_bottom(gui, " INS^S - save    INS^X - quit");
 
 	for (int i = start_line; i < start_line + cv->res_ver-2; i++){
 		list_node_t* line = list_at(text_lines, i);
@@ -319,7 +321,10 @@ void app_texteditor(const char* p){
 	// interface	
 	sdk_scr_clearScreen(cv, SCR_COLOR_BLACK);
 	
-	gui_draw_header(cv, path);
+	gui = malloc(sizeof(GuiClass));
+	gui = GuiClass_ctor(gui, cv);
+	
+	gui->draw_header(gui, path);
 	redraw_text_area(0);
 	
 	while(exit == 0){
