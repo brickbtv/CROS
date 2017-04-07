@@ -2,8 +2,9 @@
 #define _GUI_CLASS_H_
 
 #include <sdk/scr/screen.h>
+#include <stdlib/oop.h>
 
-typedef struct GuiClass{
+CLASS GuiClass{
 	Canvas * _canvas;
 		
 	void (* draw_header)(void * this, const char * title);

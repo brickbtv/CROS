@@ -87,6 +87,10 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\oop.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\extern\\printf\\printf.c",
 			"bootfile": false
 		},

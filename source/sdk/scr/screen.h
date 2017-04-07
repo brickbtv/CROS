@@ -26,12 +26,16 @@ typedef enum CanvasColor{
 } CanvasColor;
 
 #define SCR_TABSTOP 4
+#define MAX_STRING_LEN 1024
 
 void sdk_scr_setTextColor(Canvas * info, CanvasColor color);
 void sdk_scr_setBackColor(Canvas * info, CanvasColor color);
 
 void sdk_scr_printfXY(Canvas * info, unsigned int x, unsigned int y, const unsigned char* fmt, ...);
 void sdk_scr_printf(Canvas * info, const unsigned char* fmt, ...);
+
+void sdk_scr_printfXY_no_variadic(Canvas * info, unsigned int x, unsigned int y, const unsigned char* buf);
+void sdk_scr_printf_no_variadic(Canvas * info, const unsigned char* buf);
 
 void sdk_scr_clearScreen(Canvas * info, CanvasColor color);
 void sdk_scr_putchar(Canvas * info, unsigned int x, unsigned int y, const unsigned char ch);

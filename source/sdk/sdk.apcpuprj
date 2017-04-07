@@ -49,6 +49,14 @@
 	],
 	"files": [
 		{
+			"path": ".\\scr\\ScreenClass.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\scr\\ScreenClass.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\clk\\clock.c",
 			"bootfile": false
 		},
