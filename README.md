@@ -23,10 +23,10 @@ APCPU instruction set - is a part of G4 game https://bitbucket.org/ruifig/g4devk
     * 'cd FILE_NAME' - change directory
     * 'rm NAME' - remove file or directory
     * 'cat FILE_NAME' - print file content to console
-
-* Chat
-	* 'edit FILE_NAME' - simple texteditor
+    * 'edit FILE_NAME' - simple texteditor
 	* 'basic FILE_NAME' - uBASIC interpreter
+    * 'paint FILE_NAME' - simple picture editor (WIP)
+* Chat
     * server app
     * client app
     
