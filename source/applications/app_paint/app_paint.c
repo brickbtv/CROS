@@ -337,5 +337,6 @@ void app_paint(const char * path){
 		while (sdk_prc_haveNewMessage())
 			sdk_prc_handleMessage(appPaintMsgHandler);
 	}
+	timers_del_timer(2);
 	sdk_prc_die();
 }

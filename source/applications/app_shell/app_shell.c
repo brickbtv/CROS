@@ -31,6 +31,34 @@ void blinkCBack(unsigned int tn){
 	canvas->cur_x--;
 }
 
+void shellBackspace(){
+	shell_screen->printfXY(shell_screen, canvas->cur_x, canvas->cur_y, " ");
+	canvas->cur_x --;
+	if (--symb <= 0)
+		symb = 0;
+	input[symb] = 0;
+}
+
+void shellExec(){
+	shell_screen->printfXY(shell_screen, canvas->cur_x, canvas->cur_y, " ");
+	shell_screen->printf(shell_screen, "\n");				
+	
+	// changig color for commands output!
+	shell_screen->setTextColor(shell_screen, SCR_COLOR_WHITE);
+	manage_command(shell_screen, current_path, input);
+	shell_screen->setTextColor(shell_screen, SCR_COLOR_GREEN);
+
+	memset(input, 0, 128 * sizeof(char));
+	symb = 0;
+}
+
+void shellAddSymbolToCommand(int value){
+	if (symb >= shell_screen->getScreenWidth(shell_screen) - strlen(current_path) - 1)	// command line can't be longer
+		return;
+						
+	input[symb++] = value;
+}
+
 void msgHandlerShell(int type, int reason, int value){
 	switch (type){
 		case SDK_PRC_MESSAGE_CLK:
@@ -39,31 +67,11 @@ void msgHandlerShell(int type, int reason, int value){
 		case SDK_PRC_MESSAGE_KYB: 
 			if (reason == KEY_STATE_KEYTYPED){
 				if (value == KEY_BACKSPACE){
-					shell_screen->printfXY(shell_screen, canvas->cur_x, canvas->cur_y, " ");
-					canvas->cur_x --;
-					if (--symb <= 0)
-						symb = 0;
-					input[symb] = 0;
+					shellBackspace();
 				} else if (value == KEY_RETURN){
-					shell_screen->printfXY(shell_screen, canvas->cur_x, canvas->cur_y, " ");
-					shell_screen->printf(shell_screen, "\n");				
-					
-					// changig color for commands output!
-					shell_screen->setTextColor(shell_screen, SCR_COLOR_WHITE);
-					manage_command(shell_screen, current_path, input);
-					shell_screen->setTextColor(shell_screen, SCR_COLOR_GREEN);
-					
-					while (!sdk_prc_is_focused()){
-						sdk_prc_sleep(1000);
-					}
-					
-					memset(input, 0, 128 * sizeof(char));
-					symb = 0;
+					shellExec();
 				} else {
-					if (symb >= shell_screen->getScreenWidth(shell_screen) - strlen(current_path) - 1)	// command line can't be longer
-						break;
-										
-					input[symb++] = value;
+					shellAddSymbolToCommand(value);
 				}
 				shell_screen->printfXY(shell_screen, path_lenght, canvas->cur_y, "%s>%s", current_path, input);
 			}

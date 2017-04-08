@@ -15,10 +15,27 @@
 #include "app_chat/server.h"
 #include "app_paint/app_paint.h"
 
+int is_file_exists(char * filename){
+	FILE * file = fs_open_file(filename, 'r');
+	if (file){
+		fs_close_file(file);
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 void manage_command(ScreenClass * screen, char * current_path, const char * input){
+	#define COMMAND(cmd) strcmp(input, cmd) == 0
+	#define COMMAND_WITH_ARGS(cmd) strncmp(input, cmd, strlen(cmd)) == 0
+	#define CHECK_FILE_EXIST(filename) if (!is_file_exists(filename){\
+			screen->printf(screen, "Failed to open file.\n");\
+			return;\
+		}\
+
 	fs_getcwd(current_path, 256);
 
-	if (strcmp(input, "help") == 0){
+	if (COMMAND("help")){
 		screen->printf(screen, "    CROS help:\n"
 		" 'ls' - show files and folders in current directory\n"
 		" 'mkdir NAME' - make new directory\n"
@@ -29,50 +46,32 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		" 'edit NAME' - simple texteditor\n"
 		" 'chat' - simple chat application\n"
 		" 'chat_server' - simple chat server for 'chat' app\n");
-	} else if (strncmp(input, "edit ", strlen("edit ")) == 0){
+	} else if (COMMAND_WITH_ARGS("edit ")){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("edit ")]);
 	
-		FILE * file = fs_open_file(args, 'r');
-		if (file){
-			fs_close_file(file);
-		} else {
-			screen->printf(screen, "Failed to open file.\n");
-			return;
-		}
+		CHECK_FILE_EXIST(args);
 	
 		sdk_prc_create_process((unsigned int)app_texteditor, args, 0);
-	} else if (strncmp(input, "paint ", strlen("paint ")) == 0){
+	} else if (COMMAND_WITH_ARGS("paint ")){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("paint ")]);
 	
-		FILE * file = fs_open_file(args, 'r');
-		if (file){
-			fs_close_file(file);
-		} else {
-			screen->printf(screen, "Failed to open file.\n");
-			return;
-		}
+		CHECK_FILE_EXIST(args);
 	
 		sdk_prc_create_process((unsigned int)app_paint, args, 0);
-	} else if (strncmp(input, "basic ", strlen("basic ")) == 0){
+	} else if (COMMAND_WITH_ARGS("basic ")){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("basic ")]);
 	
-		FILE * file = fs_open_file(args, 'r');
-		if (file){
-			fs_close_file(file);
-		} else {
-			screen->printf(screen, "Failed to open file.\n");
-			return;
-		}
+		CHECK_FILE_EXIST(args);
 		
 		sdk_prc_create_process((unsigned int)app_basic, args, screen->getCanvas());
-	} else if (strcmp(input, "chat") == 0){
+	} else if (COMMAND("chat")){
 		sdk_prc_create_process((unsigned int)app_chat, 0, 0);
-	} else if (strcmp(input, "chat_server") == 0){
+	} else if (COMMAND("chat_server")){
 		sdk_prc_create_process((unsigned int)app_chat_server, 0, 0);
-	} else if (strcmp(input, "ls") == 0){
+	} else if (COMMAND("ls")){
 		FILEINFO fno;
 		int i;
 		char *fn;
@@ -88,27 +87,27 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 			fs_closedir(dir);
 		}
 
-	} else if (strncmp(input, "mkdir ", strlen("mkdir ")) == 0){
+	} else if (COMMAND_WITH_ARGS("mkdir ")){
 		int res = fs_mkdir(&input[strlen("mkdir ")]);
 		if (res != FS_OK)
 			screen->printf(screen, "Failed to create directory.\n");
-	} else if (strncmp(input, "mkfile ", strlen("mkfile ")) == 0){
+	} else if (COMMAND_WITH_ARGS("mkfile ")){
 		FILE * file = fs_open_file(&input[strlen("mkfile ")], 'w');
 		if (file){
 			fs_close_file(file);
 		} else {
 			screen->printf(screen, "Failed to create file.\n");
 		}
-	} else if (strncmp(input, "cd ", strlen("cd ")) == 0){
+	} else if (COMMAND_WITH_ARGS("cd ")){
 		int res = fs_chdir(&input[strlen("cd ")]);
 		if (res != FS_OK)
 			screen->printf(screen, "Failed to change directory.\n");
 		fs_getcwd(current_path, 256);
-	} else if (strncmp(input, "rm ", strlen("rm ")) == 0){
+	} else if (COMMAND_WITH_ARGS("rm ")){
 		int res = fs_unlink(&input[strlen("rm ")]);
 		if (res != FS_OK)
 			screen->printf(screen, "Failed to remove file or directory.\n");
-	} else if (strncmp(input, "cat ", strlen("cat ")) == 0){
+	} else if (COMMAND_WITH_ARGS("cat ")){
 		FILE * file = fs_open_file(&input[strlen("cat ")], 'r');
 		if (file){
 			char buff[1024];
