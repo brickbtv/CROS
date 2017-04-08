@@ -7,6 +7,7 @@
 
 #include <utils/filesystem/filesystem.h>
 #include <utils/gui/GuiClass.h>
+#include <utils/timers_and_clocks/timers.h>
 #include <sdk/scr/screen.h>
 #include <sdk/scr/ScreenClass.h>
 
@@ -117,6 +118,9 @@ bool prev_blink = false;
 
 void msgHandlerTexteditor(int type, int reason, int value){
 	switch (type){
+		case SDK_PRC_MESSAGE_CLK:
+			timers_handleMessage(type, reason, value);
+			break;
 		case SDK_PRC_MESSAGE_KYB: 
 			// saving prev cursor pos
 			cursor_prev_pos.x = cursor.x;
@@ -300,6 +304,12 @@ void msgHandlerTexteditor(int type, int reason, int value){
 	}
 }
 
+void teBlinkCBack(unsigned int tn){
+	if (tn == 11){
+		blink = !blink;
+	}
+}
+
 void app_texteditor(const char* p){	
 	Canvas * cv = (Canvas*)sdk_prc_getCanvas();
 	
@@ -329,13 +339,9 @@ void app_texteditor(const char* p){
 	gui->draw_header(gui, path);
 	redraw_text_area(0);
 	
-	while(exit == 0){
-		int time = sdk_clk_timeSinceBoot();
-		if (time % 1000 < 500){
-			blink = true;
-		} else {
-			blink = false;
-		}
+	timers_add_timer(11, 500, teBlinkCBack);
+	
+	while(exit == 0){		
 		if (prev_blink != blink){
 			if (blink){
 				screen->setBackColor(screen, SCR_COLOR_GREEN);
@@ -355,7 +361,7 @@ void app_texteditor(const char* p){
 			
 			prev_blink = blink;
 		}
-		
+	
 		if (sdk_prc_haveNewMessage()){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}

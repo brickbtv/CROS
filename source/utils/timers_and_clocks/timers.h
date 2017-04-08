@@ -3,7 +3,7 @@
 
 #include <sdk/os/process.h>
 
-typedef void (*F_TIMER_CBACK)(int timer_number);
+typedef void (*F_TIMER_CBACK)(unsigned int timer_number);
 
 typedef struct STR_TIMER{
 	unsigned int timer_number;
