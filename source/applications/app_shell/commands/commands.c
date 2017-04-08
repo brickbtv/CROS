@@ -82,7 +82,10 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 				int res = fs_readdir(dir, &fno);                   		/* Read a directory item */
 				if (res != FS_OK || fno.fname[0] == 0) break;  			/* Break on error or end of dir */
 				
-				screen->printf(screen, "%c %s\n", fno.ftype, fno.fname);
+				if (fno.ftype == 'f')
+					screen->printf(screen, "%c %s \t%db\n", fno.ftype, fno.fname, fno.fsize);
+				else 
+					screen->printf(screen, "%c %s\n", fno.ftype, fno.fname);
 			}
 			fs_closedir(dir);
 		}
