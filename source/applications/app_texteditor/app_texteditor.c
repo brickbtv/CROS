@@ -310,6 +310,28 @@ void teBlinkCBack(unsigned int tn){
 	}
 }
 
+void draw_blink(){
+	if (prev_blink != blink){
+		if (blink){
+			screen->setBackColor(screen, SCR_COLOR_GREEN);
+			screen->setTextColor(screen, SCR_COLOR_BLACK);
+		} else {
+			screen->setBackColor(screen, SCR_COLOR_BLACK);
+		}
+		
+		char bl_char = current_line()[cursor.x];
+		if (bl_char == 0)
+			bl_char = ' ';
+			
+		screen->printfXY(screen, cursor.x, cursor.y, "%c", bl_char);
+		
+		screen->setBackColor(screen, SCR_COLOR_BLACK);
+		screen->setTextColor(screen, SCR_COLOR_GREEN);
+		
+		prev_blink = blink;
+	}
+}
+
 void app_texteditor(const char* p){	
 	Canvas * cv = (Canvas*)sdk_prc_getCanvas();
 	
@@ -342,33 +364,18 @@ void app_texteditor(const char* p){
 	timers_add_timer(11, 500, teBlinkCBack);
 	
 	while(exit == 0){		
-		if (prev_blink != blink){
-			if (blink){
-				screen->setBackColor(screen, SCR_COLOR_GREEN);
-				screen->setTextColor(screen, SCR_COLOR_BLACK);
-			} else {
-				screen->setBackColor(screen, SCR_COLOR_BLACK);
-			}
-			
-			char bl_char = current_line()[cursor.x];
-			if (bl_char == 0)
-				bl_char = ' ';
-				
-			screen->printfXY(screen, cursor.x, cursor.y, "%c", bl_char);
-			
-			screen->setBackColor(screen, SCR_COLOR_BLACK);
-			screen->setTextColor(screen, SCR_COLOR_GREEN);
-			
-			prev_blink = blink;
-		}
+		draw_blink();
 	
 		if (sdk_prc_haveNewMessage()){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}
+		sdk_prc_sleep(100);
 	}
 	
 	free(gui);
 	free(screen);
+	
+	timers_del_timer(11);
 	
 	list_destroy(text_lines);
 	sdk_prc_die();

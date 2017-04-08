@@ -113,6 +113,7 @@ void app_shell(void){
 			if (sdk_prc_haveNewMessage()){
 				sdk_prc_handleMessage(msgHandlerShell);
 			}
+			sdk_prc_sleep(50);
 		}
 	}
 }
