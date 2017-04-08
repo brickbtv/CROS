@@ -100,9 +100,9 @@ list_node_t * prev_line_node(){
 void redraw_text_area(int start_line){
 	screen->clearScreen(screen, SCR_COLOR_BLACK);
 	gui->draw_header(gui, path);
-	gui->draw_bottom(gui, " INS^S - save    INS^X - quit");
+	gui->draw_bottom(gui, " INS^s - save    INS^x - quit");
 
-	for (int i = start_line; i < start_line + screen->getScreenWidth(screen)-2; i++){
+	for (int i = start_line; i < start_line + screen->getScreenHeight(screen)-2; i++){
 		list_node_t* line = list_at(text_lines, i);
 		if (line)
 			screen->printfXY(screen, 0, i - start_line + 1, line->val);
@@ -360,6 +360,9 @@ void app_texteditor(const char* p){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}
 	}
+	
+	free(gui);
+	free(screen);
 	
 	list_destroy(text_lines);
 	sdk_prc_die();
