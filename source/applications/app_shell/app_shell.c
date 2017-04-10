@@ -9,6 +9,7 @@
 
 #include <utils/filesystem/filesystem.h>
 #include "commands/commands.h"
+#include "mkfs/mkfs.h"
 
 #include <string_shared.h>
 #include <utils/timers_and_clocks/timers.h>
@@ -98,33 +99,6 @@ void msgHandlerShell(int type, int reason, int value){
 	}
 }
 
-#define APP_SHELL_NO_FS "No file system found.\n" \
-						"Marking drive 0. It takes 1-2 minutes.\n"
-#define APP_SHELL_FAILED_FS "Failed to make filesytem. Abort.\n"
-#define APP_SHELL_DONE "Done.\n"
-#define APP_SHELL_FAILED_MOUNT "Failed to mount drive. It's mounted? Abort.\n"
-
-int mount_drive_and_mkfs_if_needed(){
-	int res = fs_mount_drive(0);
-	if (res != FS_OK){
-		if (res == FS_NO_FILESYSTEM){
-			shell.screen->printf(shell.screen, APP_SHELL_NO_FS);
-			int res_mkfs = fs_make_filesystem();
-			if (res_mkfs != FS_OK){
-				shell.screen->printf(shell.screen, APP_SHELL_FAILED_FS);
-				return 1;
-			} else {
-				shell.screen->printf(shell.screen, APP_SHELL_DONE);
-			}
-		} else {
-			shell.screen->printf(shell.screen, APP_SHELL_FAILED_MOUNT);
-			return 2;
-		}
-	} 
-	
-	return 0;
-}
-
 void initShellApp(){
 	shell.blink = false;
 	shell.symb = 0;
@@ -154,7 +128,7 @@ void app_shell(void){
 		
 	timers_add_timer(0, 500, blinkCBack);
 		
-	if (mount_drive_and_mkfs_if_needed() == 2)
+	if (mount_drive_and_mkfs_if_needed(shell.screen) == 2)
 		while(1){};	
 		
 	printHelloMessage();

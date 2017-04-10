@@ -103,6 +103,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_shell\\mkfs\\mkfs.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_shell\\mkfs\\mkfs.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_basic\\printf.h",
 			"bootfile": false
 		},
