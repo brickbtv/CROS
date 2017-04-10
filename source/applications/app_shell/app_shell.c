@@ -15,48 +15,54 @@
 
 #include "stdlib/details/memdetails.h"
 
+typedef struct APP_SHELL{
+	char input[128];
+	int symb;
+	Canvas * canvas;
+	ScreenClass * screen;
+	char current_path[256];
+	int path_lenght;
+	bool blink;
+}APP_SHELL;
 
-static char input[128];
-static int symb = 0;
-static Canvas * canvas;
-static ScreenClass * shell_screen;
-static char current_path[256];
-static int path_lenght = 0;
-static bool blink = true;
+static APP_SHELL shell;
 
 void blinkCBack(unsigned int tn){
-	blink = ! blink;
+	shell.blink = ! shell.blink;
 	
-	shell_screen->printfXY(shell_screen, canvas->cur_x, canvas->cur_y, blink?"_":" ");
-	canvas->cur_x--;
+	shell.screen->printfXY(	shell.screen, 
+							shell.screen->_canvas->cur_x, 
+							shell.screen->_canvas->cur_y, 
+							shell.blink?"_":" ");
+	shell.screen->_canvas->cur_x--;
 }
 
 void shellBackspace(){
-	shell_screen->printfXY(shell_screen, canvas->cur_x, canvas->cur_y, " ");
-	canvas->cur_x --;
-	if (--symb <= 0)
-		symb = 0;
-	input[symb] = 0;
+	shell.screen->printfXY(shell.screen, shell.screen->_canvas->cur_x, shell.screen->_canvas->cur_y, " ");
+	shell.screen->_canvas->cur_x --;
+	if (--shell.symb <= 0)
+		shell.symb = 0;
+	shell.input[shell.symb] = 0;
 }
 
 void shellExec(){
-	shell_screen->printfXY(shell_screen, canvas->cur_x, canvas->cur_y, " ");
-	shell_screen->printf(shell_screen, "\n");				
+	shell.screen->printfXY(shell.screen, shell.screen->_canvas->cur_x, shell.screen->_canvas->cur_y, " ");
+	shell.screen->printf(shell.screen, "\n");				
 	
 	// changig color for commands output!
-	shell_screen->setTextColor(shell_screen, SCR_COLOR_WHITE);
-	manage_command(shell_screen, current_path, input);
-	shell_screen->setTextColor(shell_screen, SCR_COLOR_GREEN);
+	shell.screen->setTextColor(shell.screen, SCR_COLOR_WHITE);
+	manage_command(shell.screen, shell.current_path, shell.input);
+	shell.screen->setTextColor(shell.screen, SCR_COLOR_GREEN);
 
-	memset(input, 0, 128 * sizeof(char));
-	symb = 0;
+	memset(shell.input, 0, 128 * sizeof(char));
+	shell.symb = 0;
 }
 
 void shellAddSymbolToCommand(int value){
-	if (symb >= shell_screen->getScreenWidth(shell_screen) - strlen(current_path) - 1)	// command line can't be longer
+	if (shell.symb >= shell.screen->getScreenWidth(shell.screen) - strlen(shell.current_path) - 1)	// command line can't be longer
 		return;
 						
-	input[symb++] = value;
+	shell.input[shell.symb++] = value;
 }
 
 void msgHandlerShell(int type, int reason, int value){
@@ -73,7 +79,12 @@ void msgHandlerShell(int type, int reason, int value){
 				} else {
 					shellAddSymbolToCommand(value);
 				}
-				shell_screen->printfXY(shell_screen, path_lenght, canvas->cur_y, "%s>%s", current_path, input);
+				shell.screen->printfXY(	shell.screen, 
+										shell.path_lenght, 
+										shell.screen->_canvas->cur_y, 
+										"%s>%s", 
+										shell.current_path, 
+										shell.input);				
 			}
 			break;
 	}
@@ -83,16 +94,16 @@ int mount_drive_and_mkfs_if_needed(){
 	int res = fs_mount_drive(0);
 	if (res != FS_OK){
 		if (res == FS_NO_FILESYSTEM){
-			shell_screen->printf(shell_screen, "No file system found.\nMarking drive 0. It takes 1-2 minutes.\n");
+			shell.screen->printf(shell.screen, "No file system found.\nMarking drive 0. It takes 1-2 minutes.\n");
 			int res_mkfs = fs_make_filesystem();
 			if (res_mkfs != FS_OK){
-				shell_screen->printf(shell_screen, "Failed to make filesytem. Abort.\n");
+				shell.screen->printf(shell.screen, "Failed to make filesytem. Abort.\n");
 				return 1;
 			} else {
-				shell_screen->printf(shell_screen, "Done.\n");
+				shell.screen->printf(shell.screen, "Done.\n");
 			}
 		} else {
-			shell_screen->printf(shell_screen, "Failed to mount drive. It's mounted? Abort.\n");
+			shell.screen->printf(shell.screen, "Failed to mount drive. It's mounted? Abort.\n");
 			return 2;
 		}
 	} 
@@ -101,20 +112,26 @@ int mount_drive_and_mkfs_if_needed(){
 }
 
 void app_shell(void){
-	canvas = (Canvas*)sdk_prc_getCanvas();
-	shell_screen = malloc(sizeof(ScreenClass));
-	shell_screen = ScreenClass_ctor(shell_screen, canvas);
+	shell.blink = false;
+	shell.symb = 0;
+	shell.path_lenght = 0;
+	memset(shell.current_path, 0, 256);
+	memset(shell.input, 0, 128);
+	
+	shell.canvas = (Canvas*)sdk_prc_getCanvas();
+	shell.screen = malloc(sizeof(ScreenClass));
+	shell.screen = ScreenClass_ctor(shell.screen, shell.canvas);
 	
 	timers_add_timer(0, 500, blinkCBack);
 	
-	shell_screen->clearScreen(shell_screen, SCR_COLOR_BLACK);
+	shell.screen->clearScreen(shell.screen, SCR_COLOR_BLACK);
 	
 	if (mount_drive_and_mkfs_if_needed() == 2)
 		while(1){};	
 	
-	fs_getcwd(current_path, 256);
-	shell_screen->printf(shell_screen, "CR Shell. Version 1.0.\nWelcome!\nType 'help' for commands list\n");
-	shell_screen->printf(shell_screen, "%s>", current_path);
+	fs_getcwd(shell.current_path, 256);
+	shell.screen->printf(shell.screen, "CR Shell. Version 1.0.\nWelcome!\nType 'help' for commands list\n");
+	shell.screen->printf(shell.screen, "%s>", shell.current_path);
 
 	while(1){
 		if (sdk_prc_is_focused()){		
