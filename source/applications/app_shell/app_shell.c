@@ -18,7 +18,6 @@
 typedef struct APP_SHELL{
 	char input[128];
 	int symb;
-	Canvas * canvas;
 	ScreenClass * screen;
 	char current_path[256];
 	int path_lenght;
@@ -111,27 +110,35 @@ int mount_drive_and_mkfs_if_needed(){
 	return 0;
 }
 
-void app_shell(void){
+void initShellApp(){
 	shell.blink = false;
 	shell.symb = 0;
 	shell.path_lenght = 0;
 	memset(shell.current_path, 0, 256);
 	memset(shell.input, 0, 128);
 	
-	shell.canvas = (Canvas*)sdk_prc_getCanvas();
-	shell.screen = malloc(sizeof(ScreenClass));
-	shell.screen = ScreenClass_ctor(shell.screen, shell.canvas);
-	
+	Canvas * canvas = (Canvas*)sdk_prc_getCanvas();
+	shell.screen = malloc(sizeof(ScreenClass)); 
+	shell.screen = ScreenClass_ctor(shell.screen, canvas);
+}
+
+void printHelloMessage(){
+	fs_getcwd(shell.current_path, 256);
+	shell.screen->printf(shell.screen, "CR Shell. Version 1.0.\nWelcome!\nType 'help' for commands list\n");
+	shell.screen->printf(shell.screen, "%s>", shell.current_path);
+}
+
+void app_shell(void){
+	initShellApp()
+		
 	timers_add_timer(0, 500, blinkCBack);
 	
 	shell.screen->clearScreen(shell.screen, SCR_COLOR_BLACK);
 	
 	if (mount_drive_and_mkfs_if_needed() == 2)
 		while(1){};	
-	
-	fs_getcwd(shell.current_path, 256);
-	shell.screen->printf(shell.screen, "CR Shell. Version 1.0.\nWelcome!\nType 'help' for commands list\n");
-	shell.screen->printf(shell.screen, "%s>", shell.current_path);
+		
+	printHelloMessage();
 
 	while(1){
 		if (sdk_prc_is_focused()){		
