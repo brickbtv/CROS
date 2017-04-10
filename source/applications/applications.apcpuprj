@@ -111,6 +111,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_texteditor\\preprocessor\\preprocessor.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_texteditor\\preprocessor\\preprocessor.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_basic\\printf.h",
 			"bootfile": false
 		},

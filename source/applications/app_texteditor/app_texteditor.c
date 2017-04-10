@@ -16,6 +16,8 @@
 
 #include <utils/gui/gui.h>
 
+#include <preprocessor/preprocessor.h>
+
 ScreenClass * screen;
 GuiClass * gui;
 
@@ -23,56 +25,6 @@ list_t* text_lines;
 
 Cursor cursor;
 Cursor cursor_prev_pos;
-
-bool preprocess_file(const char* path){
-	/*
-		Preprocessing split input file for \n symbols.
-		Result stores in list.
-	*/
-		
-	// step 1
-	#define DEF_BUF_SIZE 256
-	char buf[DEF_BUF_SIZE];
-	memset(buf, 0, sizeof(char) * DEF_BUF_SIZE);
-	unsigned int rb;
-	
-	FILE * file = fs_open_file(path, 'r');
-	
-	if (file){
-		do{	
-			int res = fs_read_file(file, buf, DEF_BUF_SIZE, &rb);
-			if (res != FS_OK){
-				list_destroy(text_lines);
-				return FALSE;
-			}
-			
-			// splitting
-			int old_pos = -1;
-			int pos = find(buf, '\n', 0);
-			
-			if (pos == -1){
-				char* oneline = (char*)calloc(screen->getScreenWidth(screen));
-				strcpy(oneline, buf);
-				list_node_t* onl_node = list_node_new(oneline);
-				list_rpush(text_lines, onl_node);
-			}
-			
-			while (pos != -1){				
-				char* line = (char*) calloc(screen->getScreenWidth(screen));
-				strncpy(line, &buf[old_pos + 1], pos - old_pos - 1);
-				
-				list_rpush(text_lines, list_node_new(line));
-				
-				old_pos = pos;
-				pos = find(buf, '\n', pos + 1);
-			}
-		} while(rb == DEF_BUF_SIZE);
-	} else {
-		return FALSE;
-	}
-	
-	return TRUE;
-}
 
 unsigned int view_start_line = 0;
 
@@ -343,8 +295,6 @@ void app_texteditor(const char* p){
 	exit = 0;
 	view_start_line = 0;
 	insPress = 0;
-
-	text_lines = list_new();
 	
 	gui = malloc(sizeof(GuiClass));
 	gui = GuiClass_ctor(gui, cv);
@@ -353,10 +303,11 @@ void app_texteditor(const char* p){
 	screen = ScreenClass_ctor(screen, cv);
 		
 	screen->clearScreen(screen, SCR_COLOR_BLACK);
-
-	preprocess_file(p);
+	
 	memset(path, 0, sizeof(char) * 256);
 	strcpy(path, p);
+	
+	text_lines = preprocess_file(p, screen->getScreenWidth(screen));
 		
 	gui->draw_header(gui, path);
 	redraw_text_area(0);
@@ -377,6 +328,6 @@ void app_texteditor(const char* p){
 	
 	timers_del_timer(11);
 	
-	list_destroy(text_lines);
+	close_preprocessed_file(text_lines);
 	sdk_prc_die();
 }
