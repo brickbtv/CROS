@@ -25,6 +25,49 @@ int is_file_exists(char * filename){
 	}
 }
 
+void ls(ScreenClass * screen, char * current_path){
+	FILEINFO fno;
+	int i;
+	char *fn;
+	FOLDER* dir = fs_opendir(current_path);                       	/* Open the directory */
+	if (dir) {
+		i = strlen(current_path);
+		for (;;) {
+			int res = fs_readdir(dir, &fno);                   		/* Read a directory item */
+			if (res != FS_OK || fno.fname[0] == 0) break;  			/* Break on error or end of dir */
+			
+			if (fno.ftype == 'f')
+				screen->printf(screen, "%c %s \t\t\t%db\n", fno.ftype, fno.fname, fno.fsize);
+			else 
+				screen->printf(screen, "%c %s\n", fno.ftype, fno.fname);
+		}
+		fs_closedir(dir);
+	}
+}
+
+void cat(ScreenClass * screen, char * filename){
+	FILE * file = fs_open_file(filename, 'r');
+	if (file){
+		char buff[1024];
+		int rb;
+		
+		memset(buff, 0, 1024);
+		fs_read_file(file, buff, 1024, &rb);
+		while(strlen(buff) > 0){
+			screen->printf(screen, buff);
+			memset(buff, 0, 1024);
+			if (rb < 1024)
+				break;
+				
+			fs_read_file(file, buff, 1024, &rb);
+		}
+		screen->printf(screen, "\n");
+		fs_close_file(file);
+	} else {
+		screen->printf(screen, "Failed to open file.\n");
+	}
+}
+
 void manage_command(ScreenClass * screen, char * current_path, const char * input){
 	#define COMMAND(cmd) strcmp(input, cmd) == 0
 	#define COMMAND_WITH_ARGS(cmd) strncmp(input, cmd, strlen(cmd)) == 0
@@ -72,24 +115,7 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 	} else if (COMMAND("chat_server")){
 		sdk_prc_create_process((unsigned int)app_chat_server, 0, 0);
 	} else if (COMMAND("ls")){
-		FILEINFO fno;
-		int i;
-		char *fn;
-		FOLDER* dir = fs_opendir(current_path);                       	/* Open the directory */
-		if (dir) {
-			i = strlen(current_path);
-			for (;;) {
-				int res = fs_readdir(dir, &fno);                   		/* Read a directory item */
-				if (res != FS_OK || fno.fname[0] == 0) break;  			/* Break on error or end of dir */
-				
-				if (fno.ftype == 'f')
-					screen->printf(screen, "%c %s \t\t\t%db\n", fno.ftype, fno.fname, fno.fsize);
-				else 
-					screen->printf(screen, "%c %s\n", fno.ftype, fno.fname);
-			}
-			fs_closedir(dir);
-		}
-
+		ls(screen, current_path);
 	} else if (COMMAND_WITH_ARGS("mkdir ")){
 		int res = fs_mkdir(&input[strlen("mkdir ")]);
 		if (res != FS_OK)
@@ -111,26 +137,7 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		if (res != FS_OK)
 			screen->printf(screen, "Failed to remove file or directory.\n");
 	} else if (COMMAND_WITH_ARGS("cat ")){
-		FILE * file = fs_open_file(&input[strlen("cat ")], 'r');
-		if (file){
-			char buff[1024];
-			int rb;
-			
-			memset(buff, 0, 1024);
-			fs_read_file(file, buff, 1024, &rb);
-			while(strlen(buff) > 0){
-				screen->printf(screen, buff);
-				memset(buff, 0, 1024);
-				if (rb < 1024)
-					break;
-					
-				fs_read_file(file, buff, 1024, &rb);
-			}
-			screen->printf(screen, "\n");
-			fs_close_file(file);
-		} else {
-			screen->printf(screen, "Failed to open file.\n");
-		}
+		cat(screen, &input[strlen("cat ")]);
 	} else {
 		screen->printf(screen, "Unknown command. Type 'help' for commands list.\n");
 	}
