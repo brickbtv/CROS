@@ -37,7 +37,11 @@ void blinkCBack(unsigned int tn){
 }
 
 void shellBackspace(){
-	shell.screen->printfXY(shell.screen, shell.screen->_canvas->cur_x, shell.screen->_canvas->cur_y, " ");
+	shell.screen->printfXY(	shell.screen, 
+							shell.screen->_canvas->cur_x, 
+							shell.screen->_canvas->cur_y, 
+							" ");
+							
 	shell.screen->_canvas->cur_x --;
 	if (--shell.symb <= 0)
 		shell.symb = 0;
@@ -45,10 +49,12 @@ void shellBackspace(){
 }
 
 void shellExec(){
-	shell.screen->printfXY(shell.screen, shell.screen->_canvas->cur_x, shell.screen->_canvas->cur_y, " ");
+	shell.screen->printfXY(	shell.screen, 
+							shell.screen->_canvas->cur_x, 
+							shell.screen->_canvas->cur_y, 
+							" ");
 	shell.screen->printf(shell.screen, "\n");				
 	
-	// changig color for commands output!
 	shell.screen->setTextColor(shell.screen, SCR_COLOR_WHITE);
 	manage_command(shell.screen, shell.current_path, shell.input);
 	shell.screen->setTextColor(shell.screen, SCR_COLOR_GREEN);
@@ -58,7 +64,10 @@ void shellExec(){
 }
 
 void shellAddSymbolToCommand(int value){
-	if (shell.symb >= shell.screen->getScreenWidth(shell.screen) - strlen(shell.current_path) - 1)	// command line can't be longer
+	int screen_width = shell.screen->getScreenWidth(shell.screen);
+	
+	// command line can't be longer
+	if (shell.symb >= screen_width  - strlen(shell.current_path) - 1)	
 		return;
 						
 	shell.input[shell.symb++] = value;
@@ -89,20 +98,26 @@ void msgHandlerShell(int type, int reason, int value){
 	}
 }
 
+#define APP_SHELL_NO_FS "No file system found.\n" \
+						"Marking drive 0. It takes 1-2 minutes.\n"
+#define APP_SHELL_FAILED_FS "Failed to make filesytem. Abort.\n"
+#define APP_SHELL_DONE "Done.\n"
+#define APP_SHELL_FAILED_MOUNT "Failed to mount drive. It's mounted? Abort.\n"
+
 int mount_drive_and_mkfs_if_needed(){
 	int res = fs_mount_drive(0);
 	if (res != FS_OK){
 		if (res == FS_NO_FILESYSTEM){
-			shell.screen->printf(shell.screen, "No file system found.\nMarking drive 0. It takes 1-2 minutes.\n");
+			shell.screen->printf(shell.screen, APP_SHELL_NO_FS);
 			int res_mkfs = fs_make_filesystem();
 			if (res_mkfs != FS_OK){
-				shell.screen->printf(shell.screen, "Failed to make filesytem. Abort.\n");
+				shell.screen->printf(shell.screen, APP_SHELL_FAILED_FS);
 				return 1;
 			} else {
-				shell.screen->printf(shell.screen, "Done.\n");
+				shell.screen->printf(shell.screen, APP_SHELL_DONE);
 			}
 		} else {
-			shell.screen->printf(shell.screen, "Failed to mount drive. It's mounted? Abort.\n");
+			shell.screen->printf(shell.screen, APP_SHELL_FAILED_MOUNT);
 			return 2;
 		}
 	} 
@@ -120,11 +135,17 @@ void initShellApp(){
 	Canvas * canvas = (Canvas*)sdk_prc_getCanvas();
 	shell.screen = malloc(sizeof(ScreenClass)); 
 	shell.screen = ScreenClass_ctor(shell.screen, canvas);
+	
+	shell.screen->clearScreen(shell.screen, SCR_COLOR_BLACK);
 }
+
+#define APP_SHELL_HELLO	"CR Shell. Version 1.0.\n" \
+						"Welcome!\n" \
+						"Type \'help\' for commands list\n"
 
 void printHelloMessage(){
 	fs_getcwd(shell.current_path, 256);
-	shell.screen->printf(shell.screen, "CR Shell. Version 1.0.\nWelcome!\nType 'help' for commands list\n");
+	shell.screen->printf(shell.screen, APP_SHELL_HELLO);
 	shell.screen->printf(shell.screen, "%s>", shell.current_path);
 }
 
@@ -132,9 +153,7 @@ void app_shell(void){
 	initShellApp()
 		
 	timers_add_timer(0, 500, blinkCBack);
-	
-	shell.screen->clearScreen(shell.screen, SCR_COLOR_BLACK);
-	
+		
 	if (mount_drive_and_mkfs_if_needed() == 2)
 		while(1){};	
 		
