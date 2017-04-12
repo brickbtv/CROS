@@ -71,6 +71,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\gui\\editbox\\editbox.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\gui\\editbox\\editbox.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\filesystem\\fatfs\\src\\ff.c",
 			"bootfile": false
 		},
