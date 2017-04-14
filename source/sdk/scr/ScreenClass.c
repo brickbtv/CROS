@@ -35,6 +35,11 @@ void ScreenClass_printf(void * this, const unsigned char* fmt, ...){
 void ScreenClass_clearScreen(void * this, CanvasColor color){
 	sdk_scr_clearScreen(((ScreenClass*)this)->_canvas, color);
 }
+
+void ScreenClass_clearArea(void * this, CanvasColor color, int x, int y, int width, int height){
+	sdk_scr_clearArea(((ScreenClass*)this)->_canvas, color, x, y, width, height);
+}	
+
 void ScreenClass_putchar(void * this, unsigned int x, unsigned int y, const unsigned char ch){
 	sdk_scr_putchar(((ScreenClass*)this)->_canvas, x, y, ch);
 }
@@ -59,6 +64,7 @@ ScreenClass * ScreenClass_ctor(ScreenClass * this, Canvas * canvas){
 	this->printfXY = ScreenClass_printfXY;
 	this->printf = ScreenClass_printf;
 	this->clearScreen = ScreenClass_clearScreen;
+	this->clearArea = ScreenClass_clearArea;
 	this->putchar = ScreenClass_putchar;
 	this->getScreenWidth = getScreenWidth;
 	this->getScreenHeight = getScreenHeight;

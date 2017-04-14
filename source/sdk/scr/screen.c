@@ -104,3 +104,14 @@ void sdk_scr_clearScreen(Canvas * info, CanvasColor color){
 		*(canvas + i) = space;
 	}
 }
+
+void sdk_scr_clearArea(Canvas * info, CanvasColor color, int x, int y, int width, int height){
+	short space = color << 12 | info->text_color << 8 | ' ';
+	
+	short * canvas = info->addr;
+	
+	for (short y_ = y; y_ < y+height; y_++)
+		for (short x_ = x; x_ < x+width; x_++)
+			*(canvas + x_ + info->res_hor * y_) = space;
+	
+}

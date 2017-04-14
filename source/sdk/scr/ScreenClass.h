@@ -14,6 +14,7 @@ CLASS ScreenClass{
 	void (* printf)(void * this, const unsigned char* fmt, ...);
 
 	void (* clearScreen)(void * this, CanvasColor color);
+	void (* clearArea)(void * this, CanvasColor color, int x, int y, int width, int height);
 	void (* putchar)(void * this, unsigned int x, unsigned int y, const unsigned char ch);
 	
 	int (* getScreenWidth)(void * this);

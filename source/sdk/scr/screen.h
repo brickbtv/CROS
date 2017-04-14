@@ -38,6 +38,7 @@ void sdk_scr_printfXY_no_variadic(Canvas * info, unsigned int x, unsigned int y,
 void sdk_scr_printf_no_variadic(Canvas * info, const unsigned char* buf);
 
 void sdk_scr_clearScreen(Canvas * info, CanvasColor color);
+void sdk_scr_clearArea(Canvas * info, CanvasColor color, int x, int y, int width, int height);
 void sdk_scr_putchar(Canvas * info, unsigned int x, unsigned int y, const unsigned char ch);
 
 #endif
