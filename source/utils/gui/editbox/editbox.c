@@ -47,6 +47,13 @@ list_node_t * prev_line_node(EditBoxClass * this){
 void EditBoxClass_redraw(void * this, int start_line){
 	EditBoxClass * editbox = (EditBoxClass *)this;
 	
+	editbox->_screen->clearArea(editbox->_screen, 
+								SCR_COLOR_BLACK, 
+								editbox->_x, 
+								editbox->_y, 
+								editbox->_width, 
+								editbox->_height);
+	
 	for (int i = start_line; i < start_line + editbox->_screen->getScreenHeight(editbox->_screen)-2; i++){
 		list_node_t* line = list_at(editbox->_text_lines, i);
 		sdk_debug_logf("%s", line->val);
@@ -93,6 +100,9 @@ void EditBoxClass_handle_message(void * this_, int type, int reason, int value){
 						break;
 					} 
 				}
+				
+				if (this->_insPress == 1)
+					break;
 				
 				if (value == KEY_BACKSPACE){
 					if (this->_cursor.x > 0){
