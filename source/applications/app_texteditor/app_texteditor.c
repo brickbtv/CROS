@@ -136,6 +136,7 @@ void app_texteditor(const char* p){
 		sdk_prc_sleep(100);
 	}
 	
+	free(editbox);
 	free(gui);
 	free(screen);
 	
