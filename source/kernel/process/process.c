@@ -46,12 +46,17 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	// info
 	strcpy(prc->name, name);
 	prc->pid = totalPIDs++;
+	prc->interruptions_count = 0;
+	for (int i = 0; i < 6; i++)
+		prc->interruptions_stat[i] = 0;
+		
+	for (int i = 0; i < 25; i++)
+		prc->interruptions_stat_cpu[i] = 0;
 	
 	prc->context = calloc (sizeof(Ctx));
 	
 	// copy argument line
 	if (arg_line != 0){
-		krn_debugLogf("arg line: %s",  (char*)arg_line);
 		int arg_line_size = (strlen((char*) arg_line) + 2) * sizeof(char);
 		prc->arg_line = calloc(arg_line_size);
 		//memset(prc->arg_line, 0, arg_line_size);
@@ -150,19 +155,13 @@ void sendMessageToAll(PRC_MESSAGE type, int reason, int value){
 	
 	list_iterator_t * it = list_iterator_new(listPrcLoop, LIST_HEAD);
 	while (node = list_iterator_next(it)){
-		/*PrcMessage * msg = malloc(sizeof(PrcMessage));
-		msg->type = type;
-		msg->reason = reason;
-		msg->value = value;*/
+
 		unsigned int msg = type << 24 | reason << 16 | value;
 	
 		prc = node->val;
 		
 		list_rpush(prc->list_msgs, list_node_new((void*)msg));
-			
-		/*size_t us, fr, ma;
-		_getmemstats(&us, &fr, &ma);
-		krn_debugLogf("us: %d, fr: %d, ma: %d\n", us, fr, ma);*/
+
 	}
 	list_iterator_destroy(it);
 	krn_getIdleProcess()->sync_lock = FALSE;
@@ -217,6 +216,50 @@ void clkAppCback(int clk){
 	}
 }
 
+void printPrcIntsStat(Process * prc){
+	krn_debugLogf("%s - %d", prc->name, prc->interruptions_count);
+	krn_debugLogf("    %s - %d", "CPU", prc->interruptions_stat[0]);
+	krn_debugLogf("    %s - %d", "CLK", prc->interruptions_stat[1]);
+	krn_debugLogf("    %s - %d", "SCR", prc->interruptions_stat[2]);
+	krn_debugLogf("    %s - %d", "KYB", prc->interruptions_stat[3]);
+	krn_debugLogf("    %s - %d", "NIC", prc->interruptions_stat[4]);
+	krn_debugLogf("    %s - %d", "DKC", prc->interruptions_stat[5]);
+	
+	for (int i = 0; i < 25; i++)
+		if (prc->interruptions_stat_cpu[i] != 0)
+			krn_debugLogf("        %d - %d", i, prc->interruptions_stat_cpu[i]);
+}
+
+void switchProcToNext(){
+	Process * prc;
+	list_node_t * prev_prc;
+	do{
+		prev_prc = currProc;
+		
+		if (currProc->next != NULL){
+			currProc = currProc->next;
+		} else {
+			currProc = listPrcLoop->head;
+		}
+		prc = currProc->val;
+		
+		//printPrcIntsStat(prc);
+				
+	} while (isNeedSleep(prc)); // check sleep time
+}
+
+bool isAllPrcAsleep(){
+	list_node_t * prc_it = listPrcLoop->head;
+	do {
+		if (!isNeedSleep((Process *)prc_it->val))
+			return false;
+			
+		prc_it = prc_it->next;
+	} while (prc_it);
+	
+	return true;
+}
+
 void clkKrnCback(int clk){	
 	if (clk != KRN_TIMER){
 		return;	
@@ -238,26 +281,15 @@ void clkKrnCback(int clk){
 		
 	if (listPrcLoop == NULL){		// we don't have any processes
 		return;
-	} else {
-		Process * prc;
-		list_node_t * prev_prc;
-		do{
-			prev_prc = currProc;
-			do {
-				if (currProc->next != NULL){
-					currProc = currProc->next;
-				} else {
-					currProc = listPrcLoop->head;
-				}
-				prc = currProc->val;
-				// TODO: remove dead processes from loop
-			} while (prc->i_should_die != 0);
-			// kill process
-			//if (((Process *)(prev_prc->val))->i_should_die == TRUE){
-			//	list_remove(listPrcLoop, prev_prc);
-			//}
-			
-		} while (isNeedSleep(prc)); // check sleep time
+	}  else {
+		// check if all processes asleep
+		
+		
+		if (isAllPrcAsleep() == true)
+			return;
+	
+		// do preemprive multitasking
+		switchProcToNext();
 	}
 }
 

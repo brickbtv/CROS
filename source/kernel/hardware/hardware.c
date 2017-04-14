@@ -10,7 +10,7 @@
 #include "dkc/disk_driver.h"
 
 void hw_initAll(void){
-	// TODO: implement all devices initizlization
+	// TODO: implement all devices initialization
 	
 	hw_kyb_init();
 	hw_dkc_init();
@@ -23,8 +23,13 @@ void hw_handleInterrupt(int bus_and_reason, u32 data0, u32 data1, u32 data2, u32
 	uint8_t bus = bus_and_reason >> 24;
 	uint32_t reason = bus_and_reason & 0x80FFFFFF;
 	
+	Process * prc = prc_getCurrentProcess();
+	prc->interruptions_count ++;
+	prc->interruptions_stat[bus] ++;
+	
 	switch(bus){
 		case HW_BUS_CPU :
+			prc->interruptions_stat_cpu[reason] ++;
 			hw_cpu_handleInterrupt(reason, data0, data1);
 			break;
 		case HW_BUS_CLK: 

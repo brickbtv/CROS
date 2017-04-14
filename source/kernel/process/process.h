@@ -10,7 +10,7 @@
 
 #include "containers/list.h"
 
-#define PRC_CTXSWITCH_RATE_MS 60
+#define PRC_CTXSWITCH_RATE_MS 50
 #define PRC_MIN_STACKSIZE 64
 
 #define PID_NONE 0
@@ -43,6 +43,10 @@ typedef struct Process{
 	
 	unsigned int stackBottom;
 	unsigned int stackTop;
+	
+	int interruptions_count;
+	int interruptions_stat[6];
+	int interruptions_stat_cpu[20];
 	
 	bool i_should_die;
 }Process;
