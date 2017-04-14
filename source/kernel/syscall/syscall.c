@@ -35,6 +35,8 @@ void syscall_prc_sleep(void){
 	
 	prc->sleep_start = hw_clk_readTimeSinceBoot();
 	prc->sleep_ms = ms;
+	
+	prc_skipCurrentProc();
 }
 
 void syscall_prc_getCurrentProcessScreenInfo(void){
