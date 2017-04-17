@@ -11,7 +11,6 @@ void EditBoxClass_set(void * this, const char * text){
 
 void EditBoxClass_set_list(void * this, list_t * text_lines){
 	((EditBoxClass *)this)->_text_lines = text_lines;
-	sdk_debug_logf("!! %s", list_at(text_lines, 0)->val);
 }
 
 
@@ -230,6 +229,8 @@ void EditBoxClass_handle_message(void * this_, int type, int reason, int value){
 		this->_screen->printfXY(this->_screen, this->_cursor_prev_pos.x, this->_cursor_prev_pos.y, "%c", pr_bl_char);
 		this->_blink = true;
 		this->_prev_blink = false;
+		
+		this->set_blink(this, true);
 	}
 }
 
