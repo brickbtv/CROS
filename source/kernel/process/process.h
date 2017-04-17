@@ -46,7 +46,7 @@ typedef struct Process{
 	
 	int interruptions_count;
 	int interruptions_stat[6];
-	int interruptions_stat_cpu[20];
+	int interruptions_stat_cpu[25];
 	
 	bool i_should_die;
 }Process;
