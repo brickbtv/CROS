@@ -58,12 +58,11 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						
 						list_iterator_t * it = list_iterator_new(text_lines, LIST_HEAD);
 						list_node_t *node;
+						char end_line[2] = {'\n', 0};
 						while ((node = list_iterator_next(it))){
-							char end_line[2];
-							end_line[0] = '\n';
-							end_line[1] = 0;
 							fs_write_file(file, node->val);
-							fs_write_file(file, end_line);
+							if (node->next) // except last line
+								fs_write_file(file, end_line);
 						}
 						fs_close_file(file);
 						list_iterator_destroy(it);
