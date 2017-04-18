@@ -10,7 +10,7 @@
 
 #include "containers/list.h"
 
-#define PRC_CTXSWITCH_RATE_MS 50
+#define PRC_CTXSWITCH_RATE_MS 25
 #define PRC_MIN_STACKSIZE 64
 
 #define PID_NONE 0
@@ -36,6 +36,7 @@ typedef struct Process{
 	
 	bool sync_lock;
 	bool exist_canvas;
+	bool sleep_until_new_messages;
 	
 	unsigned int firstPage;
 	unsigned int numPages;

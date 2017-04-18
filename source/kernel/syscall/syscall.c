@@ -39,6 +39,13 @@ void syscall_prc_sleep(void){
 	prc_skipCurrentProc();
 }
 
+void syscall_prc_sleep_until_new_messages(void){
+	Process * prc = prc_getCurrentProcess();
+	prc->sleep_until_new_messages = true;
+	
+	prc_skipCurrentProc();
+}
+
 void syscall_prc_getCurrentProcessScreenInfo(void){
 	Process * prc = prc_getCurrentProcess();
 	prc->context->gregs[0] = (unsigned int)prc->screen;	
@@ -200,6 +207,7 @@ F_SYSCALL syscalls_cbacks[] =
 	// processes 
 	syscall_prc_create_process,
 	syscall_prc_sleep,
+	syscall_prc_sleep_until_new_messages,
 	syscall_prc_getCurrentProcessScreenInfo,
 	syscall_prc_getCurrentProcessHeapPointer,
 	syscall_prc_haveNewMessages,

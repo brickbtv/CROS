@@ -53,6 +53,8 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	for (int i = 0; i < 25; i++)
 		prc->interruptions_stat_cpu[i] = 0;
 	
+	prc->sleep_until_new_messages = false;
+	
 	prc->context = calloc (sizeof(Ctx));
 	
 	// copy argument line
@@ -189,6 +191,14 @@ void sendMessageToFocused(PRC_MESSAGE type, int reason, int value){
 *	Multiprocessing draft. 
 */
 bool isNeedSleep(Process * prc){
+	if (prc->sleep_until_new_messages == true)
+		if (prc->list_msgs->len == 0)
+			return TRUE;
+		else {
+			prc->sleep_until_new_messages = false;
+			return FALSE;
+		}
+
 	if (prc->sleep_ms == 0){
 		return FALSE;
 	}
@@ -232,10 +242,8 @@ void printPrcIntsStat(Process * prc){
 
 void switchProcToNext(){
 	Process * prc;
-	list_node_t * prev_prc;
-	do{
-		prev_prc = currProc;
-		
+	int trys = listPrcLoop->len + 2;
+	do{		
 		if (currProc->next != NULL){
 			currProc = currProc->next;
 		} else {
@@ -244,8 +252,10 @@ void switchProcToNext(){
 		prc = currProc->val;
 		
 		//printPrcIntsStat(prc);
-				
-	} while (isNeedSleep(prc)); // check sleep time
+		trys --;
+						
+	} while (isNeedSleep(prc) && trys > 0); // check sleep time
+	//krn_debugLogf("active process: %s", prc->name);
 }
 
 bool isAllPrcAsleep(){

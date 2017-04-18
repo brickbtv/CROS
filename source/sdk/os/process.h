@@ -12,6 +12,7 @@ typedef enum SDK_PRC_MESSAGE{
 void sdk_prc_create_process(unsigned int entry_point, char * arg_line, unsigned int * parent_canvas);
 
 unsigned int sdk_prc_sleep(unsigned int ms);
+void sdk_prc_sleep_until_new_messages();
 unsigned int * sdk_prc_getCanvas();
 void * sdk_prc_getHeapPointer();
 

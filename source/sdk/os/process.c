@@ -13,6 +13,10 @@ unsigned int sdk_prc_sleep(unsigned int ms){
 	return app_syscall1(syscall_prc_sleep, ms);
 }
 
+void sdk_prc_sleep_until_new_messages(){
+	app_syscall0(syscall_prc_sleep_until_new_messages);
+}
+
 unsigned int * sdk_prc_getCanvas(){
 	return (unsigned int *)app_syscall0(syscall_prc_getCurrentProcessScreenInfo);
 }
