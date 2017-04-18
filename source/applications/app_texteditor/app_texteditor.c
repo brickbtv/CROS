@@ -87,7 +87,7 @@ void teBlinkCBack(unsigned int tn){
 }
 
 void redraw_text_area(int start_line){
-	screen->clearScreen(screen, SCR_COLOR_BLACK);
+	screen->clearScreen(screen, SCR_COLOR_WHITE);
 	gui->draw_header(gui, path);
 	gui->draw_bottom(gui, " INS^s - save    INS^x - quit");
 
@@ -106,15 +106,17 @@ void app_texteditor(const char* p){
 	screen = malloc(sizeof(ScreenClass));
 	screen = ScreenClass_ctor(screen, cv);
 		
-	screen->clearScreen(screen, SCR_COLOR_BLACK);
+	screen->clearScreen(screen, SCR_COLOR_WHITE);
 	
 	editbox = malloc(sizeof(EditBoxClass));
 	editbox = EditBoxClass_ctor(editbox, 
 								screen,
-								0, 
-								1
-								screen->getScreenHeight(screen) - 2, 
-								screen->getScreenWidth(screen));
+								3, 
+								3,
+								5, 
+								20);
+								//screen->getScreenHeight(screen) - 2, 
+								//screen->getScreenWidth(screen));
 	
 	memset(path, 0, sizeof(char) * 256);
 	strcpy(path, p);

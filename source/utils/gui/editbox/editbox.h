@@ -26,9 +26,7 @@ CLASS EditBoxClass{
 	int _width;
 	int _height;
 	
-	void (* set)(void * this, const char * text);
 	void (* set_list)(void * this, list_t * text_lines);
-	char (* get)(void * this);
 	list_t * (* get_list)(void * this);
 	void (* handle_message)(void * this, int type, int reason, int value);
 	
