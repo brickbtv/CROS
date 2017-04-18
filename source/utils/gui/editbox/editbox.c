@@ -75,16 +75,25 @@ void update_insert_key_status(EditBoxClass * this, int reason){
 		this->_insPress = 0;
 }
 
+void redraw_current_line(EditBoxClass * this){
+	this->_screen->clearArea(this->_screen, 
+							SCR_COLOR_BLACK, 
+							this->_x, 
+							cursor_to_screen_y(this), 
+							this->_width, 
+							1);
+	this->_screen->printfXY(this->_screen, this->_x, cursor_to_screen_y(this), current_line(this));
+}
+
 void process_backspace(EditBoxClass * this){
 	if (this->_cursor.x > 0){
 		this->_cursor.x--;
 		strncpy(&current_line(this)[this->_cursor.x], 
 				&current_line(this)[this->_cursor.x + 1], 
 				strlen(current_line(this)) - this->_cursor.x);
-		// redraw line
-		this->_screen->printfXY(this->_screen, 0, cursor_to_screen_y(this) + 1, "                                ");
-		this->_screen->printfXY(this->_screen, 0, cursor_to_screen_y(this) + 1, current_line(this));
-	} else {	
+		
+		redraw_current_line(this);
+	} else {
 		// cat current line to prevous
 		if (this->_cursor.y > 1){
 			char * prev_line = prev_line_node(this)->val;
@@ -106,9 +115,8 @@ void process_delete(EditBoxClass * this){
 		strncpy(&current_line(this)[this->_cursor.x], 
 				&current_line(this)[this->_cursor.x + 1], 
 				strlen(current_line(this)) - this->_cursor.x);
-		// redraw line
-		this->_screen->printfXY(this->_screen, 0, cursor_to_screen_y(this) + 1, "                                ");
-		this->_screen->printfXY(this->_screen, 0, cursor_to_screen_y(this) + 1, current_line(this));
+		
+		redraw_current_line(this);
 	} else {	
 		// cat next line to current
 		if (this->_cursor.y < list_size(this->_text_lines)){
