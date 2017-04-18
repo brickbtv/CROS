@@ -149,7 +149,7 @@ void cursor_up(EditBoxClass * this){
 		if (this->_cursor.x > strlen(current_line(this)))
 			this->_cursor.x = strlen(current_line(this));
 	} else {
-		if (this->_cursor.y > 0 && this->_view_start_line > 0){
+		if (this->_cursor.y >= 0 && this->_view_start_line > 0){
 			redraw_text_area(--this->_view_start_line);
 			this->_cursor.y ++;
 		}
