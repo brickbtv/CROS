@@ -135,10 +135,11 @@ void app_shell(void){
 
 	while(1){
 		if (sdk_prc_is_focused()){		
-			if (sdk_prc_haveNewMessage()){
+			while (sdk_prc_haveNewMessage()){
 				sdk_prc_handleMessage(msgHandlerShell);
 			}
-			sdk_prc_sleep(50);
-		}
+			sdk_prc_sleep_until_new_messages();
+		} else 
+			sdk_prc_sleep(1000);
 	}
 }

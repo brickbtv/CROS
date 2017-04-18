@@ -129,12 +129,11 @@ void app_texteditor(const char* p){
 	timers_add_timer(11, 500, teBlinkCBack);
 	
 	while(exit == 0){		
-		//draw_blink();
 	
-		if (sdk_prc_haveNewMessage()){
+		while (sdk_prc_haveNewMessage()){
 			sdk_prc_handleMessage(msgHandlerTexteditor);
 		}
-		sdk_prc_sleep(100);
+		sdk_prc_sleep_until_new_messages();
 	}
 	
 	free(editbox);
