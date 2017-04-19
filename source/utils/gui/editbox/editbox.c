@@ -78,11 +78,12 @@ void update_insert_key_status(EditBoxClass * this, int reason){
 void redraw_current_line(EditBoxClass * this){
 	this->_screen->clearArea(this->_screen, 
 							SCR_COLOR_BLACK, 
-							this->_x, 
-							cursor_to_screen_y(this), 
+							this->_x, cursor_to_screen_y(this), 
 							this->_width, 
 							1);
-	this->_screen->printfXY(this->_screen, this->_x, cursor_to_screen_y(this), current_line(this));
+	this->_screen->printfXY(this->_screen, 
+							this->_x, cursor_to_screen_y(this), 
+							current_line(this));
 }
 
 void process_backspace(EditBoxClass * this){
@@ -156,24 +157,20 @@ void cursor_up(EditBoxClass * this){
 		this->_cursor.y--;
 		if (this->_cursor.x > strlen(current_line(this)))
 			this->_cursor.x = strlen(current_line(this));
-	} else {
-		if (this->_cursor.y >= 0 && this->_view_start_line > 0){
-			redraw_text_area(--this->_view_start_line);
-			this->_cursor.y ++;
-		}
+	} 
+	
+	if (this->_cursor.y < this->_view_start_line){
+		redraw_text_area(--this->_view_start_line);
 	}
+	
 }
 
 void cursor_down(EditBoxClass * this){
-	if (this->_cursor.y < list_size(this->_text_lines) - this->_view_start_line){
+	if (this->_cursor.y + 1 < list_size(this->_text_lines)){
 		this->_cursor.y++;	
-	}
-
-	if (this->_cursor.y > this->_height 
-		&& cursor_to_screen_y(this) < list_size(this->_text_lines) - this->_y){
-			
+	} 
+	if (this->_cursor.y - this->_view_start_line > (this->_height - 1)){
 		this->redraw(this, ++this->_view_start_line);
-		this->_cursor.y --;
 	}
 	
 	if (this->_cursor.x > strlen(current_line(this)))
@@ -218,7 +215,7 @@ bool is_cursor_moved(EditBoxClass * this){
 void redraw_blinking(EditBoxClass * this){
 	if (is_cursor_moved(this)){
 		char * prev_line = (char*)list_at(	this->_text_lines, 
-											this->_cursor_prev_pos.y) -> val;
+											this->_cursor_prev_pos.y/* - this->_view_start_line*/) -> val;
 											
 		char pr_bl_char = prev_line[this->_cursor_prev_pos.x];
 		if (pr_bl_char == 0)
@@ -226,7 +223,7 @@ void redraw_blinking(EditBoxClass * this){
 			
 		this->_screen->printfXY(this->_screen, 
 								this->_cursor_prev_pos.x + this->_x, 
-								this->_cursor_prev_pos.y + this->_y, 
+								this->_cursor_prev_pos.y + this->_y - this->_view_start_line, 
 								"%c", 
 								pr_bl_char);
 								
