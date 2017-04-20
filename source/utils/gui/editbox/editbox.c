@@ -96,15 +96,18 @@ void process_backspace(EditBoxClass * this){
 		redraw_current_line(this);
 	} else {
 		// cat current line to prevous
-		if (this->_cursor.y > 1){
+		if (this->_cursor.y > 0){
 			char * prev_line = prev_line_node(this)->val;
 			unsigned int new_cur_x = strlen(prev_line);
+			
+			if (strlen(prev_line) + strlen(current_line(this)) >= this->_width)
+				return;
 			
 			strcpy(&prev_line[new_cur_x], current_line(this));
 			list_remove(this->_text_lines, current_line_node(this));
 			
 			this->_cursor.x = new_cur_x;
-			this->_cursor.y--;
+			cursor_up(this);
 			
 			this->redraw(this, this->_view_start_line);
 		}
@@ -122,6 +125,9 @@ void process_delete(EditBoxClass * this){
 		// cat next line to current
 		if (this->_cursor.y < list_size(this->_text_lines)){
 			char * next_line = next_line_node(this)->val;
+										
+			if (strlen(next_line) + strlen(current_line(this)) >= this->_width)
+				return;
 										
 			strcpy(&current_line(this)[this->_cursor.x], next_line);
 			list_remove(this->_text_lines, next_line_node(this));
@@ -204,7 +210,7 @@ void process_new_char(EditBoxClass * this, char value){
 	this->_cursor.x++;
 							
 	// redraw line
-	this->_screen->printfXY(this->_screen, this->_x, cursor_to_screen_y(this), cl);
+	redraw_current_line(this);
 }
 
 bool is_cursor_moved(EditBoxClass * this){
@@ -329,6 +335,8 @@ EditBoxClass * EditBoxClass_ctor(	EditBoxClass * this,
 	this->handle_message = EditBoxClass_handle_message;
 	this->set_blink = EditBoxClass_set_blink;
 	this->redraw = EditBoxClass_redraw;
+	
+	return this;
 }
 
 void EditBoxClass_dtor(EditBoxClass * this){

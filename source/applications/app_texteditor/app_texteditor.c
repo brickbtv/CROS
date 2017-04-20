@@ -123,12 +123,10 @@ void app_texteditor(const char* p){
 	editbox = malloc(sizeof(EditBoxClass));
 	editbox = EditBoxClass_ctor(editbox, 
 								screen,
-								3, 
-								3,
-								5, 
-								20);
-								//screen->getScreenHeight(screen) - 2, 
-								//screen->getScreenWidth(screen));
+								0, 
+								1,
+								screen->getScreenHeight(screen) - 2, 
+								screen->getScreenWidth(screen));
 	
 	memset(path, 0, sizeof(char) * 256);
 	strcpy(path, p);
