@@ -108,6 +108,7 @@ void krn_halt(void){
 */
 void kybCback(KeyboardEvent event){
 	sendMessageToFocused(PRC_MESSAGE_KYB, event.event_type, event.key_code);
+	idleKeyboardEventHandler(event);
 }
 
 ScreenInfo scr_info;

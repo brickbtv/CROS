@@ -146,6 +146,53 @@ bool prc_is_focused(){
 	return FALSE;
 }
 
+int idleInsStatus = 0;
+
+void idleKeyboardEventHandler(KeyboardEvent event){
+	if (event.key_code == 0x03){ //insert
+		if (event.event_type == HW_KYB_EVENTTYPE_KEYPRESSED)
+			idleInsStatus = 1;
+		if (event.event_type == HW_KYB_EVENTTYPE_KEYRELEASED)
+			idleInsStatus = 0;
+	}
+	
+	if (event.key_code == '[' && idleInsStatus == 1)
+		switchFocus(false);
+	if (event.key_code == ']' && idleInsStatus == 1)
+		switchFocus(true);
+}
+
+void switchFocus(bool direct){
+	Process* prc_current = currFocusedProc;//prc_getCurrentProcess();
+	
+	Process * prc;
+	list_node_t * node;
+	
+	//node = list_find(listPrcLoop, prc_current);
+	node = listPrcLoop->head;
+	while (node && node->val != prc_current) node = node->next;
+	
+	if (node){
+		if (direct == true){
+			if (node->next != NULL)
+				node = node->next;
+			else
+				node = listPrcLoop->head;
+			
+			prc = (Process * )node->val;
+		} else {
+			if (node->prev != NULL)
+				node = node->prev;
+			else
+				node = listPrcLoop->tail;
+			
+			prc = (Process * )node->val;
+		}
+		currFocusedProc = prc;
+		//krn_debugLogf("Switched to: %s", prc->name);
+		hw_scr_mapScreenBuffer(currFocusedProc->screen->addr);
+	}
+}
 
 /*
 *	Messages queue

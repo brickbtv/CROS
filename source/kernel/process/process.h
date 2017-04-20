@@ -7,6 +7,7 @@
 
 #include "context/ctx.h"
 #include "hardware/scr/screen_driver.h"
+#include "hardware/kyb/keyboard_driver.h"
 
 #include "containers/list.h"
 
@@ -76,6 +77,8 @@ Process * prc_getCurrentProcess(void);
 void prc_skipCurrentProc(void);
 void sendMessageToAll(PRC_MESSAGE type, int reason, int value);
 void sendMessageToFocused(PRC_MESSAGE type, int reason, int value);
+
+void idleKeyboardEventHandler(KeyboardEvent event);
 
 bool prc_is_focused();
 void prc_die();
