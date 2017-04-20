@@ -72,6 +72,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					if (insPress  == true && value == 'x'){
 						sdk_debug_log("exit");
 						exit = 1;
+						close_app();
 					}
 				}
 			}
@@ -92,6 +93,17 @@ void redraw_text_area(int start_line){
 	gui->draw_bottom(gui, " INS^s - save    INS^x - quit");
 
 	editbox->redraw(editbox, start_line);
+}
+
+void close_app(){
+	free(editbox);
+	free(gui);
+	free(screen);
+	
+	timers_del_timer(11);
+	
+	close_preprocessed_file(text_lines);
+	sdk_prc_die();
 }
 
 void app_texteditor(const char* p){	
@@ -136,12 +148,5 @@ void app_texteditor(const char* p){
 		sdk_prc_sleep_until_new_messages();
 	}
 	
-	free(editbox);
-	free(gui);
-	free(screen);
-	
-	timers_del_timer(11);
-	
-	close_preprocessed_file(text_lines);
-	sdk_prc_die();
+	close_app();
 }

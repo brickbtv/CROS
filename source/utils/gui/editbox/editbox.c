@@ -139,17 +139,17 @@ void process_return(EditBoxClass * this){
 	
 	list_node_t* line_node = list_node_new(new_line);
 	list_node_t* line_ins_after = list_at(	this->_text_lines,
-											this->_cursor.y + this->_view_start_line);
+											this->_cursor.y);
+	if (line_ins_after == NULL){
+		sdk_debug_log("NUL");
+		return;
+	}
 	list_insertafter(this->_text_lines, line_ins_after, line_node);
 
-	this->_cursor.y++;
+	cursor_down(this);
 	this->_cursor.x = 0;
 	
-	if (this->_cursor.y > this->_height - 1){
-		this->_view_start_line ++;
-		this->_cursor.y --;
-	}
-	this->redraw(this, this->_view_start_line);	
+	this->redraw(this, this->_view_start_line);
 }
 
 void cursor_up(EditBoxClass * this){
