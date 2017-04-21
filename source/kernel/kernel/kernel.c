@@ -122,12 +122,15 @@ void krn_start(void){
 
 	hw_kyb_setCallback(kybCback);
 	
-	scr_info = hw_scr_screenInfo();		
+	scr_info = *processKernel->screen;//hw_scr_screenInfo();		
 	krn_drawLogo(&scr_info);
 	
 	hw_scr_setTextColor(&scr_info, SCR_COLOR_GREEN);
 		
-	hw_scr_printfXY(&scr_info, 0, 0, "%d %d \n%d %d \n%d %d\n\n",
+	hw_scr_printf(&scr_info, 	"Memory:\n"
+								"> ReadOnly:\n\taddr: %d\tsize: %d\n"
+								"> ReadWrite:\n\taddr: %d\tsize: %d\n"
+								"> SharedReadWrite:\n\taddr: %d\tsize: %d",
 						processInfo.readOnlyAddr, 
 						processInfo.readOnlySize,
 						processInfo.readWriteAddr,
