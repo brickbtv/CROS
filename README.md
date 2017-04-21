@@ -24,11 +24,13 @@ APCPU instruction set - is a part of G4 game https://bitbucket.org/ruifig/g4devk
     * 'rm NAME' - remove file or directory
     * 'cat FILE_NAME' - print file content to console
     * 'edit FILE_NAME' - simple texteditor
-	* 'basic FILE_NAME' - uBASIC interpreter
+    * 'basic FILE_NAME' - uBASIC interpreter
     * 'paint FILE_NAME' - simple picture editor (WIP)
+    * 'ps' - list of processes
+    * 'profile PID' - show PID HWI/SWI statistics
 * Chat
-    * server app
-    * client app
+    * 'chat' - client app
+    * 'chat_server' - server app
     
 ## APCPU VM requirements :warning:
 Current implementation isn't optimized. APCPU VM should be configured with this params to comfortable run: 
