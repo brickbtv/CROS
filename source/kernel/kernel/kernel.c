@@ -138,14 +138,6 @@ void krn_start(void){
 						
 	hw_scr_printf(&scr_info, "%d", hw_cpu_retRamAmount());
 					
-	/*
-		messages list should be initializated inside Idle process,
-		because it uses malloc with it's own dynamic memory pool
-	*/
-	prc_initMessagesList();
-					
-	//krn_autorun();
-
 	prc_startScheduler();
 }
 

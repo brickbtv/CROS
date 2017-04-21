@@ -144,6 +144,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\process\\multitasking.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\process\\multitasking.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\hardware\\nic\\network_driver.c",
 			"bootfile": false
 		},

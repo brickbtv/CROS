@@ -11,13 +11,7 @@
 #include "boot/boot.h"
 #include "extern/tlsf/tlsf.h"
 #include "stdcshared_defs.h"
-
-// Processes loop.
-list_t * listPrcLoop = NULL;
-list_t * stackFocused = NULL;
-
-static list_node_t * currProc = NULL;
-static Process * currFocusedProc;
+#include "multitasking.h"
 
 // TODO: leave here only superuser mode code
 
@@ -81,8 +75,6 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 		prc->exist_canvas = TRUE;
 	}
 	
-	
-	
 	// new process should take a screen
 	hw_scr_mapScreenBuffer(prc->screen->addr);
 	
@@ -98,28 +90,14 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	
 	prc->context->gregs[0] = (unsigned int) prc->arg_line;
 	
-	// insert process to scheduler
-	if (listPrcLoop == NULL){				// empty scheduler
-		listPrcLoop = list_new();
-	}
+	// insert process to scheduler	
+	if (!isMultitaskingInitialized())
+		initMultitasking();
 	
-	if (stackFocused == NULL){				// empty focused processes stack
-		stackFocused = list_new();
-	}
-	
-	list_rpush(stackFocused, list_node_new(prc));
-	currFocusedProc = prc;
-	
+	addProcessToScheduler(prc);
 
 	// set up events queue
 	prc->list_msgs = list_new();
-
-	// set up first created process (idle) as current. needed in scheduler.
-	if (currProc == NULL){
-		currProc = list_rpush(listPrcLoop, list_node_new(prc));
-	} else {
-		list_rpush(listPrcLoop, list_node_new(prc));
-	}
 	
 	_mem_init(prc->heap, heapSize * sizeof(char), 0);
 		
@@ -132,20 +110,16 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	return prc;
 }
 
-void prc_initMessagesList(){
-	//Process* prc = prc_getCurrentProcess();
-	//prc->list_msgs = list_new();
-}
-
 bool prc_is_focused(){
 	Process* prc = prc_getCurrentProcess();
-	if (currFocusedProc == prc)
+	if (getFocusedProcessNode()->val == prc)
 		return TRUE;
 		
 	return FALSE;
 }
 
 int idleInsStatus = 0;
+void switchFocus(bool direct); 
 
 /* return: 
 	true: if idle process handle KYB event
@@ -172,34 +146,27 @@ bool idleKeyboardEventHandler(KeyboardEvent event){
 }
 
 void switchFocus(bool direct){
-	Process* prc_current = currFocusedProc;//prc_getCurrentProcess();
+	Process* prc_current = (Process *)getFocusedProcessNode()->val;
 	
 	Process * prc;
 	list_node_t * node;
 	
-	//node = list_find(listPrcLoop, prc_current);
-	node = listPrcLoop->head;
-	while (node && node->val != prc_current) node = node->next;
+	node = getFocusedProcessNode();
 	
 	if (node){
 		if (direct == true){
 			if (node->next != NULL)
 				node = node->next;
 			else
-				node = listPrcLoop->head;
-			
-			prc = (Process * )node->val;
+				node = firstTaskNode();
 		} else {
 			if (node->prev != NULL)
 				node = node->prev;
 			else
-				node = listPrcLoop->tail;
-			
-			prc = (Process * )node->val;
+				node = lastTaskNode();
 		}
-		currFocusedProc = prc;
-		//krn_debugLogf("Switched to: %s", prc->name);
-		hw_scr_mapScreenBuffer(currFocusedProc->screen->addr);
+		prc = (Process * )node->val;
+		setFocusedProcess(prc, prc->screen->addr);
 	}
 }
 
@@ -211,7 +178,7 @@ void sendMessageToAll(PRC_MESSAGE type, int reason, int value){
 	Process * prc;
 	list_node_t * node;
 	
-	list_iterator_t * it = list_iterator_new(listPrcLoop, LIST_HEAD);
+	list_iterator_t * it = list_iterator_new(getSchedullerList(), LIST_HEAD);
 	while (node = list_iterator_next(it)){
 
 		unsigned int msg = type << 24 | reason << 16 | value;
@@ -228,18 +195,11 @@ void sendMessageToAll(PRC_MESSAGE type, int reason, int value){
 void sendMessageToFocused(PRC_MESSAGE type, int reason, int value){
 	krn_getIdleProcess()->sync_lock = TRUE;
 	Process * prc;
-	list_node_t * node;
 	
-	list_iterator_t * it = list_iterator_new(listPrcLoop, LIST_HEAD);
-	while (node = list_iterator_next(it)){
-		// send to currently focused process
-		if (currFocusedProc == node->val){		
-			unsigned int msg = type << 24 | reason << 16 | value;
-			prc = node->val;
-			list_rpush(prc->list_msgs, list_node_new((void*)msg));
-		}
-	}
-	list_iterator_destroy(it);
+	unsigned int msg = type << 24 | reason << 16 | value;
+	prc = (Process *)getFocusedProcessNode()->val;
+	list_rpush(prc->list_msgs, list_node_new((void*)msg));
+
 	krn_getIdleProcess()->sync_lock = FALSE;
 }
 
@@ -255,9 +215,8 @@ bool isNeedSleep(Process * prc){
 			return FALSE;
 		}
 
-	if (prc->sleep_ms == 0){
+	if (prc->sleep_ms == 0)
 		return FALSE;
-	}
 	
 	uint32_t curTime = hw_clk_readTimeSinceBoot();
 	
@@ -298,14 +257,11 @@ void printPrcIntsStat(Process * prc){
 
 void switchProcToNext(){
 	Process * prc;
-	int trys = listPrcLoop->len + 2;
-	do{		
-		if (currProc->next != NULL){
-			currProc = currProc->next;
-		} else {
-			currProc = listPrcLoop->head;
-		}
-		prc = currProc->val;
+	list_node_t * currProc = getCurrentProcessNode(); 
+	int trys = getSchedullerList()->len + 2;
+	do{
+		
+		prc = (Process *)nextProcess()->val;
 		
 		//printPrcIntsStat(prc);
 		trys --;
@@ -315,7 +271,7 @@ void switchProcToNext(){
 }
 
 bool isAllPrcAsleep(){
-	list_node_t * prc_it = listPrcLoop->head;
+	list_node_t * prc_it = firstTaskNode();
 	do {
 		if (!isNeedSleep((Process *)prc_it->val))
 			return false;
@@ -336,27 +292,14 @@ void clkKrnCback(int clk){
 		Imitation of synchronization primitives.
 		TODO: fix that
 	*/
-	if (((Process*)currProc->val)->sync_lock == TRUE){
+	if (((Process*)getCurrentProcessNode()->val)->sync_lock == TRUE
+		|| krn_getIdleProcess()->sync_lock == TRUE
+		|| getSchedullerList() == NULL 
+		|| isAllPrcAsleep() == true){
 		return;
 	}
-	
-	// kernel lock
-	if (krn_getIdleProcess()->sync_lock == TRUE){
-		return;
-	}
-		
-	if (listPrcLoop == NULL){		// we don't have any processes
-		return;
-	}  else {
-		// check if all processes asleep
-		
-		
-		if (isAllPrcAsleep() == true)
-			return;
-	
-		// do preemprive multitasking
-		switchProcToNext();
-	}
+
+	switchProcToNext();
 }
 
 void prc_die(){
@@ -364,11 +307,11 @@ void prc_die(){
 	prc->i_should_die = TRUE;
 	
 	// change focus
-	if (currFocusedProc == prc){
-		list_rpop(stackFocused);
-		currFocusedProc = list_tail(stackFocused)->val;
+	if (getFocusedProcessNode()->val == prc){
+		popFocusedStack();
 		// prevous process should take a screen
-		hw_scr_mapScreenBuffer(currFocusedProc->screen->addr);
+		Process * focused_proc = (Process*)getFocusedProcessNode()->val;
+		setFocusedProcess(focused_proc, focused_proc->screen->addr);
 	}
 	
 	prc->sync_lock = FALSE;
@@ -404,8 +347,9 @@ void prc_startScheduler(void){
 		while (prc->list_msgs->len > 0){
 			krn_getIdleProcess()->sync_lock = TRUE;
 			list_node_t * node = list_lpop(prc->list_msgs);
-			//PrcMessage * msg = (PrcMessage * )node->val; // TODO: process it. do not just destroy 
-			//free(node); 									// TODO: Heap corruption =( 
+			
+			// TODO: should something be here?
+			
 			krn_getIdleProcess()->sync_lock = FALSE;
 		}
 		
@@ -419,8 +363,8 @@ void prc_startScheduler(void){
 *	Can be useful to recieve current context
 */
 Process * prc_getCurrentProcess(void){
-	if (currProc)
-		return (Process *)currProc->val;
+	if (getCurrentProcessNode() && getCurrentProcessNode()->val)
+		return (Process *)getCurrentProcessNode()->val;
 	
 	return NULL;
 }
