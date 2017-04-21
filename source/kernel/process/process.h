@@ -26,14 +26,6 @@ typedef struct Process{
 	
 	char * stack;
 	char * heap;
-	Ctx * context;
-	
-	uint32_t sleep_start;
-	uint32_t sleep_ms;
-	
-	ScreenInfo * screen;
-	
-	list_t * list_msgs;
 	
 	bool sync_lock;
 	bool exist_canvas;
@@ -51,6 +43,16 @@ typedef struct Process{
 	int interruptions_stat_cpu[25];
 	
 	bool i_should_die;
+	
+	// not available for PS utility
+	Ctx * context;
+	
+	uint32_t sleep_start;
+	uint32_t sleep_ms;
+	
+	ScreenInfo * screen;
+	
+	list_t * list_msgs;
 }Process;
 
 typedef struct HeapInfo{

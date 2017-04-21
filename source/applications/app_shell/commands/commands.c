@@ -6,14 +6,19 @@
 
 #include "stdlib/details/memdetails.h"
 
+#include "containers/list.h"
+
 #include <string_shared.h>
 #include <stdio_shared.h>
+#include <stdlib_shared.h>
 
 #include "app_texteditor/app_texteditor.h"
 #include "app_basic/app_basic.h"
 #include "app_chat/app_chat.h"
 #include "app_chat/server.h"
 #include "app_paint/app_paint.h"
+
+#include "sdk/syscall_def.h"
 
 int is_file_exists(char * filename){
 	FILE * file = fs_open_file(filename, 'r');
@@ -43,6 +48,48 @@ void ls(ScreenClass * screen, char * current_path){
 		}
 		fs_closedir(dir);
 	}
+}
+
+void ps(ScreenClass * screen){
+	ProcessDummy * prc;
+
+	screen->printf(screen, "PID\tname\tdead\n");
+	
+	list_t * processes_list = sdk_prc_get_scheduler_list();
+	list_node_t * node = processes_list->head;
+	while (node){
+		prc = (ProcessDummy *) node->val;
+		screen->printf(screen, "%d\t%s\t%d\n", prc->pid, prc->name, prc->i_should_die);
+		node = node->next;
+	}
+}
+
+void profile(ScreenClass * screen, char * arg){
+	
+
+	ProcessDummy * prc;
+	int pid = atoi(arg);
+	
+	list_t * processes_list = sdk_prc_get_scheduler_list();
+	list_node_t * node = processes_list->head;
+	while (node){
+		prc = (ProcessDummy *) node->val;
+		if (prc->pid == pid){			
+			screen->printf(screen, "%s: Summary %d interruptions\n", prc->name, prc->interruptions_count);
+			screen->printf(screen, "    %s - %d\n", "CLK", prc->interruptions_stat[1]);
+			screen->printf(screen, "    %s - %d\n", "SCR", prc->interruptions_stat[2]);
+			screen->printf(screen, "    %s - %d\n", "KYB", prc->interruptions_stat[3]);
+			screen->printf(screen, "    %s - %d\n", "NIC", prc->interruptions_stat[4]);
+			screen->printf(screen, "    %s - %d\n", "DKC", prc->interruptions_stat[5]);
+			screen->printf(screen, "    %s - %d\n", "CPU", prc->interruptions_stat[0]);			
+			for (int i = 0; i < 25; i++)
+				if (prc->interruptions_stat_cpu[i] != 0)
+					screen->printf(screen, "        %d - %d\t\t%s\n", i, prc->interruptions_stat_cpu[i], SYSCALL_NAMES_DUMMY[i]);
+		
+			break;
+		}
+		node = node->next;
+	}	
 }
 
 void cat(ScreenClass * screen, char * filename){
@@ -116,6 +163,10 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		sdk_prc_create_process((unsigned int)app_chat_server, 0, 0);
 	} else if (COMMAND("ls")){
 		ls(screen, current_path);
+	} else if (COMMAND("ps")){
+		ps(screen);
+	} else if (COMMAND_WITH_ARGS("profile ")){
+		profile(screen, &input[strlen("profile ")]);
 	} else if (COMMAND_WITH_ARGS("mkdir ")){
 		int res = fs_mkdir(&input[strlen("mkdir ")]);
 		if (res != FS_OK)

@@ -7,6 +7,7 @@
 #include "hardware/dkc/disk_driver.h"
 #include "kernel/kernel_debug.h"
 #include "kernel/kernel.h"
+#include "process/multitasking.h"
 
 #include <details/memdetails.h>
 
@@ -98,6 +99,12 @@ void syscall_prc_is_focused(void){
 
 void syscall_prc_die(void){
 	prc_die();
+}
+
+void syscall_get_scheduler_list(void){
+	Process * prc = prc_getCurrentProcess();
+	
+	prc->context->gregs[0] = (unsigned int)getSchedullerList();
 }
 
 //////////////////////
@@ -216,6 +223,7 @@ F_SYSCALL syscalls_cbacks[] =
 	syscall_prc_unlock,
 	syscall_prc_is_focused,
 	syscall_prc_die,
+	syscall_get_scheduler_list,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,
