@@ -260,14 +260,9 @@ void switchProcToNext(){
 	list_node_t * currProc = getCurrentProcessNode(); 
 	int trys = getSchedullerList()->len + 2;
 	do{
-		
 		prc = (Process *)nextProcess()->val;
-		
-		//printPrcIntsStat(prc);
 		trys --;
-						
 	} while (isNeedSleep(prc) && trys > 0); // check sleep time
-	//krn_debugLogf("active process: %s", prc->name);
 }
 
 bool isAllPrcAsleep(){
@@ -282,10 +277,25 @@ bool isAllPrcAsleep(){
 	return true;
 }
 
+void removeDeadProcesses(){
+	Process * prc;
+	list_node_t * node = firstTaskNode();
+	while (node){
+		prc = (Process *)node->val;
+		if (prc->i_should_die){
+			node = removeProcessFromScheduler(node);
+			continue;
+		}
+		node = node->next;
+	}
+}
+
 void clkKrnCback(int clk){	
 	if (clk != KRN_TIMER){
 		return;	
 	}
+		
+	removeDeadProcesses();
 		
 	/* if process need lock. skip scheduler
 	
@@ -304,7 +314,9 @@ void clkKrnCback(int clk){
 
 void prc_die(){
 	Process* prc = prc_getCurrentProcess();
-	prc->i_should_die = TRUE;
+	
+	if (prc->i_should_die == TRUE)
+		return;
 	
 	// change focus
 	if (getFocusedProcessNode()->val == prc){
@@ -316,7 +328,6 @@ void prc_die(){
 	
 	prc->sync_lock = FALSE;
 	
-	
 	krn_getIdleProcess()->sync_lock = TRUE;
 	
 	if (prc->exist_canvas == FALSE){	
@@ -326,8 +337,9 @@ void prc_die(){
 	
 	free(prc->stack);
 	_mem_destroy(prc->heap);
-	free(prc->heap);
+	free(prc->heap)
 	
+	prc->i_should_die = TRUE;
 	krn_getIdleProcess()->sync_lock = FALSE;
 }
 

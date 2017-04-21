@@ -71,7 +71,7 @@ void msgHandlerTexteditor(int type, int reason, int value){
 					
 					if (insPress  == true && value == 'x'){
 						sdk_debug_log("exit");
-						exit = 1;
+						//exit = 1;
 						close_app();
 					}
 				}

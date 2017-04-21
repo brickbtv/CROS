@@ -62,13 +62,18 @@ void addProcessToScheduler(void * process){
 	currFocusedProc = list_rpush(stackFocused, list_node_new(process));
 }
 
+list_node_t * removeProcessFromScheduler(list_node_t * node){
+	list_node_t * next = node->next;
+	list_remove(listPrcLoop, node);
+	return next;
+}
+
 void setFocusedProcess(void * prc, void * canvas_address){
 	list_node_t * node = firstTaskNode();
 	while (node && node->val != prc) 
 		node = node->next;
 	
 	currFocusedProc = node;
-	krn_debugLogf("%x", currFocusedProc);
 	hw_scr_mapScreenBuffer(canvas_address);
 }
 

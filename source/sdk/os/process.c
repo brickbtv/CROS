@@ -58,6 +58,6 @@ void sdk_prc_die(void){
 	//sdk_prc_sleep(10000);
 }
 
-void sdk_prc_get_scheduler_list(void){
-	return app_syscall0(syscall_get_scheduler_list);
+list_t * sdk_prc_get_scheduler_list(void){
+	return (list_t *)app_syscall0(syscall_get_scheduler_list);
 }

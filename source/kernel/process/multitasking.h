@@ -8,6 +8,7 @@ list_node_t * getCurrentProcessNode();
 list_node_t * getFocusedProcessNode();
 
 void addProcessToScheduler(void * process);
+list_node_t * removeProcessFromScheduler(list_node_t * node);
 list_node_t * nextProcess();
 
 list_node_t * firstTaskNode();
