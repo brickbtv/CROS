@@ -65,6 +65,9 @@ void shellExec(){
 }
 
 void shellAddSymbolToCommand(int value){
+	if ( ! (value >= 0x20 && value <= 0x7E))
+		return;
+
 	int screen_width = shell.screen->getScreenWidth(shell.screen);
 	
 	// command line can't be longer

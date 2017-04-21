@@ -61,7 +61,6 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	if (arg_line != 0){
 		int arg_line_size = (strlen((char*) arg_line) + 2) * sizeof(char);
 		prc->arg_line = calloc(arg_line_size);
-		//memset(prc->arg_line, 0, arg_line_size);
 		strcpy(prc->arg_line, (char*)arg_line);
 	}
 	
@@ -148,7 +147,11 @@ bool prc_is_focused(){
 
 int idleInsStatus = 0;
 
-void idleKeyboardEventHandler(KeyboardEvent event){
+/* return: 
+	true: if idle process handle KYB event
+	false: if KYB event should be delivired to focused app
+*/
+bool idleKeyboardEventHandler(KeyboardEvent event){
 	if (event.key_code == 0x03){ //insert
 		if (event.event_type == HW_KYB_EVENTTYPE_KEYPRESSED)
 			idleInsStatus = 1;
@@ -156,10 +159,16 @@ void idleKeyboardEventHandler(KeyboardEvent event){
 			idleInsStatus = 0;
 	}
 	
-	if (event.key_code == '[' && idleInsStatus == 1)
+	if (event.key_code == '[' && idleInsStatus == 1){
 		switchFocus(false);
-	if (event.key_code == ']' && idleInsStatus == 1)
+		return true;
+	}
+	if (event.key_code == ']' && idleInsStatus == 1){
 		switchFocus(true);
+		return true;
+	}
+		
+	return false;
 }
 
 void switchFocus(bool direct){

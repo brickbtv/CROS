@@ -107,8 +107,9 @@ void krn_halt(void){
 * 	Used directly, because kernel executed in privileged mode.
 */
 void kybCback(KeyboardEvent event){
+	if (idleKeyboardEventHandler(event))
+		return;
 	sendMessageToFocused(PRC_MESSAGE_KYB, event.event_type, event.key_code);
-	idleKeyboardEventHandler(event);
 }
 
 ScreenInfo scr_info;

@@ -78,7 +78,7 @@ void prc_skipCurrentProc(void);
 void sendMessageToAll(PRC_MESSAGE type, int reason, int value);
 void sendMessageToFocused(PRC_MESSAGE type, int reason, int value);
 
-void idleKeyboardEventHandler(KeyboardEvent event);
+bool idleKeyboardEventHandler(KeyboardEvent event);
 
 bool prc_is_focused();
 void prc_die();
