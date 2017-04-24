@@ -52,14 +52,15 @@ void ls(ScreenClass * screen, char * current_path){
 
 void ps(ScreenClass * screen){
 	ProcessDummy * prc;
-
-	screen->printf(screen, "PID\tname\tdead\n");
+	screen->setBackColor(screen, SCR_COLOR_BLUE);
+	screen->printf(screen, "PID\tdead\tINTs\tname\t\n");
+	screen->setBackColor(screen, SCR_COLOR_BLACK);
 	
 	list_t * processes_list = sdk_prc_get_scheduler_list();
 	list_node_t * node = processes_list->head;
 	while (node){
 		prc = (ProcessDummy *) node->val;
-		screen->printf(screen, "%d\t%s\t%d\n", prc->pid, prc->name, prc->i_should_die);
+		screen->printf(screen, "%d\t%d\t\t%d\t\t%s\n", prc->pid, prc->i_should_die, prc->interruptions_count, prc->name);
 		node = node->next;
 	}
 }
@@ -142,25 +143,25 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 	
 		CHECK_FILE_EXIST(args);
 	
-		sdk_prc_create_process((unsigned int)app_texteditor, args, 0);
+		sdk_prc_create_process((unsigned int)app_texteditor, "edit", args, 0);
 	} else if (COMMAND_WITH_ARGS("paint ")){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("paint ")]);
 	
 		CHECK_FILE_EXIST(args);
 	
-		sdk_prc_create_process((unsigned int)app_paint, args, 0);
+		sdk_prc_create_process((unsigned int)app_paint, "paint", args, 0);
 	} else if (COMMAND_WITH_ARGS("basic ")){
 		char * args = calloc(256);
 		sprintf(args, "%s/%s", current_path, &input[strlen("basic ")]);
 	
 		CHECK_FILE_EXIST(args);
 		
-		sdk_prc_create_process((unsigned int)app_basic, args, screen->getCanvas());
+		sdk_prc_create_process((unsigned int)app_basic, "basic", args, screen->getCanvas());
 	} else if (COMMAND("chat")){
-		sdk_prc_create_process((unsigned int)app_chat, 0, 0);
+		sdk_prc_create_process((unsigned int)app_chat, "chat", 0, 0);
 	} else if (COMMAND("chat_server")){
-		sdk_prc_create_process((unsigned int)app_chat_server, 0, 0);
+		sdk_prc_create_process((unsigned int)app_chat_server, "chat_server", 0, 0);
 	} else if (COMMAND("ls")){
 		ls(screen, current_path);
 	} else if (COMMAND("ps")){

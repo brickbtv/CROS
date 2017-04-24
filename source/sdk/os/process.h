@@ -38,7 +38,7 @@ typedef struct ProcessDummy{
 	bool i_should_die;
 }ProcessDummy;
 
-void sdk_prc_create_process(unsigned int entry_point, char * arg_line, unsigned int * parent_canvas);
+void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, unsigned int * parent_canvas);
 
 unsigned int sdk_prc_sleep(unsigned int ms);
 void sdk_prc_sleep_until_new_messages();
