@@ -29,7 +29,7 @@ bool sdk_prc_haveNewMessage(void){
 	return (bool)app_syscall0(syscall_prc_haveNewMessages);
 }
 
-void sdk_prc_handleMessage(F_PRC_MSGCBACK cback){
+void sdk_prc_handleMessage(F_PRC_MSGCBACK cback, void * userdata){
 	//PrcMessage * msg = (PrcMessage *)app_syscall0(syscall_prc_getNextMessage);
 	unsigned int msg = app_syscall0(syscall_prc_getNextMessage);//msg->type, rs = msg->reason, vl = msg->value;
 
@@ -37,7 +37,7 @@ void sdk_prc_handleMessage(F_PRC_MSGCBACK cback){
 	int reason = (msg & 0x00FF0000) >> 16;
 	int value = msg  & 0x0000FFFF;
 			
-	cback(type, reason, value);
+	cback(type, reason, value, userdata);
 }
 
 void sdk_prc_lock(void){

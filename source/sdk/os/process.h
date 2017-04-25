@@ -45,10 +45,10 @@ void sdk_prc_sleep_until_new_messages();
 unsigned int * sdk_prc_getCanvas();
 void * sdk_prc_getHeapPointer();
 
-typedef void (*F_PRC_MSGCBACK)(int type, int reason, int value);
+typedef void (*F_PRC_MSGCBACK)(int type, int reason, int value, void * userdata);
 
 bool sdk_prc_haveNewMessage(void);
-void sdk_prc_handleMessage(F_PRC_MSGCBACK cback);
+void sdk_prc_handleMessage(F_PRC_MSGCBACK cback, void * userdata);
 
 void sdk_prc_lock(void);
 void sdk_prc_unlock(void);

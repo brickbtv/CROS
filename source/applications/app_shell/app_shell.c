@@ -27,7 +27,7 @@ typedef struct APP_SHELL{
 
 static APP_SHELL shell;
 
-void blinkCBack(unsigned int tn){
+void blinkCBack(unsigned int tn, void * userdata){
 	shell.blink = ! shell.blink;
 	
 	shell.screen->printfXY(	shell.screen, 
@@ -77,10 +77,10 @@ void shellAddSymbolToCommand(int value){
 	shell.input[shell.symb++] = value;
 }
 
-void msgHandlerShell(int type, int reason, int value){
+void msgHandlerShell(int type, int reason, int value, void * userdata){
 	switch (type){
 		case SDK_PRC_MESSAGE_CLK:
-			timers_handleMessage(type, reason, value);
+			timers_handleMessage(type, reason, value, userdata);
 			break;
 		case SDK_PRC_MESSAGE_KYB: 
 			if (reason == KEY_STATE_KEYTYPED){
@@ -127,9 +127,9 @@ void printHelloMessage(){
 }
 
 void app_shell(void){
-	initShellApp()
+	initShellApp();
 		
-	timers_add_timer(0, 500, blinkCBack);
+	timers_add_timer(500, blinkCBack);
 		
 	if (mount_drive_and_mkfs_if_needed(shell.screen) == 2)
 		while(1){};	
@@ -139,7 +139,7 @@ void app_shell(void){
 	while(1){
 		if (sdk_prc_is_focused()){		
 			while (sdk_prc_haveNewMessage()){
-				sdk_prc_handleMessage(msgHandlerShell);
+				sdk_prc_handleMessage(msgHandlerShell, NULL);
 			}
 			sdk_prc_sleep_until_new_messages();
 		} else 

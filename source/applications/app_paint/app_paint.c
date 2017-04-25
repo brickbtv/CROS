@@ -42,13 +42,13 @@ int width = 20;
 int height = 10;
 char paint_path[256];
 
-char * open_file(const char * path, int * len){
+short * open_file(const char * path, int * len){
 	FILE * file = fs_open_file(path, 'r');
 	if (!file)
 		return NULL;
 	char buf[256];
 	int rb;
-	char * picture = NULL;
+	short * picture = NULL;
 	int size = -1;
 	fs_read_file(file, buf, 256, &rb);
 	while (rb > 0){
@@ -71,26 +71,24 @@ char * open_file(const char * path, int * len){
 	return picture;
 }
 
-void paintBlinkCBack(unsigned int tn){
-	if (tn == 2){
-		p_canvas->blink = !p_canvas->blink;
-		p_charmap->blink = !p_charmap->blink;
-		p_main_color->blink = !p_main_color->blink;
-		p_back_color->blink = !p_back_color->blink;
-		
-		gui_charmap_draw_blink(p_canvas, paint_canvas);
-		gui_charmap_draw_blink(p_charmap, paint_canvas);
-		gui_charmap_draw_blink(p_back_color, paint_canvas);
-		gui_charmap_draw_blink(p_main_color, paint_canvas);
-	}
+void paintBlinkCBack(unsigned int tn, void * userdata){
+	p_canvas->blink = !p_canvas->blink;
+	p_charmap->blink = !p_charmap->blink;
+	p_main_color->blink = !p_main_color->blink;
+	p_back_color->blink = !p_back_color->blink;
+	
+	gui_charmap_draw_blink(p_canvas, paint_canvas);
+	gui_charmap_draw_blink(p_charmap, paint_canvas);
+	gui_charmap_draw_blink(p_back_color, paint_canvas);
+	gui_charmap_draw_blink(p_main_color, paint_canvas);
 }
 
 int is_ins_pressed = 0;
 
-void appPaintMsgHandler(int type, int reason, int value){
+void appPaintMsgHandler(int type, int reason, int value, void * userdata){
 	switch (type){
 		case SDK_PRC_MESSAGE_CLK:
-			timers_handleMessage(type, reason, value);
+			timers_handleMessage(type, reason, value, userdata);
 			break;
 		case SDK_PRC_MESSAGE_KYB:
 			if (state == 0){
@@ -208,7 +206,7 @@ void app_paint(const char * path){
 	short * map;
 	
 	int len = 0;
-	char * pic = open_file(path, &len);
+	short * pic = open_file(path, &len);
 	sdk_debug_logf("LEN: %d", len);
 	if (pic != NULL){
 		// read format
@@ -265,13 +263,13 @@ void app_paint(const char * path){
 		sdk_scr_printfXY(paint_canvas, 0, 0, "Enter new file resolution in 'WIDTHxHEIGHT' format. Like '20x10':\n");
 		while (state == 0){
 			while (sdk_prc_haveNewMessage())
-				sdk_prc_handleMessage(appPaintMsgHandler);
+				sdk_prc_handleMessage(appPaintMsgHandler, NULL);
 		}
 		
 		sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
 	}
 	
-	timers_add_timer(2, 1000, paintBlinkCBack);
+	timers_add_timer(1000, paintBlinkCBack);
 		
 	paint_brush_x_offset = paint_canvas->res_hor - 34 + 1;
 	
@@ -335,7 +333,7 @@ void app_paint(const char * path){
 	
 	while (paint_run){
 		while (sdk_prc_haveNewMessage())
-			sdk_prc_handleMessage(appPaintMsgHandler);
+			sdk_prc_handleMessage(appPaintMsgHandler, NULL);
 	}
 	timers_del_timer(2);
 	sdk_prc_die();

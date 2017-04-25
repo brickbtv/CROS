@@ -8,6 +8,7 @@
 #define APP_TIMER_RESERVED 1
 
 list_t * timers_list = NULL;
+int timer_counter = 1;
 
 int getNearestFinishedTimer(){
 	list_node_t * node;
@@ -47,7 +48,7 @@ int getNearestTimerDelta(){
 	return nearest;
 }
 
-void timers_handleMessage(int type, int reason, int value){
+void timers_handleMessage(int type, int reason, int value, void * userdata){
 	if (type == SDK_PRC_MESSAGE_CLK){
 		int nearest_id = getNearestFinishedTimer();
 		while (nearest_id >= 0){
@@ -59,7 +60,7 @@ void timers_handleMessage(int type, int reason, int value){
 					STR_TIMER * timer = (STR_TIMER*)node->val;
 					if (timer->timer_number == nearest_id){
 						timer->last_tick = sdk_clk_timeSinceBoot();
-						(*timer->cback)(timer->timer_number);
+						(*timer->cback)(timer->timer_number, userdata);
 						break;
 					}
 				}
@@ -75,12 +76,12 @@ void timers_handleMessage(int type, int reason, int value){
 	}
 }
 
-void timers_add_timer(unsigned int timer_number, unsigned int ms, F_TIMER_CBACK timer_cback){
+int timers_add_timer(unsigned int ms, F_TIMER_CBACK timer_cback){
 	if (timers_list == NULL)
 		timers_list = list_new();
 		
 	STR_TIMER * str_timer = (STR_TIMER *)calloc(sizeof(STR_TIMER));
-	str_timer->timer_number = timer_number;
+	str_timer->timer_number = timer_counter;
 	str_timer->ms = ms;
 	str_timer->cback = timer_cback;
 	str_timer->last_tick = sdk_clk_timeSinceBoot();
@@ -89,9 +90,10 @@ void timers_add_timer(unsigned int timer_number, unsigned int ms, F_TIMER_CBACK 
 	
 	int nearest = getNearestTimerDelta();
 	if (nearest > 0){
-		sdk_debug_logf("ADD TIMER %d, MS: %d", timer_number, ms);
 		sdk_clk_setCountdownTimer(APP_TIMER_RESERVED, nearest, FALSE);
 	}
+	
+	return timer_counter ++;
 }
 
 void timers_del_timer(unsigned int timer_number){

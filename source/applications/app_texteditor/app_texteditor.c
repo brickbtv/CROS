@@ -19,31 +19,37 @@
 
 #include <preprocessor/preprocessor.h>
 
-ScreenClass * screen;
-GuiClass * gui;
-EditBoxClass * editbox;
+typedef struct TEXTEDITOR{
+	ScreenClass * screen;
+	GuiClass * gui;
+	EditBoxClass * editbox;
 
-list_t* text_lines;
+	list_t* text_lines;
 
-char path[256];
+	char path[256];
 
-int insPress;
-int exit = 0;
-bool blink = false;
+	int insPress;
+	int exit;
+	bool blink;
+	int timer_id;
+} TEXTEDITOR;
 
-void msgHandlerTexteditor(int type, int reason, int value){
-	editbox->handle_message(editbox, type, reason, value);
+void close_app(TEXTEDITOR * te);
+
+void msgHandlerTexteditor(int type, int reason, int value, void * userdata){
+	TEXTEDITOR * te = (TEXTEDITOR *)userdata;
+	te->editbox->handle_message(te->editbox, type, reason, value);
 	switch (type){
 		case SDK_PRC_MESSAGE_CLK:
-			timers_handleMessage(type, reason, value);
+			timers_handleMessage(type, reason, value, userdata);
 			break;
 		case SDK_PRC_MESSAGE_KYB: 	
 			// CTRL rplsmnt by INSERT
 			if (value == KEY_INSERT){
 				if (reason == KEY_STATE_KEYPRESSED)
-					insPress = 1;
+					te->insPress = 1;
 				else if (reason == KEY_STATE_KEYRELEASED)
-					insPress = 0;
+					te->insPress = 0;
 				
 				break;
 			}
@@ -51,12 +57,12 @@ void msgHandlerTexteditor(int type, int reason, int value){
 			if (reason == KEY_STATE_KEYTYPED){
 				// letters
 				if (value >= 0x20 && value <= 0x7E){
-					if (insPress  == true && value == 's'){
+					if (te->insPress  == true && value == 's'){
 						sdk_debug_log("saving");
 						
-						FILE * file = fs_open_file(path, 'w');
+						FILE * file = fs_open_file(te->path, 'w');
 						
-						list_iterator_t * it = list_iterator_new(text_lines, LIST_HEAD);
+						list_iterator_t * it = list_iterator_new(te->text_lines, LIST_HEAD);
 						list_node_t *node;
 						char end_line[2] = {'\n', 0};
 						while ((node = list_iterator_next(it))){
@@ -69,10 +75,10 @@ void msgHandlerTexteditor(int type, int reason, int value){
 						break;
 					}
 					
-					if (insPress  == true && value == 'x'){
+					if (te->insPress  == true && value == 'x'){
 						sdk_debug_log("exit");
 						//exit = 1;
-						close_app();
+						close_app(te);
 					}
 				}
 			}
@@ -80,71 +86,74 @@ void msgHandlerTexteditor(int type, int reason, int value){
 	}
 }
 
-void teBlinkCBack(unsigned int tn){
-	if (tn == 11){
-		blink = !blink;
-		editbox->set_blink(editbox, blink);
+void teBlinkCBack(unsigned int tn, void * userdata){
+	TEXTEDITOR * te = (TEXTEDITOR *)userdata;
+	if (tn == te->timer_id){
+		te->blink = !te->blink;
+		te->editbox->set_blink(te->editbox, te->blink);
 	}
 }
 
-void redraw_text_area(int start_line){
-	screen->clearScreen(screen, SCR_COLOR_WHITE);
-	gui->draw_header(gui, path);
-	gui->draw_bottom(gui, " INS^s - save    INS^x - quit");
+void redraw_text_area(TEXTEDITOR * te, int start_line){
+	te->screen->clearScreen(te->screen, SCR_COLOR_WHITE);
+	te->gui->draw_header(te->gui, te->path);
+	te->gui->draw_bottom(te->gui, " INS^s - save    INS^x - quit");
 
-	editbox->redraw(editbox, start_line);
+	te->editbox->redraw(te->editbox, start_line);
 }
 
-void close_app(){
-	free(editbox);
-	free(gui);
-	free(screen);
+void close_app(TEXTEDITOR * te){
+	free(te->editbox);
+	free(te->gui);
+	free(te->screen);
 	
 	timers_del_timer(11);
 	
-	close_preprocessed_file(text_lines);
+	close_preprocessed_file(te->text_lines);
 	sdk_prc_die();
 }
 
 void app_texteditor(const char* p){	
 	Canvas * cv = (Canvas*)sdk_prc_getCanvas();
+	
+	TEXTEDITOR * te = calloc(sizeof(TEXTEDITOR));
 		
-	exit = 0;
-	insPress = 0;
+	te->exit = 0;
+	te->insPress = 0;
 	
-	gui = malloc(sizeof(GuiClass));
-	gui = GuiClass_ctor(gui, cv);
+	te->gui = malloc(sizeof(GuiClass));
+	te->gui = GuiClass_ctor(te->gui, cv);
 	
-	screen = malloc(sizeof(ScreenClass));
-	screen = ScreenClass_ctor(screen, cv);
+	te->screen = malloc(sizeof(ScreenClass));
+	te->screen = ScreenClass_ctor(te->screen, cv);
 		
-	screen->clearScreen(screen, SCR_COLOR_WHITE);
+	te->screen->clearScreen(te->screen, SCR_COLOR_WHITE);
 	
-	editbox = malloc(sizeof(EditBoxClass));
-	editbox = EditBoxClass_ctor(editbox, 
-								screen,
+	te->editbox = malloc(sizeof(EditBoxClass));
+	te->editbox = EditBoxClass_ctor(te->editbox, 
+								te->screen,
 								0, 
 								1,
-								screen->getScreenHeight(screen) - 2, 
-								screen->getScreenWidth(screen));
+								te->screen->getScreenHeight(te->screen) - 2, 
+								te->screen->getScreenWidth(te->screen));
 	
-	memset(path, 0, sizeof(char) * 256);
-	strcpy(path, p);
+	memset(te->path, 0, sizeof(char) * 256);
+	strcpy(te->path, p);
 	
-	text_lines = preprocess_file(p, screen->getScreenWidth(screen));
-	editbox->set_list(editbox, text_lines);		
+	te->text_lines = preprocess_file(p, te->screen->getScreenWidth(te->screen));
+	te->editbox->set_list(te->editbox, te->text_lines);		
 	
-	redraw_text_area(0);
+	redraw_text_area(te, 0);
 	
-	timers_add_timer(11, 500, teBlinkCBack);
+	te->timer_id = timers_add_timer(500, teBlinkCBack);
 	
-	while(exit == 0){		
+	while(te->exit == 0){		
 	
 		while (sdk_prc_haveNewMessage()){
-			sdk_prc_handleMessage(msgHandlerTexteditor);
+			sdk_prc_handleMessage(msgHandlerTexteditor, te);
 		}
 		sdk_prc_sleep_until_new_messages();
 	}
 	
-	close_app();
+	close_app(te);
 }
