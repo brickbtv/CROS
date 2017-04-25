@@ -8,14 +8,21 @@
 
 #define DEF_ERR_HANDLER(r) if (r != FR_OK){ return FS_UNKNOWN_ERROR; } return FS_OK;
 
+FATFS * fs_pointers[4];
+
 int fs_mount_drive(int drive_id){
 	FATFS * fs = malloc(sizeof(FATFS));
 	char buf[10];
 	sprintf(buf, "%d:", drive_id);
+	buf[2] = 0;
+	
 	FRESULT res = f_mount(fs, buf, 1);
 	if (res == FR_NO_FILESYSTEM){
+		free(fs);
 		return FS_NO_FILESYSTEM;
 	} 
+	
+	fs_pointers[drive_id] = fs;
 	
 	DEF_ERR_HANDLER(res)
 } 

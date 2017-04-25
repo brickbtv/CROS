@@ -120,14 +120,27 @@ void cat(ScreenClass * screen, char * filename){
 
 void diskinfo(ScreenClass * screen){
 	screen->setBackColor(screen, SCR_COLOR_BLUE);
-	screen->printf(screen, "#\tnumSectors\tsectorSize\tstatus\n");
+	screen->printf(screen, "#\tFatFS\tnumSectors\tsectorSize\tstatus\n");
 	screen->setBackColor(screen, SCR_COLOR_BLACK);
 	
 	for (int i = 0; i < 4; i++){
 		DiskQuery dq;
 		sdk_dkc_get_disk_info(i, &dq);
+		int res = fs_mount_drive(i);
 		
-		screen->printf(screen, "%d\t%d\t\t%d\t\t\t%s\t\t\t\n", i, dq.numSectors, dq.sectorSize, dq.errorCode==0?"OK":"NOT CONNECTED");
+		char status[4];
+		if (res == FS_NO_FILESYSTEM)
+			strcpy(status, "No ");
+		else if (res == FS_OK)
+			strcpy(status, "Yes");
+		else
+			strcpy(status, "---");
+		status[3] = 0;
+		
+		if (dq.errorCode == 0)
+			screen->printf(screen, "%d\t%s\t\t%d\t\t%d\t\t\t%s\t\t\t\n", i, status, dq.numSectors, dq.sectorSize, "OK");
+		else 
+			screen->printf(screen, "%d\t%s\t\t%s\t\t\t%s\t\t\t%s\t\t\t\n", i, status, "---", "---", "NOT CONNECTED");
 	}
 }
 
