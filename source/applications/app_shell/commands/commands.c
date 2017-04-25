@@ -120,14 +120,14 @@ void cat(ScreenClass * screen, char * filename){
 
 void diskinfo(ScreenClass * screen){
 	screen->setBackColor(screen, SCR_COLOR_BLUE);
-	screen->printf(screen, "#\terror\tnumSectors\tsectorSize\n");
+	screen->printf(screen, "#\tnumSectors\tsectorSize\tstatus\n");
 	screen->setBackColor(screen, SCR_COLOR_BLACK);
 	
 	for (int i = 0; i < 4; i++){
 		DiskQuery dq;
 		sdk_dkc_get_disk_info(i, &dq);
 		
-		screen->printf(screen, "%d\t%d\t\t%d\t\t%d\t\t\t\n", i, dq.errorCode, dq.numSectors, dq.sectorSize);
+		screen->printf(screen, "%d\t%d\t\t%d\t\t\t%s\t\t\t\n", i, dq.numSectors, dq.sectorSize, dq.errorCode==0?"OK":"NOT CONNECTED");
 	}
 }
 
