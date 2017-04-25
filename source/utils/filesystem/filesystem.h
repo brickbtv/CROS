@@ -26,7 +26,7 @@ typedef struct FILEINFO{
 } FILEINFO;
 
 int fs_mount_drive(int drive_id);
-int fs_make_filesystem();
+int fs_make_filesystem(int drive_id);
 FILE * fs_open_file(const char* path, const char mode);
 void fs_close_file(FILE* file);
 int fs_write_file(FILE* file, const char * buf);

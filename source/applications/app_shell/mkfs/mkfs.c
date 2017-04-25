@@ -13,7 +13,7 @@ int mount_drive_and_mkfs_if_needed(ScreenClass * screen){
 	if (res != FS_OK){
 		if (res == FS_NO_FILESYSTEM){
 			screen->printf(screen, APP_SHELL_NO_FS);
-			int res_mkfs = fs_make_filesystem();
+			int res_mkfs = fs_make_filesystem(0);
 			if (res_mkfs != FS_OK){
 				screen->printf(screen, APP_SHELL_FAILED_FS);
 				return 1;

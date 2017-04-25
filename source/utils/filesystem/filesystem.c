@@ -3,22 +3,28 @@
 
 #include <details/memdetails.h>
 #include <string_shared.h>
+#include <stdio_shared.h>
 #include "sdk/os/debug.h"
 
 #define DEF_ERR_HANDLER(r) if (r != FR_OK){ return FS_UNKNOWN_ERROR; } return FS_OK;
 
 int fs_mount_drive(int drive_id){
 	FATFS * fs = malloc(sizeof(FATFS));
-	FRESULT res = f_mount(fs, "", 1);
+	char buf[10];
+	sprintf(buf, "%d:", drive_id);
+	FRESULT res = f_mount(fs, buf, 1);
 	if (res == FR_NO_FILESYSTEM){
 		return FS_NO_FILESYSTEM;
 	} 
 	
 	DEF_ERR_HANDLER(res)
-}
+} 
 
-int fs_make_filesystem(){
-	FRESULT res = f_mkfs("", 0, 0);
+int fs_make_filesystem(int drive_id){
+	char buf[10];
+	sprintf(buf, "%d:", drive_id);
+
+	FRESULT res = f_mkfs(buf, 0, 0);
 	DEF_ERR_HANDLER(res)
 }
 

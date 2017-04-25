@@ -3,6 +3,8 @@
 #include "utils/filesystem/filesystem.h"
 #include "sdk/os/process.h"
 #include "sdk/os/debug.h"
+#include "sdk/dkc/disk_drive.h"
+#include "kernel/hardware/dkc/disk_driver.h"
 
 #include "stdlib/details/memdetails.h"
 
@@ -116,6 +118,19 @@ void cat(ScreenClass * screen, char * filename){
 	}
 }
 
+void diskinfo(ScreenClass * screen){
+	screen->setBackColor(screen, SCR_COLOR_BLUE);
+	screen->printf(screen, "#\terror\tnumSectors\tsectorSize\n");
+	screen->setBackColor(screen, SCR_COLOR_BLACK);
+	
+	for (int i = 0; i < 4; i++){
+		DiskQuery dq;
+		sdk_dkc_get_disk_info(i, &dq);
+		
+		screen->printf(screen, "%d\t%d\t\t%d\t\t%d\t\t\t\n", i, dq.errorCode, dq.numSectors, dq.sectorSize);
+	}
+}
+
 void manage_command(ScreenClass * screen, char * current_path, const char * input){
 	#define COMMAND(cmd) strcmp(input, cmd) == 0
 	#define COMMAND_WITH_ARGS(cmd) strncmp(input, cmd, strlen(cmd)) == 0
@@ -166,6 +181,8 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		ls(screen, current_path);
 	} else if (COMMAND("ps")){
 		ps(screen);
+	} else if (COMMAND("diskinfo")){
+		diskinfo(screen);
 	} else if (COMMAND_WITH_ARGS("profile ")){
 		profile(screen, &input[strlen("profile ")]);
 	} else if (COMMAND_WITH_ARGS("mkdir ")){
