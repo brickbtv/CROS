@@ -107,7 +107,7 @@ void close_app(TEXTEDITOR * te){
 	free(te->gui);
 	free(te->screen);
 	
-	timers_del_timer(11);
+	timers_del_timer(te->timer_id);
 	
 	close_preprocessed_file(te->text_lines);
 	sdk_prc_die();

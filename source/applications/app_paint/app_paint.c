@@ -269,7 +269,7 @@ void app_paint(const char * path){
 		sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
 	}
 	
-	timers_add_timer(1000, paintBlinkCBack);
+	int timer_id = timers_add_timer(1000, paintBlinkCBack);
 		
 	paint_brush_x_offset = paint_canvas->res_hor - 34 + 1;
 	
@@ -335,6 +335,6 @@ void app_paint(const char * path){
 		while (sdk_prc_haveNewMessage())
 			sdk_prc_handleMessage(appPaintMsgHandler, NULL);
 	}
-	timers_del_timer(2);
+	timers_del_timer(timer_id);
 	sdk_prc_die();
 }
