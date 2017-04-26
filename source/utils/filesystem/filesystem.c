@@ -153,6 +153,10 @@ int fs_chdir(const char* dir){
 	DEF_ERR_HANDLER(res);
 }
 
+int fs_chdrive(const char* path){
+	FRESULT res = f_chdrive(path);
+}
+
 int fs_getcwd(char * cwd_str, int str_len){
 	FRESULT res = f_getcwd(cwd_str, str_len);
 	DEF_ERR_HANDLER(res);

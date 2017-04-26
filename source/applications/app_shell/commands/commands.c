@@ -145,6 +145,20 @@ void diskinfo(ScreenClass * screen){
 	}
 }
 
+void cd (ScreenClass * screen, char * current_path, char * path){
+	int res = fs_chdrive(path);
+	if (res != FS_OK){
+		screen->printf(screen, "Failed to change drive.\n");
+		return;
+	}
+	res = fs_chdir(path);
+	if (res != FS_OK){
+		screen->printf(screen, "Failed to change directory.\n");
+		return;
+	}
+	fs_getcwd(current_path, 256);
+}
+
 void mkfs(ScreenClass * screen, char * arg){
 	int drive = arg[0] - '0';
 	
@@ -219,10 +233,7 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 			screen->printf(screen, "Failed to create file.\n");
 		}
 	} else if (COMMAND_WITH_ARGS("cd ")){
-		int res = fs_chdir(&input[strlen("cd ")]);
-		if (res != FS_OK)
-			screen->printf(screen, "Failed to change directory.\n");
-		fs_getcwd(current_path, 256);
+		cd(screen, current_path, &input[strlen("cd ")]);
 	} else if (COMMAND_WITH_ARGS("rm ")){
 		int res = fs_unlink(&input[strlen("rm ")]);
 		if (res != FS_OK)
