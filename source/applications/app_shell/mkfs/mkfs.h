@@ -3,6 +3,6 @@
 
 #include <sdk/scr/ScreenClass.h>
 
-int mount_drive_and_mkfs_if_needed(ScreenClass * screen);
+int mount_drive_and_mkfs_if_needed(ScreenClass * screen, int drive);
 
 #endif 

@@ -131,7 +131,7 @@ void app_shell(void){
 		
 	timers_add_timer(500, blinkCBack);
 		
-	if (mount_drive_and_mkfs_if_needed(shell.screen) == 2)
+	if (mount_drive_and_mkfs_if_needed(shell.screen, 0) == 2)
 		while(1){};	
 		
 	printHelloMessage();

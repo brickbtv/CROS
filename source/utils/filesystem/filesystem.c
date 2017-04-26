@@ -18,7 +18,7 @@ int fs_mount_drive(int drive_id){
 	
 	FRESULT res = f_mount(fs, buf, 1);
 	if (res == FR_NO_FILESYSTEM){
-		free(fs);
+		//free(fs);
 		return FS_NO_FILESYSTEM;
 	} 
 	

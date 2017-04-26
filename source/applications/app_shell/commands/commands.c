@@ -21,6 +21,7 @@
 #include "app_paint/app_paint.h"
 
 #include "sdk/syscall_def.h"
+#include "../mkfs/mkfs.h"
 
 int is_file_exists(char * filename){
 	FILE * file = fs_open_file(filename, 'r');
@@ -144,6 +145,12 @@ void diskinfo(ScreenClass * screen){
 	}
 }
 
+void mkfs(ScreenClass * screen, char * arg){
+	int drive = arg[0] - '0';
+	
+	mount_drive_and_mkfs_if_needed(screen, drive);
+}
+
 void manage_command(ScreenClass * screen, char * current_path, const char * input){
 	#define COMMAND(cmd) strcmp(input, cmd) == 0
 	#define COMMAND_WITH_ARGS(cmd) strncmp(input, cmd, strlen(cmd)) == 0
@@ -198,6 +205,8 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		diskinfo(screen);
 	} else if (COMMAND_WITH_ARGS("profile ")){
 		profile(screen, &input[strlen("profile ")]);
+	} else if (COMMAND_WITH_ARGS("mkfs ")){
+		mkfs(screen, &input[strlen("mkfs ")]);
 	} else if (COMMAND_WITH_ARGS("mkdir ")){
 		int res = fs_mkdir(&input[strlen("mkdir ")]);
 		if (res != FS_OK)
