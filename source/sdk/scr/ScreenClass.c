@@ -68,6 +68,7 @@ ScreenClass * ScreenClass_ctor(ScreenClass * this, Canvas * canvas){
 	this->putchar = ScreenClass_putchar;
 	this->getScreenWidth = getScreenWidth;
 	this->getScreenHeight = getScreenHeight;
+	this->getCanvas = getCanvas;
 	
 	return this;
 }

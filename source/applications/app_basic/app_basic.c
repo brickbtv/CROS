@@ -12,7 +12,7 @@
 
 int exit_basic = 0;
 
-void msgBasicHandlerShell(int type, int reason, int value){
+void msgBasicHandlerShell(int type, int reason, int value, void * userdata){
 	switch (type){
 		case SDK_PRC_MESSAGE_KYB: 
 			if (reason == KEY_STATE_KEYTYPED){
@@ -43,7 +43,7 @@ void app_basic(const char* path){
 	sdk_scr_printf(sdk_prc_getCanvas(), "Program is finished. Press any key to exit...\n");
 	while(exit_basic == 0){
 		if (sdk_prc_haveNewMessage()){
-			sdk_prc_handleMessage(msgBasicHandlerShell);
+			sdk_prc_handleMessage(msgBasicHandlerShell, NULL);
 		}
 		
 		sdk_prc_sleep(500);

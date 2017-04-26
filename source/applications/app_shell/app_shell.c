@@ -130,7 +130,10 @@ void app_shell(void){
 	initShellApp();
 		
 	timers_add_timer(500, blinkCBack);
-		
+	
+	for (int i = 0; i < 4; i++)
+		fs_mount_drive(i);
+	
 	if (mount_drive_and_mkfs_if_needed(shell.screen, 0) == 2)
 		while(1){};	
 		

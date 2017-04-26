@@ -29,6 +29,7 @@ APCPU instruction set - is a part of G4 game https://bitbucket.org/ruifig/g4devk
     * 'ps' - list of processes
     * 'profile PID' - show PID HWI/SWI statistics
     * 'diskinfo' - show info about disk drives & FatFS state
+    * 'mkfs DRIVE' - make FatFS at selected disk drive
 * Chat
     * 'chat' - client app
     * 'chat_server' - server app

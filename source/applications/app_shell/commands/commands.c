@@ -174,25 +174,25 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		" 'chat_server' - simple chat server for 'chat' app\n");
 	} else if (COMMAND_WITH_ARGS("edit ")){
 		char * args = calloc(256);
-		sprintf(args, "%s/%s", current_path, &input[strlen("edit ")]);
+		sprintf(args, "%s", &input[strlen("edit ")]);
 	
 		CHECK_FILE_EXIST(args);
 	
 		sdk_prc_create_process((unsigned int)app_texteditor, "edit", args, 0);
 	} else if (COMMAND_WITH_ARGS("paint ")){
 		char * args = calloc(256);
-		sprintf(args, "%s/%s", current_path, &input[strlen("paint ")]);
+		sprintf(args, "%s", &input[strlen("paint ")]);
 	
 		CHECK_FILE_EXIST(args);
 	
 		sdk_prc_create_process((unsigned int)app_paint, "paint", args, 0);
 	} else if (COMMAND_WITH_ARGS("basic ")){
 		char * args = calloc(256);
-		sprintf(args, "%s/%s", current_path, &input[strlen("basic ")]);
+		sprintf(args, "%s", &input[strlen("basic ")]);
 	
 		CHECK_FILE_EXIST(args);
 		
-		sdk_prc_create_process((unsigned int)app_basic, "basic", args, screen->getCanvas());
+		sdk_prc_create_process((unsigned int)app_basic, "basic", args, screen->getCanvas(screen));
 	} else if (COMMAND("chat")){
 		sdk_prc_create_process((unsigned int)app_chat, "chat", 0, 0);
 	} else if (COMMAND("chat_server")){
