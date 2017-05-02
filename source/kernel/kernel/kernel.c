@@ -19,6 +19,7 @@
 #include "hardware/clk/clock_driver.h"
 #include "hardware/scr/screen_driver.h"
 #include "hardware/kyb/keyboard_driver.h"
+#include "hardware/nic/network_driver.h"
 
 #include "autorun/autorun.h"
 
@@ -112,6 +113,14 @@ void kybCback(KeyboardEvent event){
 	sendMessageToFocused(PRC_MESSAGE_KYB, event.event_type, event.key_code);
 }
 
+/*!
+*	Network card interruptions handler. 
+* 	Used directly, because kernel executed in privileged mode.
+*/
+void nicCback(int reason){
+	sendMessageToAll(PRC_MESSAGE_NIC, reason, 0);
+}
+
 ScreenInfo scr_info;
 
 /*!
@@ -121,6 +130,7 @@ void krn_start(void){
 	hw_initAll();
 
 	hw_kyb_setCallback(kybCback);
+	hw_nic_setNetworkCallback(nicCback);
 	
 	scr_info = *processKernel->screen;//hw_scr_screenInfo();		
 	krn_drawLogo(&scr_info);

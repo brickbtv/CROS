@@ -35,6 +35,9 @@ void hw_nic_retrieveIncomingPacket(char * msg, uint32_t size, uint32_t * network
 NetworkBuffersState hw_nic_queryBufferState();
 NetworkGlobalState hw_nic_queryGlobalState();
 
+typedef void (*F_HW_NIC_CBACK)(int);
 void hw_nic_handleInterrupt(uint32_t reason);
+
+void hw_nic_setNetworkCallback(F_HW_NIC_CBACK cback);
 
 #endif

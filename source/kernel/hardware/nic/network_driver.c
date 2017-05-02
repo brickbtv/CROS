@@ -1,4 +1,4 @@
-#include "network_driver.H"
+#include "network_driver.h"
 
 #include "hwi/hwi.h"
 
@@ -61,11 +61,19 @@ NetworkGlobalState hw_nic_queryGlobalState(){
 	return state;
 }
 
+static F_HW_NIC_CBACK hw_nic_cback = NULL;
+
 void hw_nic_handleInterrupt(uint32_t reason){
 	if (reason == HW_NIC_INTS_LASTPACKETISSEND){
 		// TODO: ?
 		// NOTE: don't send info about this interuption to NIC0. never.
+		if (hw_nic_cback != NULL)
+			hw_nic_cback(reason);
 	} else {
 		krn_debugBSODf("NIC0 interruption", "Unknown reason - %d", reason);
 	}
+}
+
+void hw_nic_setNetworkCallback(F_HW_NIC_CBACK cback){
+	hw_nic_cback = cback;
 }
