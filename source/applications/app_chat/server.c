@@ -39,56 +39,69 @@ void sendMsg(int addr, char * fmt, ...){
 	list_iterator_destroy(it);
 }
 
+void msgHandlerChatServer(int type, int reason, int value, void * userdata){
+	switch (type){
+		case SDK_PRC_MESSAGE_NIC:
+			{
+				int addr;
+				char msg[1024];
+				memset(msg, 0, 1024 * sizeof(char));
+				int recv_size = sdk_nic_recv(msg, 1024, &addr);
+				
+				if ((strlen(msg) > 0) && (strcmp(msg, "> SEARCH CR CHAT SERVER") == 0)){
+					sdk_scr_printf(canvas2, "New client addr: %d. Reply.\n", addr);
+					sdk_nic_send(addr, "< SEARCH RESPONSE", strlen("< SEARCH RESPONSE"));
+				}
+				
+				if ((strlen(msg) > 0) && (strncmp(msg, "> NICKNAME", 8) == 0)){
+					sdk_scr_printf(canvas2, "name: %s\n", &msg[11]);
+					
+					ClientInfo * cl = malloc(sizeof(ClientInfo));
+					memset(cl, 0, sizeof(ClientInfo));
+					
+					cl->addr = addr;
+					strncpy(cl->name, &msg[10], strlen(&msg[10]));
+					
+					if (list_clients == 0){
+						list_clients = list_new((void*)cl);
+					}
+					
+					list_rpush(list_clients, list_node_new((void*)cl));			
+					
+					sendMsg(addr, "< NEWUSER %s", cl->name);
+				}
+				
+				if ((strlen(msg) > 0) && (strncmp(msg, "> MESSAGE ", 8) == 0)){
+					sdk_scr_printf(canvas2, "msg: %s\n", &msg[10]);
+					
+					//sender name
+					ClientInfo * author = NULL;
+					
+					list_node_t *node;
+					list_iterator_t *it = list_iterator_new(list_clients, LIST_HEAD);
+					while ((node = list_iterator_next(it))) {
+						author = (ClientInfo*)node->val;
+						if (author->addr == addr){
+							break;
+						}
+					}	
+					list_iterator_destroy(it);
+					
+					sendMsg(addr, "< MESSAGE %s: %s", author->name, &msg[10]);
+				}
+			}
+			break;
+	}
+}
+
 void app_chat_server(){
 	canvas2 = (Canvas *)sdk_prc_getCanvas();
 	
 	sdk_scr_printfXY(canvas2, 0, 0, "Starting server.\n");
-	while (1){
-		int addr;
-		char msg[1024];
-		memset(msg, 0, 1024 * sizeof(char));
-		int recv_size = sdk_nic_recv(msg, 1024, &addr);
-		
-		if ((strlen(msg) > 0) && (strcmp(msg, "> SEARCH CR CHAT SERVER") == 0)){
-			sdk_scr_printf(canvas2, "New client addr: %d. Reply.\n", addr);
-			sdk_nic_send(addr, "< SEARCH RESPONSE", strlen("< SEARCH RESPONSE"));
+	while (1){		
+		while (sdk_prc_haveNewMessage()){
+			sdk_prc_handleMessage(msgHandlerChatServer, 0);
 		}
-		
-		if ((strlen(msg) > 0) && (strncmp(msg, "> NICKNAME", 8) == 0)){
-			sdk_scr_printf(canvas2, "name: %s\n", &msg[11]);
-			
-			ClientInfo * cl = malloc(sizeof(ClientInfo));
-			memset(cl, 0, sizeof(ClientInfo));
-			
-			cl->addr = addr;
-			strncpy(cl->name, &msg[10], strlen(&msg[10]));
-			
-			if (list_clients == 0){
-				list_clients = list_new((void*)cl);
-			}
-			
-			list_rpush(list_clients, list_node_new((void*)cl));			
-			
-			sendMsg(addr, "< NEWUSER %s", cl->name);
-		}
-		
-		if ((strlen(msg) > 0) && (strncmp(msg, "> MESSAGE ", 8) == 0)){
-			sdk_scr_printf(canvas2, "msg: %s\n", &msg[10]);
-			
-			//sender name
-			ClientInfo * author = NULL;
-			
-			list_node_t *node;
-			list_iterator_t *it = list_iterator_new(list_clients, LIST_HEAD);
-			while ((node = list_iterator_next(it))) {
-				author = (ClientInfo*)node->val;
-				if (author->addr == addr){
-					break;
-				}
-			}	
-			list_iterator_destroy(it);
-			
-			sendMsg(addr, "< MESSAGE %s: %s", author->name, &msg[10]);
-		}
+		sdk_prc_sleep_until_new_messages();
 	}
 }

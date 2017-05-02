@@ -23,8 +23,60 @@ int findServer();
 
 static int state = 0;	//0 - connection; 1 - name request ; 2 - chat;
 
-void msgHandler(int type, int reason, int value){
+void scroll(){
+	if (line > canvas->res_ver - 5){
+		//scroll
+		for (int i = 1; i < line; i++){
+			short linesize_bytes = canvas->res_hor;
+			short * dest = (canvas->addr + linesize_bytes*i);
+			
+			memcpy(dest, dest + linesize_bytes, 60*2);
+		}
+		line--;
+	}
+}
+
+
+void msgHandler(int type, int reason, int value, void * userdata){
 	switch (type){
+		case SDK_PRC_MESSAGE_NIC:
+			if (state == 2){
+				char msg[1024];
+				int addr;
+				
+				// new message received?
+				memset(msg, 0, 1024 * sizeof(char));
+				int recvs = sdk_nic_recv(msg, 1024, &addr);
+				if ((strlen(msg) > 0) && (strncmp("< MESSAGE", msg, 6) == 0)){
+					char cutmsg[100];
+					memset(cutmsg, 0, sizeof(char) * 100);
+					
+					if (strlen(&msg[10]) >= 55){
+						strncpy(cutmsg, &msg[10], 55);
+						cutmsg[55] = '.';
+						cutmsg[56] = '.';
+						cutmsg[57] = '.';
+						cutmsg[58] = 0;
+					} else {
+						strcpy(cutmsg, &msg[10]);
+					}
+				
+					sdk_scr_printfXY(canvas, 1, line, ">%s", cutmsg);
+					line++;		
+					scroll();
+				}
+				if ((strlen(msg) > 0) && (strncmp("< NEWUSER", msg, 6) == 0)){
+					sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
+					sdk_scr_printfXY(canvas, 1, line, "user %s joined the chanel", &msg[10]);
+					sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
+					line++;	
+					
+					sdk_scr_printfXY(canvas, 62, users_line, &msg[10]);
+					users_line++;
+					scroll();
+				}
+			}
+			break;
 		case SDK_PRC_MESSAGE_KYB: 
 			if (reason == KEY_STATE_KEYTYPED){
 				if (value == 0x01){
@@ -68,22 +120,6 @@ void msgHandler(int type, int reason, int value){
 				}
 			}
 			break;
-			
-		case SDK_PRC_MESSAGE_NIC:
-			break;
-	}
-}
-
-void scroll(){
-	if (line > canvas->res_ver - 5){
-		//scroll
-		for (int i = 1; i < line; i++){
-			short linesize_bytes = canvas->res_hor;
-			short * dest = (canvas->addr + linesize_bytes*i);
-			
-			memcpy(dest, dest + linesize_bytes, 60*2);
-		}
-		line--;
 	}
 }
 
@@ -94,81 +130,43 @@ void app_chat(void){
 	memset(input, 0, 1024 * sizeof(char));
 		
 	while (1){
-		switch (state){
-			case 0:
-				sdk_scr_printfXY(canvas, 0, 0, "Search server... ");
-				server_addr = findServer();
-				state = 1;
-				sdk_scr_printf(canvas, "done.\nEnter your name: \n");
-				break;
-			case 1:
-				
-				
-				break;
-			case 2:
-				{
-					char msg[1024];
-					int addr;
-					
-					// new message received?
-					memset(msg, 0, 1024 * sizeof(char));
-					int recvs = sdk_nic_recv(msg, 1024, &addr);
-					if ((strlen(msg) > 0) && (strncmp("< MESSAGE", msg, 6) == 0)){
-						char cutmsg[100];
-						memset(cutmsg, 0, sizeof(char) * 100);
-						
-						if (strlen(&msg[10]) >= 55){
-							strncpy(cutmsg, &msg[10], 55);
-							cutmsg[55] = '.';
-							cutmsg[56] = '.';
-							cutmsg[57] = '.';
-							cutmsg[58] = 0;
-						} else {
-							strcpy(cutmsg, &msg[10]);
-						}
-					
-						sdk_scr_printfXY(canvas, 1, line, ">%s", cutmsg);
-						line++;		
-						scroll();
-					}
-					if ((strlen(msg) > 0) && (strncmp("< NEWUSER", msg, 6) == 0)){
-						sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
-						sdk_scr_printfXY(canvas, 1, line, "user %s joined the chanel", &msg[10]);
-						sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
-						line++;	
-						
-						sdk_scr_printfXY(canvas, 62, users_line, &msg[10]);
-						users_line++;
-						scroll();
-					}
-						
-				}
-				break;
+		if (state == 0){
+			sdk_scr_printfXY(canvas, 0, 0, "Search server... ");
+			server_addr = findServer();
+			if (server_addr < 0){
+				sdk_scr_printf(canvas, "Failed\n");
+				sdk_prc_sleep(2000);
+				sdk_prc_die();
+				return;
+			}
+			state = 1;
+			sdk_scr_printf(canvas, "done.\nEnter your name: \n");
 		}
 	
-		if (sdk_prc_haveNewMessage()){
-			sdk_prc_handleMessage(msgHandler);
+		while (sdk_prc_haveNewMessage()){
+			sdk_prc_handleMessage(msgHandler, 0);
 		}
+		sdk_prc_sleep_until_new_messages();
 	}
 }
 
 int findServer(){
-	while (1){
-		char msg[1024];
-		int addr;
+	char msg[1024];
+	int addr;
+	
+	// send broadcast
+	for (int i = 1; i < 1024; i++){
+		char req[40] = "> SEARCH CR CHAT SERVER";
+		sdk_nic_send(i, req, strlen(req));
 		
-		// send broadcast
-		for (int i = 1; i < 1024; i++){
-			char req[40] = "> SEARCH CR CHAT SERVER";
-			sdk_nic_send(i, req, strlen(req));
-			
-			memset(msg, 0, 1024 * sizeof(char));
-			int recvs = sdk_nic_recv(msg, 1024, &addr);
-			if ((strlen(msg) > 0) && (strcmp("< SEARCH RESPONSE", msg) == 0)){
-				return addr;
-			} 
-		}		
+		memset(msg, 0, 1024 * sizeof(char));
+		int recvs = sdk_nic_recv(msg, 1024, &addr);
+		if ((strlen(msg) > 0) && (strcmp("< SEARCH RESPONSE", msg) == 0)){
+			return addr;
+		} 
 	}
+
+	return -1;
 }
 
 
