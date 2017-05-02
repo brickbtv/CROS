@@ -159,6 +159,43 @@ void cd (ScreenClass * screen, char * current_path, char * path){
 	fs_getcwd(current_path, 256);
 }
 
+void cp(ScreenClass * screen, char * args){
+	int pos = find(args, ' ', 0);
+	if (pos == -1){
+		screen->printf(screen, "Invalid args");
+		return;
+	}
+	
+	char src_name[256];
+	strncpy(src_name, args, pos);
+	char * dst_name = &args[pos + 1];
+	
+	if (!is_file_exists(src_name)){
+		screen->printf(screen, "Failed to open source file");
+		return;
+	}
+	
+	FILE * f_src = fs_open_file(src_name, 'r');
+	FILE * f_dst = fs_open_file(dst_name, 'w');
+	
+	unsigned char buffer[4096];
+	int br = 0, bw = 0;
+	int fr = 0;
+	
+	for (;;) {
+        fr = fs_read_file(f_src, buffer, sizeof(buffer), &br);
+        if (fr || br == 0) 
+			break;
+			
+        fr = fs_write_file(f_dst, buffer);           
+        if (fr || bw < br) 
+			break; 
+    }
+	
+	fs_close_file(f_src);
+	fs_close_file(f_dst);
+}
+
 void mkfs(ScreenClass * screen, char * arg){
 	int drive = arg[0] - '0';
 	
@@ -168,7 +205,7 @@ void mkfs(ScreenClass * screen, char * arg){
 void manage_command(ScreenClass * screen, char * current_path, const char * input){
 	#define COMMAND(cmd) strcmp(input, cmd) == 0
 	#define COMMAND_WITH_ARGS(cmd) strncmp(input, cmd, strlen(cmd)) == 0
-	#define CHECK_FILE_EXIST(filename) if (!is_file_exists(filename){\
+	#define CHECK_FILE_EXIST(filename) if (!is_file_exists(filename)){\
 			screen->printf(screen, "Failed to open file.\n");\
 			return;\
 		}\
@@ -207,6 +244,8 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		CHECK_FILE_EXIST(args);
 		
 		sdk_prc_create_process((unsigned int)app_basic, "basic", args, screen->getCanvas(screen));
+	} else if (COMMAND_WITH_ARGS("cp ")){		
+		cp(screen, &input[strlen("cp ")]);
 	} else if (COMMAND("chat")){
 		sdk_prc_create_process((unsigned int)app_chat, "chat", 0, 0);
 	} else if (COMMAND("chat_server")){
