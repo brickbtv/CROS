@@ -162,7 +162,7 @@ void cd (ScreenClass * screen, char * current_path, char * path){
 void cp(ScreenClass * screen, char * args){
 	int pos = find(args, ' ', 0);
 	if (pos == -1){
-		screen->printf(screen, "Invalid args");
+		screen->printf(screen, "Invalid args\n");
 		return;
 	}
 	
@@ -171,7 +171,7 @@ void cp(ScreenClass * screen, char * args){
 	char * dst_name = &args[pos + 1];
 	
 	if (!is_file_exists(src_name)){
-		screen->printf(screen, "Failed to open source file");
+		screen->printf(screen, "Failed to open source file\n");
 		return;
 	}
 	
