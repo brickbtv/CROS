@@ -95,6 +95,10 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_test\\asm.asm",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_shell\\commands\\commands.c",
 			"bootfile": false
 		},

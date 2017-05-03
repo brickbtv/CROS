@@ -4,4 +4,6 @@
 void app_test(void);
 void asm_func(void);
 
+void asm_test(void);
+
 #endif
