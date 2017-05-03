@@ -33,11 +33,14 @@ void app_test(void){
 	
 	for (int i = 0; i < 60; i++){
 		sdk_scr_printf(canvas, "\n");
+		sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
 		unsigned char * caddr = start_addr + i;
 		if (*caddr >= 10)
 			sdk_scr_printf(canvas, " 0x%x    %x", caddr, *caddr);
 		else 
 			sdk_scr_printf(canvas, " 0x%x    %x ", caddr, *caddr);
+		
+		sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
 		
 		unsigned char instr = *caddr;
 		
