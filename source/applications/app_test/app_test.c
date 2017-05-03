@@ -14,6 +14,9 @@ int run(){
 }
 
 char * alu_opcode[] = {"AND", "EOR", "SUB", "RSB", "ADD", "OP ", "SLL", "SRL", "SRA"};
+char * mul_div[] = {"SMUL", "UMUL", "SDIV", "UDIV"};
+char * push_pop[] = {"PUSH", "POP"};
+char * mrs_msr[] = {"MRS", "MSR"};
 
 void app_test(void){	
 	Canvas * canvas = (Canvas *)sdk_prc_getCanvas();
@@ -33,44 +36,112 @@ void app_test(void){
 		
 		// ALU
 		if (instr >= 0 && instr <= 0x2F){
+			int code = instr;
 			int opcode = instr % 16;			
 			NEXT_BYTE
 			int reg = instr / 16;
 			int rop1 = instr % 16;
-			if (instr >= 0 && instr <=0x0F){
+			if (code >= 0 && code <=0x0F){
 				NEXT_BYTE
 				sdk_scr_printf(canvas, "    %s R%d, R%d, R%d", alu_opcode[opcode], reg, rop1, instr / 16);
-			} else if (instr > 0x0F && instr <=0x1F){
+			} else if (code > 0xF && code <=0x1F){
 				NEXT_BYTE
 				sdk_scr_printf(canvas, "    %s R%d, R%d, %d", alu_opcode[opcode], reg, rop1, instr);
-			} else if (instr > 0x1F && instr <=0x2F){
+			} else if (code > 0x1F && code <=0x2F){
 				IMM32
 				sdk_scr_printf(canvas, "    %s R%d, R%d, %lu", alu_opcode[opcode], reg, rop1, imm32);
 			}
 			continue;
 		}
+		
+		// Multiplication/division
+		if (instr >= 0x3 && instr <= 0x37){
+			int opcode = instr % 16;
+			NEXT_BYTE
+			int r0 = instr / 16;
+			int r1 = instr % 16;
+			NEXT_BYTE
+			int rop1 = instr / 16;
+			int rop2 = instr % 16;
+			if (opcode % 2 == 1){
+				IMM32
+				sdk_scr_printf(canvas, "    %s R%d, R%d, R%d, %lu", mul_div[opcode / 2], r0, r1, rop1, imm32);
+			} else {
+				sdk_scr_printf(canvas, "    %s R%d, R%d, R%d, R%d", mul_div[opcode / 2], r0, r1, rop1, rop2);
+			}
+				
+			continue;
+		}
 				
 		if (instr == 0x38){
 			sdk_scr_printf(canvas, "    NOP");
-		} else if (instr == 0x60){
-			NEXT_BYTE
-			sdk_scr_printf(canvas, "    MOV R%d, R%d", instr / 16, instr % 16);
-		} else if (instr == 0x61){
-			NEXT_BYTE
-			sdk_scr_printf(canvas, "    MOV R%d, %d", instr / 16, instr % 16);
-		} else if (instr == 0x62){
-			NEXT_BYTE
-			int reg = instr / 16;
-			NEXT_BYTE
-			sdk_scr_printf(canvas, "    MOV R%d, %d", reg, instr);
-		} else if (instr == 0x63){
-			NEXT_BYTE
-			int reg = instr / 16;
-			IMM32
-			sdk_scr_printf(canvas, "    MOV R%d, %lu", reg, imm32);
+			continue;
 		}
-	}
-	
+		
+		if (instr == 0x39){
+			sdk_scr_printf(canvas, "    DBGBRK");
+			continue;
+		}
+		
+		if (instr == 0x3A){
+			NEXT_BYTE
+			int rdest = instr / 16;
+			int rval = instr % 16;
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    SWP R%d, R%d, R%d, %c", rdest, rval, instr / 16, (instr%16 == 0)?'B':'W');
+			continue;
+		}
+		
+		if (instr == 0x3B){
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    NOT R%d, R%d", instr / 16, instr % 16);
+			continue;
+		}
+		
+		if (instr == 0x3C || instr == 0x3D){
+			int code = instr;
+			NEXT_BYTE
+			int rbase = instr / 16;
+			int flags = instr % 16;
+			NEXT_BYTE
+			int byte1 = instr
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    %s R%d, %x, %x%x", push_pop[code % 2], rbase, flags, byte1, instr);
+			continue;
+		}
+		
+		if (instr == 0x3E || instr == 0x3F){
+			int code = instr;
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    %s R%d", mrs_msr[code % 2], instr / 16);
+		}
+		
+		// store/load single
+		if (instr >= 0x40 && instr <= 0x53){
+			
+		}
+			
+		// mov
+		if (instr >= 0x60 && instr <= 0x63){
+			int code = instr;
+			NEXT_BYTE
+			if (code == 0x60){
+				sdk_scr_printf(canvas, "    MOV R%d, R%d", instr / 16, instr % 16);
+			} else if (code == 0x61){
+				sdk_scr_printf(canvas, "    MOV R%d, %d", instr / 16, instr % 16);
+			} else if (code == 0x62){
+				int reg = instr / 16;
+				NEXT_BYTE
+				sdk_scr_printf(canvas, "    MOV R%d, %d", reg, instr);
+			} else if (code == 0x63){
+				int reg = instr / 16;
+				IMM32
+				sdk_scr_printf(canvas, "    MOV R%d, %lu", reg, imm32);
+			}
+			
+			continue; 
+		}
+	}	
 	
 	while(1){
 		sdk_prc_sleep_until_new_messages();

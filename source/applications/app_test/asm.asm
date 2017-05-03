@@ -5,6 +5,16 @@
 public _asm_test
 _asm_test:
 	nop
+	mrs r2
+	msr r3
+	nop
+	push {lr}
+	nop
+	not r12, r14
+	nop
+	smul r0:r1, r2 ,r3
+	smul r0, r2, 65525
+	nop
 	add r0, r1, r2
 	sub r0, r1, 123
 	sra r0, r1, 65530
