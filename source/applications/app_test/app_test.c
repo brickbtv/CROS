@@ -122,7 +122,6 @@ void app_test(void){
 		
 		// store/load single
 		if (instr >= 0x40 && instr <= 0x53){
-			sdk_debug_logf("%x", instr);
 			int code = instr;
 			int args = instr % 16;
 			
@@ -130,26 +129,21 @@ void app_test(void){
 			int a = args % 4;
 			
 			NEXT_BYTE
-			sdk_debug_logf("%x", instr);
 			int rbase = instr / 16;
 			int flags = instr % 16;
 			
 			int size =  flags % 4;
 			
 			OFFSET(a)
-			sdk_debug_logf("%x", instr);
-			sdk_debug_logf("A: %d offset: %d", a, offset);
 			char cmd[4] = "STR";
 			if (code >= 0x50)
 				strcpy(cmd, "LDR");
 			
 			if (c == 0){
 				NEXT_BYTE
-				sdk_debug_logf("%x", instr);
 				sdk_scr_printf(canvas, "    %s [R%d+%x], R%d", cmd, rbase, offset, instr / 16);
 			} else {
 				OFFSET(c)
-				sdk_debug_logf("C: %d offset: %d", c, offset);
 				sdk_scr_printf(canvas, "    %s [R%d+%x], %d", cmd, rbase, offset, offset);
 			}
 			continue;
