@@ -13,20 +13,51 @@
 
 #define ASM_NO_ARGS(a, b) if (instr == a){ sdk_scr_printf(canvas, b); continue;}
 
-int run(){
-	sdk_debug_log("IT's MY TRIUMPH");
-}
-
 char * alu_opcode[] = {"AND", "EOR", "SUB", "RSB", "ADD", "OP ", "SLL", "SRL", "SRA"};
 char * mul_div[] = {"SMUL", "UMUL", "SDIV", "UDIV"};
 char * push_pop[] = {"PUSH", "POP"};
 char * mrs_msr[] = {"MRS", "MSR"};
 char * branch_suffix[] = {"EQ", "NE", "CS/HS", "CC/LO", "MI", "PL", "VS", "VC", "HI", "LS", "GE", "LT", "GT", "LE", "AL"};
 
+typedef struct STR_SYMBOL{
+	unsigned int address;
+	char name[64];
+} STR_SYMBOL;
+
+list_t * sym_table;
+
+int get_symbol(int address, char * name){
+	list_node_t * node = sym_table->head;
+	while (node){
+		STR_SYMBOL *s = (STR_SYMBOL *)node->val;
+		if (s->address == address){
+			strcpy(name, s->name);
+			return 1;
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int run(){
+	sdk_debug_log("IT's MY TRIUMPH");
+}
+
 void app_test(void){	
 	Canvas * canvas = (Canvas *)sdk_prc_getCanvas();
 	unsigned char * start_addr = run;
-	//start_addr += 10;
+	
+	STR_SYMBOL s1;
+	strcpy(s1.name, "sdk_debug_log");
+	s1.address = (int)sdk_debug_log;
+	STR_SYMBOL s2;
+	strcpy(s2.name, "sdk_prc_getCanvas");
+	s2.address = (int)sdk_prc_getCanvas;
+	
+	sym_table = list_new();
+	list_rpush(sym_table, list_node_new(&s1));
+	list_rpush(sym_table, list_node_new(&s2));
+	
 	
 	sdk_scr_printf(canvas, "DUMP: 0x%x\n", start_addr);
 	sdk_scr_printf(canvas, "SYMB_TABLE: 0x%x    sdk_debug_log\n", sdk_debug_log);
@@ -207,7 +238,14 @@ void app_test(void){
 			int cond = instr % 16;
 			if (instr % 2 == 0){
 				SIMM32				
+				char name[64] = "";
+				int fres = get_symbol(base+imm32, name);
 				sdk_scr_printf(canvas, "    B%s %ld (0x%x)", branch_suffix[cond], imm32, base+imm32);
+				if (fres > 0){
+					sdk_scr_setTextColor(canvas, SCR_COLOR_RED);
+					sdk_scr_printf(canvas, " %s", name);
+					sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
+				}
 			} else {
 				NEXT_BYTE
 				sdk_scr_printf(canvas, "    B%s R%x", branch_suffix[cond], instr / 16);
