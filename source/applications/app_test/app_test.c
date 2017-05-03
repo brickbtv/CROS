@@ -33,27 +33,17 @@ void app_test(void){
 		
 		// ALU
 		if (instr >= 0 && instr <= 0x2F){
+			int opcode = instr % 16;			
+			NEXT_BYTE
+			int reg = instr / 16;
+			int rop1 = instr % 16;
 			if (instr >= 0 && instr <=0x0F){
-				int opcode = instr % 16;			
 				NEXT_BYTE
-				int reg = instr / 16;
-				int rop1 = instr % 16;
-				NEXT_BYTE
-				int rop2 = instr / 16;
-				sdk_scr_printf(canvas, "    %s R%d, R%d, R%d", alu_opcode[opcode], reg, rop1, rop2);
+				sdk_scr_printf(canvas, "    %s R%d, R%d, R%d", alu_opcode[opcode], reg, rop1, instr / 16);
 			} else if (instr > 0x0F && instr <=0x1F){
-				int opcode = instr % 16;			
 				NEXT_BYTE
-				int reg = instr / 16;
-				int rop1 = instr % 16;
-				NEXT_BYTE
-				int imm8 = instr;
-				sdk_scr_printf(canvas, "    %s R%d, R%d, %d", alu_opcode[opcode], reg, rop1, imm8);
+				sdk_scr_printf(canvas, "    %s R%d, R%d, %d", alu_opcode[opcode], reg, rop1, instr);
 			} else if (instr > 0x1F && instr <=0x2F){
-				int opcode = instr % 16;			
-				NEXT_BYTE
-				int reg = instr / 16;
-				int rop1 = instr % 16;
 				IMM32
 				sdk_scr_printf(canvas, "    %s R%d, R%d, %lu", alu_opcode[opcode], reg, rop1, imm32);
 			}
