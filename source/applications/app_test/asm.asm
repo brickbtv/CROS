@@ -5,6 +5,15 @@
 public _asm_test
 _asm_test:
 	nop
+	nop
+	nop
+_test_l:	
+	nop
+	bl _test_l
+	nop
+	hwi
+	swi
+	nop
 	mrs r2
 	msr r3
 	nop

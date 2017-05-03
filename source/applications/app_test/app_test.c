@@ -6,7 +6,8 @@
 
 #define NEXT_BYTE caddr++; i++; instr = *caddr;
 
-#define IMM32 NEXT_BYTE unsigned long imm32 = instr; NEXT_BYTE imm32 = imm32 | instr << 8; NEXT_BYTE imm32 = imm32 | instr << 16; NEXT_BYTE imm32 = imm32 | instr << 32;
+#define IMM32 NEXT_BYTE unsigned long imm32 = instr; NEXT_BYTE imm32 = imm32 | instr << 8; NEXT_BYTE imm32 = imm32 | instr << 16; NEXT_BYTE imm32 = imm32 | instr << 24;
+#define SIMM32 NEXT_BYTE long imm32 = instr; NEXT_BYTE imm32 = imm32 | instr << 8; NEXT_BYTE imm32 = imm32 | instr << 16; NEXT_BYTE imm32 = imm32 | instr << 24;
 
 int run(){
 	sdk_debug_log("IT's MY TRIUMPH");
@@ -17,14 +18,17 @@ char * alu_opcode[] = {"AND", "EOR", "SUB", "RSB", "ADD", "OP ", "SLL", "SRL", "
 char * mul_div[] = {"SMUL", "UMUL", "SDIV", "UDIV"};
 char * push_pop[] = {"PUSH", "POP"};
 char * mrs_msr[] = {"MRS", "MSR"};
+char * branch_suffix[] = {"EQ", "NE", "CS/HS", "CC/LO", "MI", "PL", "VS", "VC", "HI", "LS", "GE", "LT", "GT", "LE", "AL"};
 
 void app_test(void){	
 	Canvas * canvas = (Canvas *)sdk_prc_getCanvas();
-	unsigned char * start_addr = asm_test;
+	unsigned char * start_addr = run;
+	start_addr += 10;
 	
 	sdk_scr_printf(canvas, "DUMP: 0x%x\n", start_addr);
+	sdk_scr_printf(canvas, "SYMB_TABLE: 0x%x    sdk_debug_log\n", sdk_debug_log);
 	
-	for (int i = 0; i < 40; i++){
+	for (int i = 0; i < 20; i++){
 		sdk_scr_printf(canvas, "\n");
 		unsigned char * caddr = start_addr + i;
 		if (*caddr >= 10)
@@ -118,9 +122,12 @@ void app_test(void){
 		
 		// store/load single
 		if (instr >= 0x40 && instr <= 0x53){
+			int code = instr;
+			int args = instr % 16;
+			
 			
 		}
-			
+					
 		// mov
 		if (instr >= 0x60 && instr <= 0x63){
 			int code = instr;
@@ -140,6 +147,75 @@ void app_test(void){
 			}
 			
 			continue; 
+		}
+		
+		// CMP
+		if (instr >= 0x64 && instr <= 0x67){
+			int code = instr;
+			NEXT_BYTE
+			if (code == 0x64){
+				sdk_scr_printf(canvas, "    CMP R%d, R%d", instr / 16, instr % 16);
+			} else if (code == 0x65){
+				sdk_scr_printf(canvas, "    CMP R%d, %d", instr / 16, instr % 16);
+			} else if (code == 0x66){
+				int reg = instr / 16;
+				NEXT_BYTE
+				sdk_scr_printf(canvas, "    CMP R%d, %d", reg, instr);
+			} else if (code == 0x67){
+				int reg = instr / 16;
+				IMM32
+				sdk_scr_printf(canvas, "    CMP R%d, %lu", reg, imm32);
+			}
+			
+			continue; 
+		}
+		
+		if (instr == 0x68){
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    RDTSC R%d, R%d", instr / 16, instr % 16);
+			continue;
+		}
+		
+		if (instr == 0x69){
+			sdk_scr_printf(canvas, "    HWI");
+			continue;
+		}
+		
+		if (instr == 0x6A){
+			sdk_scr_printf(canvas, "    SWI");
+			continue;
+		}
+		
+		if (instr == 0x6B){
+			sdk_scr_printf(canvas, "    HLT");
+			continue;
+		}
+		
+		// branches 
+		if (instr >= 0x80 && instr <= 0xBF){
+			int base = (int)caddr;
+			int code = instr;
+			int cond = instr % 16;
+			if (instr % 2 == 0){
+				//SIMM32
+				sdk_debug_logf("%x", base);
+				//sdk_debug_logf("%d", imm32);
+				
+				NEXT_BYTE long imm32 = instr; 
+				sdk_debug_logf("%x", imm32);
+				NEXT_BYTE imm32 = imm32 | instr << 8; 
+				sdk_debug_logf("%x", imm32);
+				NEXT_BYTE imm32 = imm32 | instr << 16; 
+				sdk_debug_logf("%x", imm32);
+				NEXT_BYTE imm32 = imm32 | instr << 24;
+				sdk_debug_logf("%x", imm32);
+				
+				sdk_scr_printf(canvas, "    B%s %ld (0x%x)", branch_suffix[cond], imm32, base+imm32);
+			} else {
+				NEXT_BYTE
+				sdk_scr_printf(canvas, "    B%s R%x", branch_suffix[cond], instr / 16);
+			}
+			continue;
 		}
 	}	
 	
