@@ -43,26 +43,49 @@ int run(){
 	sdk_debug_log("IT's MY TRIUMPH");
 }
 
+#define ADD_SYMBOL(a){STR_SYMBOL s1;	strcpy(s1.name, #a);	s1.address = (int)a;list_rpush(sym_table, list_node_new(&s1));} 
+
+void init_symbol_table(){
+	ADD_SYMBOL(sdk_debug_log);
+	ADD_SYMBOL(sdk_debug_logf);
+	
+	ADD_SYMBOL(sdk_prc_create_process);
+	ADD_SYMBOL(sdk_prc_die);
+	ADD_SYMBOL(sdk_prc_getCanvas);
+	ADD_SYMBOL(sdk_prc_getHeapPointer);
+	ADD_SYMBOL(sdk_prc_get_scheduler_list);
+	ADD_SYMBOL(sdk_prc_handleMessage);
+	ADD_SYMBOL(sdk_prc_haveNewMessage);
+	ADD_SYMBOL(sdk_prc_is_focused);
+	ADD_SYMBOL(sdk_prc_lock);
+	ADD_SYMBOL(sdk_prc_sleep);
+	ADD_SYMBOL(sdk_prc_sleep_until_new_messages);
+	ADD_SYMBOL(sdk_prc_unlock);
+	
+	ADD_SYMBOL(sdk_scr_clearArea);
+	ADD_SYMBOL(sdk_scr_clearScreen);
+	ADD_SYMBOL(sdk_scr_printf);
+	ADD_SYMBOL(sdk_scr_printfXY);
+	ADD_SYMBOL(sdk_scr_printfXY_no_variadic);
+	ADD_SYMBOL(sdk_scr_printf_no_variadic);
+	ADD_SYMBOL(sdk_scr_putchar);
+	ADD_SYMBOL(sdk_scr_setBackColor);
+	ADD_SYMBOL(sdk_scr_setTextColor);
+}
+
 void app_test(void){	
 	Canvas * canvas = (Canvas *)sdk_prc_getCanvas();
 	unsigned char * start_addr = run;
 	
-	STR_SYMBOL s1;
-	strcpy(s1.name, "sdk_debug_log");
-	s1.address = (int)sdk_debug_log;
-	STR_SYMBOL s2;
-	strcpy(s2.name, "sdk_prc_getCanvas");
-	s2.address = (int)sdk_prc_getCanvas;
-	
 	sym_table = list_new();
-	list_rpush(sym_table, list_node_new(&s1));
-	list_rpush(sym_table, list_node_new(&s2));
 	
+	init_symbol_table();
 	
 	sdk_scr_printf(canvas, "DUMP: 0x%x\n", start_addr);
 	sdk_scr_printf(canvas, "SYMB_TABLE: 0x%x    sdk_debug_log\n", sdk_debug_log);
 	
-	for (int i = 0; i < 60; i++){
+	for (int i = 0; i >= 0; i++){
+		sdk_prc_sleep(100);
 		sdk_scr_printf(canvas, "\n");
 		sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
 		unsigned char * caddr = start_addr + i;
