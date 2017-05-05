@@ -2,7 +2,11 @@
 
 #include "sdk/os/debug.h"
 #include "sdk/os/process.h"
-#include <sdk/scr/screen.h>
+#include "sdk/clk/clock.h"
+#include "sdk/scr/screen.h"
+#include "sdk/dkc/disk_drive.h"
+#include "sdk/kyb/keyboard.h"
+#include "sdk/nic/network.h"
 
 #define NEXT_BYTE caddr++; i++; instr = *caddr;
 
@@ -71,6 +75,19 @@ void init_symbol_table(){
 	ADD_SYMBOL(sdk_scr_putchar);
 	ADD_SYMBOL(sdk_scr_setBackColor);
 	ADD_SYMBOL(sdk_scr_setTextColor);
+	
+	ADD_SYMBOL(sdk_clk_readCountdownTimer);
+	ADD_SYMBOL(sdk_clk_setCountdownTimer);
+	ADD_SYMBOL(sdk_clk_timeSinceBoot);
+	
+	ADD_SYMBOL(sdk_dkc_get_disk_info);
+	ADD_SYMBOL(sdk_dkc_isReady);
+	ADD_SYMBOL(sdk_dkc_read);
+	ADD_SYMBOL(sdk_dkc_write);
+	
+	ADD_SYMBOL(sdk_nic_recv);
+	ADD_SYMBOL(sdk_nic_send);
+	ADD_SYMBOL(sdk_nic_sendf);
 }
 
 void app_test(void){	
@@ -85,7 +102,7 @@ void app_test(void){
 	sdk_scr_printf(canvas, "SYMB_TABLE: 0x%x    sdk_debug_log\n", sdk_debug_log);
 	
 	for (int i = 0; i >= 0; i++){
-		sdk_prc_sleep(100);
+		//sdk_prc_sleep(100);
 		sdk_scr_printf(canvas, "\n");
 		sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
 		unsigned char * caddr = start_addr + i;
@@ -253,7 +270,7 @@ void app_test(void){
 			sdk_scr_printf(canvas, "    RDTSC R%d, R%d", instr / 16, instr % 16);
 			continue;
 		}
-		
+				
 		// branches 
 		if (instr >= 0x80 && instr <= 0xBF){
 			int base = (int)caddr;
@@ -274,6 +291,17 @@ void app_test(void){
 				sdk_scr_printf(canvas, "    B%s R%x", branch_suffix[cond], instr / 16);
 			}
 			continue;
+		}
+		
+		// UNDOCUMENTED
+		
+		//memcpy
+		if (instr == 0x6D){
+			NEXT_BYTE
+			int r0 = instr / 16;
+			int r1 = instr % 16;
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    MEMCPY R%d, R%d, R%d", r0, r1, instr / 16);
 		}
 	}	
 	
