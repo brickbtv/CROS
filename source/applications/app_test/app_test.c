@@ -92,7 +92,7 @@ void init_symbol_table(){
 
 void app_test(void){	
 	Canvas * canvas = (Canvas *)sdk_prc_getCanvas();
-	unsigned char * start_addr = run;
+	unsigned char * start_addr = 0;
 	
 	sym_table = list_new();
 	
@@ -302,6 +302,7 @@ void app_test(void){
 			int r1 = instr % 16;
 			NEXT_BYTE
 			sdk_scr_printf(canvas, "    MEMCPY R%d, R%d, R%d", r0, r1, instr / 16);
+			continue;
 		}
 	}	
 	

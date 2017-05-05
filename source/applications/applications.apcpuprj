@@ -63,6 +63,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_disasm\\app_disasm",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_disasm\\app_disasm.c",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_paint\\app_paint.c",
 			"bootfile": false
 		},

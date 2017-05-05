@@ -36,6 +36,7 @@ typedef struct ProcessDummy{
 	int interruptions_stat_cpu[25];
 	
 	bool i_should_die;
+	uint32_t entry_point;
 }ProcessDummy;
 
 void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, unsigned int * parent_canvas);

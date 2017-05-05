@@ -43,6 +43,7 @@ typedef struct Process{
 	int interruptions_stat_cpu[25];
 	
 	bool i_should_die;
+	uint32_t entry_point;
 	
 	// not available for PS utility
 	Ctx * context;
