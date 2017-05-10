@@ -6,6 +6,10 @@
 #include "sdk/kyb/keyboard.h"
 #include "sdk/nic/network.h"
 
+#include "stdlib/stdlib_shared.h"
+#include "stdlib/stdio_shared.h"
+#include "stdlib/string_shared.h"
+
 #define NEXT_BYTE caddr++; instr = *caddr;
 
 #define IMM32 NEXT_BYTE unsigned long imm32 = instr; NEXT_BYTE imm32 = imm32 | instr << 8; NEXT_BYTE imm32 = imm32 | instr << 16; NEXT_BYTE imm32 = imm32 | instr << 24;
@@ -39,6 +43,22 @@ int get_symbol(int address, char * name){
 		node = node->next;
 	}
 	return 0;
+}
+
+char* reverse_string(char *str)
+{
+    char temp;
+    size_t len = strlen(str) - 1;
+    size_t stop = len/2;
+    size_t i,k;
+
+    for(i = 0, k = len; i < stop; i++, k--)
+    {
+        temp = str[k];
+        str[k] = str[i];
+        str[i] = temp;
+    }
+    return str;
 }
 
 #define ADD_SYMBOL(a){STR_SYMBOL s1;	strcpy(s1.name, #a);	s1.address = (int)a;list_rpush(sym_table, list_node_new(&s1));} 
@@ -167,7 +187,22 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 		NEXT_BYTE
 		int byte1 = instr;
 		NEXT_BYTE
-		sdk_scr_printf(canvas, "    %s R%d, %x, %x%x", push_pop[code % 2], rbase, flags, byte1, instr);
+		char flags_s[256];
+		itoa(flags, flags_s, 2);		
+		char registers_s[256];
+		itoa(byte1, registers_s, 2);
+		char * p = reverse_string(registers_s);			
+		
+		char registers_s2[256];
+		itoa(instr, registers_s2, 2);
+		char * p2 = reverse_string(registers_s2);	
+		
+		char reglist[] = "0000000000000000";
+		
+		strncpy(reglist, p, strlen(p));
+		strncpy(&reglist[8], p2, strlen(p2));
+				
+		sdk_scr_printf(canvas, "    %s R%d, b%s, b%s", push_pop[code % 2], rbase, flags_s, reglist);
 		return caddr;
 	}
 	
@@ -274,6 +309,14 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 			NEXT_BYTE
 			sdk_scr_printf(canvas, "    B%s R%x", branch_suffix[cond], instr / 16);
 		}
+		return caddr;
+	}
+	
+	// Floating point extension
+	
+	if (instr == 0xff){
+		//NEXT_BYTE
+		
 		return caddr;
 	}
 	
