@@ -90,7 +90,7 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 	sdk_scr_printf(canvas, "\n");
 	sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
 	//unsigned char * caddr = start_addr + i;
-	if (*caddr >= 10)
+	if (*caddr >= 16)
 		sdk_scr_printf(canvas, " 0x%x    %x", caddr, *caddr);
 	else 
 		sdk_scr_printf(canvas, " 0x%x    %x ", caddr, *caddr);
