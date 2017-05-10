@@ -1,7 +1,7 @@
 #include "autorun.h"
 #include "process/process.h"
 #include "applications/app_shell/app_shell.h"
-#include "applications/app_paint/app_paint.h"
+#include "applications/app_test/app_test.h"
 #include <stdint_shared.h>
 
 /*!
@@ -9,5 +9,4 @@
 */
 void krn_autorun(void){
 	Process * prc = prc_create("app_shell", 1024*10, 1024*20, (uint32_t*)app_shell, USERMODE_USER, 0, 0);
-	//Process * prc = prc_create("app_paint", 1024*10, 1024*20, (uint32_t*)app_paint, USERMODE_USER, "", 0);
 }

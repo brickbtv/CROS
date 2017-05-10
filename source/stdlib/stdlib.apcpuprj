@@ -147,6 +147,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\extern\\strtol\\strtol.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\extern\\strtol\\strtol.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\extern\\tlsf\\tlsf.c",
 			"bootfile": false
 		},

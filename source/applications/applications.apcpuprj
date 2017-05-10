@@ -63,11 +63,11 @@
 			"bootfile": false
 		},
 		{
-			"path": ".\\app_disasm\\app_disasm",
+			"path": ".\\app_disasm\\app_disasm.c",
 			"bootfile": false
 		},
 		{
-			"path": ".\\app_disasm\\app_disasm.c",
+			"path": ".\\app_disasm\\app_disasm.h",
 			"bootfile": false
 		},
 		{
@@ -104,6 +104,14 @@
 		},
 		{
 			"path": ".\\app_test\\asm.asm",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_disasm\\decoder\\asm_decoder.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_disasm\\decoder\\asm_decoder.h",
 			"bootfile": false
 		},
 		{

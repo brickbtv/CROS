@@ -19,6 +19,7 @@
 #include "app_chat/app_chat.h"
 #include "app_chat/server.h"
 #include "app_paint/app_paint.h"
+#include "app_disasm/app_disasm.h"
 
 #include "sdk/syscall_def.h"
 #include "../mkfs/mkfs.h"
@@ -277,6 +278,10 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		int res = fs_unlink(&input[strlen("rm ")]);
 		if (res != FS_OK)
 			screen->printf(screen, "Failed to remove file or directory.\n");
+	} else if (COMMAND_WITH_ARGS("disasm ")){
+		char * args = calloc(256);
+		sprintf(args, "%s", &input[strlen("disasm ")]);
+		sdk_prc_create_process((unsigned int)app_disasm, "disasm", args, 0);
 	} else if (COMMAND_WITH_ARGS("cat ")){
 		cat(screen, &input[strlen("cat ")]);
 	} else {
