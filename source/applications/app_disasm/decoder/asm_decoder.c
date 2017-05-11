@@ -314,11 +314,11 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 	
 	// Floating point extension
 	
-	if (instr == 0xff){
+	/*if (instr == 0xff){
 		//NEXT_BYTE
 		
 		return caddr;
-	}
+	}*/
 	
 	// UNDOCUMENTED
 	
