@@ -22,15 +22,19 @@
 char * alu_opcode[] = {"AND", "EOR", "SUB", "RSB", "ADD", "OP ", "SLL", "SRL", "SRA"};
 char * mul_div[] = {"SMUL", "UMUL", "SDIV", "UDIV"};
 char * push_pop[] = {"PUSH", "POP"};
+char * push_pop_f[] = {"FPUSH", "FPOP"};
 char * mrs_msr[] = {"MRS", "MSR"};
 char * branch_suffix[] = {"EQ", "NE", "CS/HS", "CC/LO", "MI", "PL", "VS", "VC", "HI", "LS", "GE", "LT", "GT", "LE", "AL"};
+
+char * alu_f_opcode[] = {"FADD", "FSUB", "FMUL", "FDIV", "FPOW", "FMOD"};
+char * instr_f[] = {"FFIX", "FFLT", "FMOV", "FMVN", "FABS", "FRND", "FSQT", "FLOG", "FLGN", "FEXP", "FSIN", "FCOS", "FTAN", "FASN", "FACS"};
 
 typedef struct STR_SYMBOL{
 	unsigned int address;
 	char name[64];
 } STR_SYMBOL;
 
-list_t * sym_table;
+static list_t * sym_table;
 
 int get_symbol(int address, char * name){
 	list_node_t * node = sym_table->head;
@@ -61,7 +65,7 @@ char* reverse_string(char *str)
     return str;
 }
 
-#define ADD_SYMBOL(a){STR_SYMBOL s1;	strcpy(s1.name, #a);	s1.address = (int)a;list_rpush(sym_table, list_node_new(&s1));} 
+#define ADD_SYMBOL(a){STR_SYMBOL * s1 = malloc(sizeof(STR_SYMBOL));	strcpy(s1->name, #a);	s1->address = (int)a;list_rpush(sym_table, list_node_new(s1));} 
 
 void init_symbol_table(){
 	sym_table = list_new();
@@ -168,8 +172,14 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 		NEXT_BYTE
 		int rdest = instr / 16;
 		int rval = instr % 16;
-		NEXT_BYTE
-		sdk_scr_printf(canvas, "    SWP R%d, R%d, R%d, %c", rdest, rval, instr / 16, (instr%16 == 0)?'B':'W');
+
+		if (rval = 0x00)
+			sdk_scr_printf(canvas, "    NEXTIRQ  R%d", rdest);
+		else if (rval = 0xFF)
+			sdk_scr_printf(canvas, "    NEXTIRQ");
+		else 
+			sdk_scr_printf(canvas, "    NEXTIRQ %d", rdest);
+			
 		return caddr;
 	}
 	
@@ -289,7 +299,42 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 		sdk_scr_printf(canvas, "    RDTSC R%d, R%d", instr / 16, instr % 16);
 		return caddr;
 	}
+	
+	if (instr == 0x6C){
+		NEXT_BYTE
+		sdk_scr_printf(canvas, "    CTXSWITCH R%d", instr / 16);
+	}
 			
+	//memcpy
+	if (instr == 0x6D){
+		NEXT_BYTE
+		int r0 = instr / 16;
+		int r1 = instr % 16;
+		NEXT_BYTE
+		sdk_scr_printf(canvas, "    MEMCPY R%d, R%d, R%d", r0, r1, instr / 16);
+		return caddr;
+	}
+	
+	//memset
+	if (instr == 0x6E){
+		NEXT_BYTE
+		int r0 = instr / 16;
+		int r1 = instr % 16;
+		NEXT_BYTE
+		sdk_scr_printf(canvas, "    MEMSET R%d, R%d, R%d", r0, r1, instr / 16);
+		return caddr;
+	}
+	
+	//cmpxchg
+	if (instr == 0x6E){
+		NEXT_BYTE
+		int r0 = instr / 16;
+		int r1 = instr % 16;
+		NEXT_BYTE
+		sdk_scr_printf(canvas, "    CMPXCHG R%d, R%d, R%d", r0, r1, instr / 16);
+		return caddr;
+	}
+	
 	// branches 
 	if (instr >= 0x80 && instr <= 0xBF){
 		int base = (int)caddr;
@@ -314,23 +359,137 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 	
 	// Floating point extension
 	
-	/*if (instr == 0xff){
-		//NEXT_BYTE
+	if (instr == 0xff){
+		while (instr == 0xff){
+			NEXT_BYTE
+		}
+		
+		// ALU
+		if (instr >= 0x00 && instr <= 0x0F){
+			int code = instr;
+			NEXT_BYTE
+			int fdst = instr / 16;
+			int fop1 = instr % 16;
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    %s F%d, F%d, F%d", alu_f_opcode[code], fdst, fop1, instr / 16);
+			return caddr;
+		}
+		
+		// FSTR/ FLDR
+		if (instr >= 0x10 && instr <= 0x1F){
+			int code = instr;
+			int args = instr % 16;
+			
+			int c = (args >> 2) % 2;
+			int a = args % 4;
+			
+			NEXT_BYTE
+			int freg = instr / 16;
+			int rbase = instr % 16;
+			
+			char cmd[6] = "FSTR ";
+			if (code >= 0x18)
+				strcpy(cmd, "FLDR ");
+			
+			if (c == 0)
+				cmd[4] = 's';
+			else 
+				cmd[4] = 'd';
+			
+			OFFSET(a)
+			sdk_scr_printf(canvas, "    %s [R%d+%x], F%d", cmd, rbase, offset, freg);
+			
+			return caddr;
+		}
+		
+		// float math
+		if (instr >= 0x20 && instr <= 0x2F){
+			int code = instr % 16;
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    %s F%d, F%d", instr_f[code], instr/16, instr % 16);
+			
+			return caddr;
+		}
+		
+		// FSTM/FLDM
+		if (instr == 0x30 || instr == 0x31){
+			int code = instr;
+			NEXT_BYTE
+			int rbase = instr / 16;
+			int flags = instr % 16;
+			NEXT_BYTE
+			int byte1 = instr;
+			NEXT_BYTE
+			char flags_s[256];
+			itoa(flags, flags_s, 2);		
+			char registers_s[256];
+			itoa(byte1, registers_s, 2);
+			char * p = reverse_string(registers_s);			
+			
+			char registers_s2[256];
+			itoa(instr, registers_s2, 2);
+			char * p2 = reverse_string(registers_s2);	
+			
+			char reglist[] = "0000000000000000";
+			
+			strncpy(reglist, p, strlen(p));
+			strncpy(&reglist[8], p2, strlen(p2));
+					
+			sdk_scr_printf(canvas, "    %s R%d, b%s, b%s", push_pop[code % 2], rbase, flags_s, reglist);
+			return caddr;
+		}
+		
+		// FCMP
+		if (instr == 0x32){
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    FCMP F%d F%d", instr / 16, instr % 16);
+			return caddr;
+		}
+		
+		// 0x33 reserved
+		
+		// FMSR
+		if (instr == 0x34){
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    FMSR F%d F%d", instr / 16, instr % 16);
+			return caddr;
+		}
+		
+		// FMRS
+		if (instr == 0x35){
+			NEXT_BYTE
+			sdk_scr_printf(canvas, "    FMRS F%d F%d", instr / 16, instr % 16);
+			return caddr;
+		}
+		
+		// FMDR
+		if (instr == 0x36){
+			NEXT_BYTE
+			int rsrcHi = instr / 16;
+			int rsrcLo = instr % 16;
+			NEXT_BYTE
+			int freg = instr / 16;
+			sdk_scr_printf(canvas, "    FMDR Rsrc%d%d, F%d", rsrcHi, rsrcLo, freg);
+			return caddr;
+		}
+		
+		// FMRD
+		if (instr == 0x37){
+			NEXT_BYTE
+			int rsrcHi = instr / 16;
+			int rsrcLo = instr % 16;
+			NEXT_BYTE
+			int freg = instr / 16;
+			sdk_scr_printf(canvas, "    FMRD Rsrc%d%d, F%d", rsrcHi, rsrcLo, freg);
+			return caddr;
+		}
+		
+		sdk_scr_printf(canvas, "    == ext ==");
 		
 		return caddr;
-	}*/
+	}
 	
 	// UNDOCUMENTED
-	
-	//memcpy
-	if (instr == 0x6D){
-		NEXT_BYTE
-		int r0 = instr / 16;
-		int r1 = instr % 16;
-		NEXT_BYTE
-		sdk_scr_printf(canvas, "    MEMCPY R%d, R%d, R%d", r0, r1, instr / 16);
-		return caddr;
-	}
 	
 	return ++caddr;
 }
