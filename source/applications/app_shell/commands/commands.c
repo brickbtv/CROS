@@ -214,14 +214,21 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 	if (COMMAND("help")){
 		screen->printf(screen, "    CROS help:\n"
 		" 'ls' - show files and folders in current directory\n"
-		" 'mkdir NAME' - make new directory\n"
-		" 'mkfile NAME' - make new file\n"
-		" 'cd NAME' - change directory\n"
-		" 'rm NAME' - remove file or directory\n"
-		" 'cat NAME' - print file content to console\n"
-		" 'edit NAME' - simple texteditor\n"
+		" 'mkdir FILE_NAME' - make new directory\n"
+		" 'mkfile FILE_NAME' - make new file\n"
+		" 'cd FILE_NAME' - change directory\n"
+		" 'rm FILE_NAME' - remove file or directory\n"
+		" 'cat FILE_NAME' - print file content to console\n"
+		" 'edit FILE_NAME' - simple texteditor\n"
 		" 'chat' - simple chat application\n"
-		" 'chat_server' - simple chat server for 'chat' app\n");
+		" 'chat_server' - simple chat server for 'chat' app\n"
+		" 'basic FILE_NAME' - uBASIC interpreter\n"
+		" 'paint FILE_NAME' - simple picture editor (WIP)\n"
+		" 'ps' - list of processes\n"
+		" 'profile PID' - show PID HWI/SWI statistics\n"
+		" 'diskinfo' - show info about disk drives & FatFS state\n"
+		" 'mkfs DRIVE' - make FatFS at selected disk drive\n"
+		" 'disasm 0xADDRESS' - disassemble address\n");
 	} else if (COMMAND_WITH_ARGS("edit ")){
 		char * args = calloc(256);
 		sprintf(args, "%s", &input[strlen("edit ")]);
