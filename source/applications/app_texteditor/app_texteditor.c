@@ -95,7 +95,7 @@ void teBlinkCBack(unsigned int tn, void * userdata){
 }
 
 void redraw_text_area(TEXTEDITOR * te, int start_line){
-	te->screen->clearScreen(te->screen, SCR_COLOR_WHITE);
+	te->screen->clearScreen(te->screen, CANVAS_COLOR_WHITE);
 	te->gui->draw_header(te->gui, te->path);
 	te->gui->draw_bottom(te->gui, " INS^s - save    INS^x - quit");
 
@@ -127,7 +127,7 @@ void app_texteditor(const char* p){
 	te->screen = malloc(sizeof(ScreenClass));
 	te->screen = ScreenClass_ctor(te->screen, cv);
 		
-	te->screen->clearScreen(te->screen, SCR_COLOR_WHITE);
+	te->screen->clearScreen(te->screen, CANVAS_COLOR_WHITE);
 	
 	te->editbox = malloc(sizeof(EditBoxClass));
 	te->editbox = EditBoxClass_ctor(te->editbox, 

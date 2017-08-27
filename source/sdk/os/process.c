@@ -5,7 +5,7 @@
 #include <details/memdetails.h>
 #include "debug.h"
 
-void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, unsigned int * parent_canvas){
+void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, Canvas * parent_canvas){
 	app_syscall4(syscall_prc_create_process,(unsigned int)entry_point, (unsigned int)&arg_line[0], (unsigned int)parent_canvas, (unsigned int)&name[0]);
 }
 
@@ -17,8 +17,8 @@ void sdk_prc_sleep_until_new_messages(){
 	app_syscall0(syscall_prc_sleep_until_new_messages);
 }
 
-unsigned int * sdk_prc_getCanvas(){
-	return (unsigned int *)app_syscall0(syscall_prc_getCurrentProcessScreenInfo);
+Canvas * sdk_prc_getCanvas(){
+	return (Canvas *)app_syscall0(syscall_prc_getCurrentProcessScreenInfo);
 }
 
 void * sdk_prc_getHeapPointer(){

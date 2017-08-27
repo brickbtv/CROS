@@ -56,9 +56,9 @@ void shellExec(){
 							" ");
 	shell.screen->printf(shell.screen, "\n");				
 	
-	shell.screen->setTextColor(shell.screen, SCR_COLOR_WHITE);
+	shell.screen->setTextColor(shell.screen, CANVAS_COLOR_WHITE);
 	manage_command(shell.screen, shell.current_path, shell.input);
-	shell.screen->setTextColor(shell.screen, SCR_COLOR_GREEN);
+	shell.screen->setTextColor(shell.screen, CANVAS_COLOR_GREEN);
 
 	memset(shell.input, 0, 128 * sizeof(char));
 	shell.symb = 0;
@@ -113,7 +113,7 @@ void initShellApp(){
 	shell.screen = malloc(sizeof(ScreenClass)); 
 	shell.screen = ScreenClass_ctor(shell.screen, canvas);
 	
-	shell.screen->clearScreen(shell.screen, SCR_COLOR_BLACK);
+	shell.screen->clearScreen(shell.screen, CANVAS_COLOR_BLACK);
 }
 
 #define APP_SHELL_HELLO	"CR Shell. Version 1.0.\n" \

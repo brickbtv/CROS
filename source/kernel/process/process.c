@@ -337,7 +337,7 @@ void prc_die(){
 	
 	free(prc->stack);
 	_mem_destroy(prc->heap);
-	free(prc->heap)
+	free(prc->heap);
 	
 	prc->i_should_die = TRUE;
 	krn_getIdleProcess()->sync_lock = FALSE;

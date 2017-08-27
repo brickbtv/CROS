@@ -57,7 +57,7 @@ unsigned char * get_addr_from_args(const char * path){
 }
 
 unsigned char * show_asm(ScreenClass * screen, unsigned char * addr){
-	screen->clearArea(screen, SCR_COLOR_BLACK, 10, 1, screen->_canvas->res_hor - 10, screen->_canvas->res_ver - 2);
+	screen->clearArea(screen, CANVAS_COLOR_BLACK, 10, 1, screen->_canvas->res_hor - 10, screen->_canvas->res_ver - 2);
 	
 	unsigned char * addr_v = addr;
 	
@@ -71,6 +71,7 @@ unsigned char * show_asm(ScreenClass * screen, unsigned char * addr){
 		if (i == 0)
 			second_instr = addr_v;
 	}
+	
 	return second_instr;
 }
 
@@ -88,8 +89,8 @@ void app_disasm(const char * args){
 	sdk_debug_logf("%s, %d", args, addr);
 	
 	char title[256];	
-	sprintf(title, "DisASM: %s (%d)", args, addr);
-	app.screen->clearScreen(app.screen, SCR_COLOR_BLACK);
+	sprintf(title, "DisASM: %s (%d)", args, (int)addr);
+	app.screen->clearScreen(app.screen, CANVAS_COLOR_BLACK);
 	app.gui->draw_header(app.gui, title);
 	app.gui->draw_bottom(app.gui, " DOWN - scroll\tINS^x - exit");
 	

@@ -24,7 +24,7 @@
 #include "sdk/syscall_def.h"
 #include "../mkfs/mkfs.h"
 
-int is_file_exists(char * filename){
+int is_file_exists(const char * filename){
 	FILE * file = fs_open_file(filename, 'r');
 	if (file){
 		fs_close_file(file);
@@ -34,7 +34,7 @@ int is_file_exists(char * filename){
 	}
 }
 
-void ls(ScreenClass * screen, char * current_path){
+void ls(ScreenClass * screen, const char * current_path){
 	FILEINFO fno;
 	int i;
 	char *fn;
@@ -56,9 +56,9 @@ void ls(ScreenClass * screen, char * current_path){
 
 void ps(ScreenClass * screen){
 	ProcessDummy * prc;
-	screen->setBackColor(screen, SCR_COLOR_BLUE);
+ 	screen->setBackColor(screen, CANVAS_COLOR_BLUE);
 	screen->printf(screen, "PID\tdead\tINTs\tname\t\n");
-	screen->setBackColor(screen, SCR_COLOR_BLACK);
+	screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 	
 	list_t * processes_list = sdk_prc_get_scheduler_list();
 	list_node_t * node = processes_list->head;
@@ -69,9 +69,7 @@ void ps(ScreenClass * screen){
 	}
 }
 
-void profile(ScreenClass * screen, char * arg){
-	
-
+void profile(ScreenClass * screen, const char * arg){
 	ProcessDummy * prc;
 	int pid = atoi(arg);
 	
@@ -81,11 +79,11 @@ void profile(ScreenClass * screen, char * arg){
 		prc = (ProcessDummy *) node->val;
 		if (prc->pid == pid){			
 			screen->printf(screen, "%s: Summary %d interruptions\n", prc->name, prc->interruptions_count);
-			screen->printf(screen, "    %s - %d\n", "CLK", prc->interruptions_stat[1]);
+			/*screen->printf(screen, "    %s - %d\n", "CLK", prc->interruptions_stat[1]);
 			screen->printf(screen, "    %s - %d\n", "SCR", prc->interruptions_stat[2]);
 			screen->printf(screen, "    %s - %d\n", "KYB", prc->interruptions_stat[3]);
 			screen->printf(screen, "    %s - %d\n", "NIC", prc->interruptions_stat[4]);
-			screen->printf(screen, "    %s - %d\n", "DKC", prc->interruptions_stat[5]);
+			screen->printf(screen, "    %s - %d\n", "DKC", prc->interruptions_stat[5]);*/
 			screen->printf(screen, "    %s - %d\n", "CPU", prc->interruptions_stat[0]);			
 			for (int i = 0; i < 25; i++)
 				if (prc->interruptions_stat_cpu[i] != 0)
@@ -97,7 +95,7 @@ void profile(ScreenClass * screen, char * arg){
 	}	
 }
 
-void cat(ScreenClass * screen, char * filename){
+void cat(ScreenClass * screen, const char * filename){
 	FILE * file = fs_open_file(filename, 'r');
 	if (file){
 		char buff[1024];
@@ -121,9 +119,9 @@ void cat(ScreenClass * screen, char * filename){
 }
 
 void diskinfo(ScreenClass * screen){
-	screen->setBackColor(screen, SCR_COLOR_BLUE);
+	screen->setBackColor(screen, CANVAS_COLOR_BLUE);
 	screen->printf(screen, "#\tFatFS\tnumSectors\tsectorSize\tstatus\n");
-	screen->setBackColor(screen, SCR_COLOR_BLACK);
+	screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 	
 	for (int i = 0; i < 4; i++){
 		DiskQuery dq;
@@ -146,7 +144,7 @@ void diskinfo(ScreenClass * screen){
 	}
 }
 
-void cd (ScreenClass * screen, char * current_path, char * path){
+void cd (ScreenClass * screen, const char * current_path, const char * path){
 	int res = fs_chdrive(path);
 	if (res != FS_OK){
 		screen->printf(screen, "Failed to change drive.\n");
@@ -160,7 +158,7 @@ void cd (ScreenClass * screen, char * current_path, char * path){
 	fs_getcwd(current_path, 256);
 }
 
-void cp(ScreenClass * screen, char * args){
+void cp(ScreenClass * screen, const char * args){
 	int pos = find(args, ' ', 0);
 	if (pos == -1){
 		screen->printf(screen, "Invalid args\n");
@@ -169,7 +167,7 @@ void cp(ScreenClass * screen, char * args){
 	
 	char src_name[256];
 	strncpy(src_name, args, pos);
-	char * dst_name = &args[pos + 1];
+	const char * dst_name = &args[pos + 1];
 	
 	if (!is_file_exists(src_name)){
 		screen->printf(screen, "Failed to open source file\n");
@@ -197,7 +195,7 @@ void cp(ScreenClass * screen, char * args){
 	fs_close_file(f_dst);
 }
 
-void mkfs(ScreenClass * screen, char * arg){
+void mkfs(ScreenClass * screen, const char * arg){
 	int drive = arg[0] - '0';
 	
 	mount_drive_and_mkfs_if_needed(screen, drive);

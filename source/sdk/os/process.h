@@ -3,6 +3,7 @@
 
 #include <stddef_shared.h>
 #include "containers/list.h"
+#include "sdk/scr/screen.h"
 
 typedef enum SDK_PRC_MESSAGE{
 	SDK_PRC_MESSAGE_KYB = 0,
@@ -39,11 +40,11 @@ typedef struct ProcessDummy{
 	uint32_t entry_point;
 }ProcessDummy;
 
-void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, unsigned int * parent_canvas);
+void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, Canvas * parent_canvas);
 
 unsigned int sdk_prc_sleep(unsigned int ms);
 void sdk_prc_sleep_until_new_messages();
-unsigned int * sdk_prc_getCanvas();
+Canvas * sdk_prc_getCanvas();
 void * sdk_prc_getHeapPointer();
 
 typedef void (*F_PRC_MSGCBACK)(int type, int reason, int value, void * userdata);

@@ -206,7 +206,7 @@ void app_paint(const char * path){
 	short * map;
 	
 	int len = 0;
-	short * pic = open_file(path, &len);
+	unsigned char * pic = open_file(path, &len);
 	sdk_debug_logf("LEN: %d", len);
 	if (pic != NULL){
 		// read format
@@ -253,7 +253,7 @@ void app_paint(const char * path){
 	}
 
 	paint_canvas = (Canvas *)sdk_prc_getCanvas();
-	sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
+	sdk_scr_clearScreen(paint_canvas, CANVAS_COLOR_BLACK);
 
 	if (state == 0){	// new picture
 	
@@ -266,7 +266,7 @@ void app_paint(const char * path){
 				sdk_prc_handleMessage(appPaintMsgHandler, NULL);
 		}
 		
-		sdk_scr_clearScreen(paint_canvas, SCR_COLOR_BLACK);
+		sdk_scr_clearScreen(paint_canvas, CANVAS_COLOR_BLACK);
 	}
 	
 	int timer_id = timers_add_timer(1000, paintBlinkCBack);
@@ -282,7 +282,7 @@ void app_paint(const char * path){
 	short * map_colors = calloc(16 * sizeof(short));
 	short * map_back_colors = calloc(8 * sizeof(short));
 	
-	short back_ch = SCR_COLOR_BLUE << 12 | SCR_COLOR_WHITE << 8 | ' ';
+	short back_ch = CANVAS_COLOR_BLUE << 12 | CANVAS_COLOR_WHITE << 8 | ' ';
 	
 	if (map == 0){
 		map = calloc(width * height * sizeof(short));
@@ -292,19 +292,19 @@ void app_paint(const char * path){
 	}
 		
 	for (short i = 0; i < 256; i++)
-		map_brushes[i] = SCR_COLOR_BLACK << 12 | SCR_COLOR_WHITE << 8 | i;
+		map_brushes[i] = CANVAS_COLOR_BLACK << 12 | CANVAS_COLOR_WHITE << 8 | i;
 		
 	for (short i = 0; i < 16; i++){
 		char color = i;
-		if (color == SCR_COLOR_WHITE)
-			color = SCR_COLOR_BLACK;
-		map_colors[i] = SCR_COLOR_WHITE << 12 | color << 8 | 8;
+		if (color == CANVAS_COLOR_WHITE)
+			color = CANVAS_COLOR_BLACK;
+		map_colors[i] = CANVAS_COLOR_WHITE << 12 | color << 8 | 8;
 	}
 	
 	for (short i = 0; i < 8; i++){
 		char color = i;
-		if (color == SCR_COLOR_RED)
-			color = SCR_COLOR_BLUE;
+		if (color == CANVAS_COLOR_RED)
+			color = CANVAS_COLOR_BLUE;
 		map_back_colors[i] = i << 12 | (8-color) << 8 | 7;
 	}
 	

@@ -4,12 +4,13 @@
 #include <sdk/os/process.h>
 #include <sdk/kyb/keyboard.h>
 #include <sdk/os/debug.h>
+#include <string_shared.h>
 
 void EditBoxClass_set_list(void * this, list_t * text_lines){
 	((EditBoxClass *)this)->_text_lines = text_lines;
 }
 
-char * EditBoxClass_get_list(void * this){
+list_t * EditBoxClass_get_list(void * this){
 	return ((EditBoxClass *)this)->_text_lines;
 }
 
@@ -54,7 +55,7 @@ void EditBoxClass_redraw(void * this, int start_line){
 	EditBoxClass * editbox = (EditBoxClass *)this;
 	
 	editbox->_screen->clearArea(editbox->_screen, 
-								SCR_COLOR_BLACK, 
+								CANVAS_COLOR_BLACK, 
 								editbox->_x, 
 								editbox->_y, 
 								editbox->_width, 
@@ -77,13 +78,49 @@ void update_insert_key_status(EditBoxClass * this, int reason){
 
 void redraw_current_line(EditBoxClass * this){
 	this->_screen->clearArea(this->_screen, 
-							SCR_COLOR_BLACK, 
+							CANVAS_COLOR_BLACK, 
 							this->_x, cursor_to_screen_y(this), 
 							this->_width, 
 							1);
 	this->_screen->printfXY(this->_screen, 
 							this->_x, cursor_to_screen_y(this), 
 							current_line(this));
+}
+
+void cursor_up(EditBoxClass * this){
+	if (this->_cursor.y > 0){
+		this->_cursor.y--;
+		if (this->_cursor.x > strlen(current_line(this)))
+			this->_cursor.x = strlen(current_line(this));
+	} 
+	
+	if (this->_cursor.y < this->_view_start_line){
+		this->redraw(this, --this->_view_start_line);
+	}
+	
+}
+
+void cursor_down(EditBoxClass * this){
+	if (this->_cursor.y + 1 < list_size(this->_text_lines)){
+		this->_cursor.y++;	
+	} 
+	if (this->_cursor.y - this->_view_start_line > (this->_height - 1)){
+		this->redraw(this, ++this->_view_start_line);
+	}
+	
+	if (this->_cursor.x > strlen(current_line(this)))
+		this->_cursor.x = strlen(current_line(this));
+}
+
+void cursor_left(EditBoxClass * this){
+	if (this->_cursor.x > 0)
+		this->_cursor.x--;
+}
+
+void cursor_right(EditBoxClass * this){
+	int lenght = strlen(current_line(this));
+	if (this->_cursor.x < this->_width && this->_cursor.x < lenght)
+		this->_cursor.x++;
 }
 
 void process_backspace(EditBoxClass * this){
@@ -156,42 +193,6 @@ void process_return(EditBoxClass * this){
 	this->_cursor.x = 0;
 	
 	this->redraw(this, this->_view_start_line);
-}
-
-void cursor_up(EditBoxClass * this){
-	if (this->_cursor.y > 0){
-		this->_cursor.y--;
-		if (this->_cursor.x > strlen(current_line(this)))
-			this->_cursor.x = strlen(current_line(this));
-	} 
-	
-	if (this->_cursor.y < this->_view_start_line){
-		redraw_text_area(--this->_view_start_line);
-	}
-	
-}
-
-void cursor_down(EditBoxClass * this){
-	if (this->_cursor.y + 1 < list_size(this->_text_lines)){
-		this->_cursor.y++;	
-	} 
-	if (this->_cursor.y - this->_view_start_line > (this->_height - 1)){
-		this->redraw(this, ++this->_view_start_line);
-	}
-	
-	if (this->_cursor.x > strlen(current_line(this)))
-		this->_cursor.x = strlen(current_line(this));
-}
-
-void cursor_left(EditBoxClass * this){
-	if (this->_cursor.x > 0)
-		this->_cursor.x--;
-}
-
-void cursor_right(EditBoxClass * this){
-	int lenght = strlen(current_line(this));
-	if (this->_cursor.x < this->_width && this->_cursor.x < lenght)
-		this->_cursor.x++;
 }
 
 void process_new_char(EditBoxClass * this, char value){
@@ -287,10 +288,10 @@ void EditBoxClass_set_blink(void * this_, bool blink){
 	this->_blink = blink;
 	
 	if (blink){
-		this->_screen->setBackColor(this->_screen, SCR_COLOR_GREEN);
-		this->_screen->setTextColor(this->_screen, SCR_COLOR_BLACK);
+		this->_screen->setBackColor(this->_screen, CANVAS_COLOR_GREEN);
+		this->_screen->setTextColor(this->_screen, CANVAS_COLOR_BLACK);
 	} else {
-		this->_screen->setBackColor(this->_screen, SCR_COLOR_BLACK);
+		this->_screen->setBackColor(this->_screen, CANVAS_COLOR_BLACK);
 	}
 	
 	char bl_char = current_line(this)[this->_cursor.x];
@@ -302,8 +303,8 @@ void EditBoxClass_set_blink(void * this_, bool blink){
 							cursor_to_screen_y(this), 
 							"%c", bl_char);
 	
-	this->_screen->setBackColor(this->_screen, SCR_COLOR_BLACK);
-	this->_screen->setTextColor(this->_screen, SCR_COLOR_GREEN);
+	this->_screen->setBackColor(this->_screen, CANVAS_COLOR_BLACK);
+	this->_screen->setTextColor(this->_screen, CANVAS_COLOR_GREEN);
 	
 	this->_prev_blink = this->_blink;
 }

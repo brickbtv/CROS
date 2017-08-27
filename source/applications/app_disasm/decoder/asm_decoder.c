@@ -112,19 +112,19 @@ void init_symbol_table(){
 
 unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 	sdk_scr_printf(canvas, "\n");
-	sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
+	sdk_scr_setTextColor(canvas, CANVAS_COLOR_GREEN);
 	//unsigned char * caddr = start_addr + i;
 	if (*caddr >= 16)
 		sdk_scr_printf(canvas, " 0x%x    %x", caddr, *caddr);
 	else 
 		sdk_scr_printf(canvas, " 0x%x    %x ", caddr, *caddr);
 	
-	sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
+	sdk_scr_setTextColor(canvas, CANVAS_COLOR_WHITE);
 	
 	unsigned char instr = *caddr;
 	
 	// ALU
-	if (instr >= 0 && instr <= 0x2F){
+	if (instr <= 0x2F){
 		int code = instr;
 		int opcode = instr % 16;			
 		NEXT_BYTE
@@ -346,9 +346,9 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 			int fres = get_symbol(base+imm32, name);
 			sdk_scr_printf(canvas, "    B%s %ld (0x%x)", branch_suffix[cond], imm32, base+imm32);
 			if (fres > 0){
-				sdk_scr_setTextColor(canvas, SCR_COLOR_RED);
+				sdk_scr_setTextColor(canvas, CANVAS_COLOR_RED);
 				sdk_scr_printf(canvas, " %s", name);
-				sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
+				sdk_scr_setTextColor(canvas, CANVAS_COLOR_WHITE);
 			}
 		} else {
 			NEXT_BYTE
@@ -365,7 +365,7 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 		}
 		
 		// ALU
-		if (instr >= 0x00 && instr <= 0x0F){
+		if (instr <= 0x0F){
 			int code = instr;
 			NEXT_BYTE
 			int fdst = instr / 16;

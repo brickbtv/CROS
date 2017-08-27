@@ -66,9 +66,9 @@ void msgHandler(int type, int reason, int value, void * userdata){
 					scroll();
 				}
 				if ((strlen(msg) > 0) && (strncmp("< NEWUSER", msg, 6) == 0)){
-					sdk_scr_setTextColor(canvas, SCR_COLOR_GREEN);
+					sdk_scr_setTextColor(canvas, CANVAS_COLOR_GREEN);
 					sdk_scr_printfXY(canvas, 1, line, "user %s joined the chanel", &msg[10]);
-					sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
+					sdk_scr_setTextColor(canvas, CANVAS_COLOR_WHITE);
 					line++;	
 					
 					sdk_scr_printfXY(canvas, 62, users_line, &msg[10]);
@@ -114,7 +114,7 @@ void msgHandler(int type, int reason, int value, void * userdata){
 						sdk_scr_printfXY(canvas, 0, 2, "%s ", input);
 						break;
 					case 2:
-						sdk_scr_setBackColor(canvas, SCR_COLOR_BLACK);
+						sdk_scr_setBackColor(canvas, CANVAS_COLOR_BLACK);
 						sdk_scr_printfXY(canvas, 3, canvas->res_ver - 2, "%s ", input);
 						break;
 				}
@@ -125,7 +125,7 @@ void msgHandler(int type, int reason, int value, void * userdata){
 
 void app_chat(void){
 	canvas = (Canvas*)sdk_prc_getCanvas();
-	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
+	sdk_scr_clearScreen(canvas, CANVAS_COLOR_BLACK);
 			
 	memset(input, 0, 1024 * sizeof(char));
 		
@@ -172,8 +172,8 @@ int findServer(){
 
 
 void draw_fake_gui(){
-	sdk_scr_clearScreen(canvas, SCR_COLOR_BLACK);
-	sdk_scr_setTextColor(canvas, SCR_COLOR_BROWN);
+	sdk_scr_clearScreen(canvas, CANVAS_COLOR_BLACK);
+	sdk_scr_setTextColor(canvas, CANVAS_COLOR_BROWN);
 	
 	for (int i = 0; i < canvas->res_hor; i++){
 		sdk_scr_putchar(canvas, i, 0, 219);
@@ -188,8 +188,8 @@ void draw_fake_gui(){
 		sdk_scr_putchar(canvas, canvas->res_hor - 20, i, 219);
 	}
 	
-	sdk_scr_setTextColor(canvas, SCR_COLOR_WHITE);
-	sdk_scr_setBackColor(canvas, SCR_COLOR_BROWN);
+	sdk_scr_setTextColor(canvas, CANVAS_COLOR_WHITE);
+	sdk_scr_setBackColor(canvas, CANVAS_COLOR_BROWN);
 	sdk_scr_printfXY(canvas, 30, 0, "CR Chat:");
 	sdk_scr_printfXY(canvas, 65, 0, "Users:");
 	sdk_scr_printfXY(canvas, 2, canvas->res_ver-3, "Input message:");

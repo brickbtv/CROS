@@ -85,6 +85,6 @@ short gui_charmap_get_symbol(GuiCharmap * charmap){
 	return charmap->map[charmap->cur.x + charmap->cur.y * charmap->width];
 }
 
-short gui_charmap_set_symbol(GuiCharmap * charmap, unsigned int x, unsigned int y, short value){
+void gui_charmap_set_symbol(GuiCharmap * charmap, unsigned int x, unsigned int y, short value){
 	charmap->map[x + y * charmap->width] = value;
 }
