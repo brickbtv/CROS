@@ -90,9 +90,6 @@ void profile(ScreenClass * screen, const char * arg){
 				if (prc->interruptions_stat_cpu[i] != 0)
 					screen->printf(screen, "        %d - %d\t\t%s\n", i, prc->interruptions_stat_cpu[i], SYSCALL_NAMES_DUMMY[i]);
 		
-			for (int i = 0; i < 16; i++)
-				screen->printf(screen, ">   %s_%d - %x\n", "CTX", i, prc->context->gregs[i]);
-		
 			break;
 		}
 		node = node->next;
