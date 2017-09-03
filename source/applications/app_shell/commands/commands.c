@@ -20,6 +20,7 @@
 #include "app_chat/server.h"
 #include "app_paint/app_paint.h"
 #include "app_disasm/app_disasm.h"
+#include "app_memprof/app_memprof.h"
 
 #include "sdk/syscall_def.h"
 #include "../mkfs/mkfs.h"
@@ -84,10 +85,13 @@ void profile(ScreenClass * screen, const char * arg){
 			screen->printf(screen, "    %s - %d\n", "KYB", prc->interruptions_stat[3]);
 			screen->printf(screen, "    %s - %d\n", "NIC", prc->interruptions_stat[4]);
 			screen->printf(screen, "    %s - %d\n", "DKC", prc->interruptions_stat[5]);*/
-			screen->printf(screen, "    %s - %d\n", "CPU", prc->interruptions_stat[0]);			
+			screen->printf(screen, "    %s - %d\n", "CPU", prc->interruptions_stat[0]);
 			for (int i = 0; i < 25; i++)
 				if (prc->interruptions_stat_cpu[i] != 0)
 					screen->printf(screen, "        %d - %d\t\t%s\n", i, prc->interruptions_stat_cpu[i], SYSCALL_NAMES_DUMMY[i]);
+		
+			for (int i = 0; i < 16; i++)
+				screen->printf(screen, ">   %s_%d - %x\n", "CTX", i, prc->context->gregs[i]);
 		
 			break;
 		}
@@ -256,6 +260,8 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		sdk_prc_create_process((unsigned int)app_chat, "chat", 0, 0);
 	} else if (COMMAND("chat_server")){
 		sdk_prc_create_process((unsigned int)app_chat_server, "chat_server", 0, 0);
+	} else if (COMMAND("memprofile")){
+		sdk_prc_create_process((unsigned int)app_memprof, "memprofile", 0, 0);
 	} else if (COMMAND("ls")){
 		ls(screen, current_path);
 	} else if (COMMAND("ps")){

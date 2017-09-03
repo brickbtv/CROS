@@ -71,6 +71,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_memprof\\app_memprof.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_memprof\\app_memprof.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_paint\\app_paint.c",
 			"bootfile": false
 		},
