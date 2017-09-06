@@ -17,13 +17,18 @@ typedef struct APP_MEMPROF{
 	GuiClass * gui;
 	int insPress;	
 	unsigned int timerId;
+	int work;
 } APP_MEMPROF;
 
 void memprof_exit(APP_MEMPROF * app){
+	app->work = 0;
 	timers_del_timer(app->timerId);
 	free(app->gui);
 	free(app->screen);
+		
 	free(app);
+	
+	sdk_prc_die();
 }
 
 void msgHandlerMemProf(int type, int reason, int value, void * userdata){
@@ -47,7 +52,6 @@ void msgHandlerMemProf(int type, int reason, int value, void * userdata){
 				if (app->insPress == true){
 					if (value == 'x'){
 						memprof_exit(app);
-						sdk_prc_die();
 					}
 					break;
 				} 
@@ -178,8 +182,10 @@ void app_memprof(void){
 	app->timerId = timers_add_timer(1000, updateMemMap);
 	
 	updateMemMap(app->timerId, app);
+	
+	app->work = 1;
 		
-	while (1){
+	while (app->work){
 		if (sdk_prc_is_focused()){
 			while (sdk_prc_haveNewMessage()){
 				sdk_prc_handleMessage(msgHandlerMemProf, app);
@@ -189,6 +195,4 @@ void app_memprof(void){
 	}
 	
 	memprof_exit(app);
-	
-	sdk_prc_die();
 }
