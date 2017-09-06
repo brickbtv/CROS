@@ -19,6 +19,13 @@ typedef struct APP_MEMPROF{
 	unsigned int timerId;
 } APP_MEMPROF;
 
+void memprof_exit(APP_MEMPROF * app){
+	timers_del_timer(app->timerId);
+	free(app->gui);
+	free(app->screen);
+	free(app);
+}
+
 void msgHandlerMemProf(int type, int reason, int value, void * userdata){
 	APP_MEMPROF * app = (APP_MEMPROF *)userdata;
 	
@@ -39,6 +46,7 @@ void msgHandlerMemProf(int type, int reason, int value, void * userdata){
 			if (reason == KEY_STATE_KEYTYPED){
 				if (app->insPress == true){
 					if (value == 'x'){
+						memprof_exit(app);
 						sdk_prc_die();
 					}
 					break;
@@ -69,6 +77,11 @@ void updateMemMap(unsigned int timerId, void * userdata){
 		return;
 	app->screen->getCanvas(app->screen)->cur_x = 0;
 	app->screen->getCanvas(app->screen)->cur_y = 1;
+	app->screen->clearArea(app->screen,
+							CANVAS_COLOR_BLACK,
+							0, 1, 
+							app->screen->getCanvas(app->screen)->res_hor,
+							app->screen->getCanvas(app->screen)->res_ver - 2);
 	ProcessDummy * prc;
 	
 	list_t * processes_list = sdk_prc_get_scheduler_list();
@@ -124,6 +137,8 @@ void app_memprof(void){
 		}
 		sdk_prc_sleep_until_new_messages();
 	}
+	
+	memprof_exit(app);
 	
 	sdk_prc_die();
 }
