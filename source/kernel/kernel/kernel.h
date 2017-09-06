@@ -9,8 +9,7 @@
 #define KRN_TIMER 0
 #define KRN_APP_RESERVED_TIMER 1
 
-#define KERNEL_STACKSIZE (1024*10)
-#define KERNEL_HEAPSIZE (1024*10)
+#define KRN_HEAP_BASE 1024 * 1000
 
 extern const int krn_currIntrBusAndReason;
 

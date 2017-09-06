@@ -61,3 +61,7 @@ void sdk_prc_die(void){
 list_t * sdk_prc_get_scheduler_list(void){
 	return (list_t *)app_syscall0(syscall_get_scheduler_list);
 }
+
+unsigned int sdk_prc_get_total_memory(void){
+	return (unsigned int)app_syscall0(syscall_get_total_memory);
+}

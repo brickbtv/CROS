@@ -52,6 +52,7 @@ typedef enum SYSCALL_CBACKS{
 	syscall_prc_is_focused,
 	syscall_prc_die,
 	syscall_get_scheduler_list,
+	syscall_get_total_memory,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,
@@ -67,7 +68,7 @@ typedef enum SYSCALL_CBACKS{
 	syscall_dkc_isReady
 } SYSCALL_CBACKS;
 
-static char * SYSCALL_NAMES_DUMMY[22] = {
+static char * SYSCALL_NAMES_DUMMY[23] = {
 		"syscall_prc_create_process",
 		"syscall_prc_sleep",
 		"syscall_prc_sleep_until_new_messages",
@@ -80,6 +81,7 @@ static char * SYSCALL_NAMES_DUMMY[22] = {
 		"syscall_prc_is_focused",
 		"syscall_prc_die",
 		"syscall_get_scheduler_list",
+		"syscall_get_total_memory",
 		// clock
 		"syscall_clk_readTimeSinceBoot",
 		"syscall_clk_readCountdownTimer",

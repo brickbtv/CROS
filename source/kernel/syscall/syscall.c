@@ -111,6 +111,12 @@ void syscall_get_scheduler_list(void){
 	prc->context->gregs[0] = (unsigned int)getSchedullerList();
 }
 
+void syscall_get_total_memory(void){
+	Process * prc = prc_getCurrentProcess();
+	
+	prc->context->gregs[0] = (unsigned int)KRN_HEAP_BASE;
+}
+
 //////////////////////
 //		CLOCK 		//
 //////////////////////
@@ -228,6 +234,7 @@ F_SYSCALL syscalls_cbacks[] =
 	syscall_prc_is_focused,
 	syscall_prc_die,
 	syscall_get_scheduler_list,
+	syscall_get_total_memory,
 	// clock
 	syscall_clk_readTimeSinceBoot,
 	syscall_clk_readCountdownTimer,

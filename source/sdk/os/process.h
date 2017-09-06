@@ -59,4 +59,5 @@ bool sdk_prc_is_focused(void);
 void sdk_prc_die(void);
 
 list_t * sdk_prc_get_scheduler_list(void);
+unsigned int sdk_prc_get_total_memory(void);
 #endif
