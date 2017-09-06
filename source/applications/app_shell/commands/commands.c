@@ -58,14 +58,14 @@ void ls(ScreenClass * screen, const char * current_path){
 void ps(ScreenClass * screen){
 	ProcessDummy * prc;
  	screen->setBackColor(screen, CANVAS_COLOR_BLUE);
-	screen->printf(screen, "PID\tdead\tINTs\tname\t\n");
+	screen->printf(screen, "%-5s%-10s%-15s%-50s\n", "PID", "Is Dead?", "Interruptions", "Name");
 	screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 	
 	list_t * processes_list = sdk_prc_get_scheduler_list();
 	list_node_t * node = processes_list->head;
 	while (node){
 		prc = (ProcessDummy *) node->val;
-		screen->printf(screen, "%d\t%d\t\t%d\t\t%s\n", prc->pid, prc->i_should_die, prc->interruptions_count, prc->name);
+		screen->printf(screen, "%-5d%-10d%-15d%-50s\n", prc->pid, prc->i_should_die, prc->interruptions_count, prc->name);
 		node = node->next;
 	}
 }
