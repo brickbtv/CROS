@@ -21,6 +21,7 @@
 #include "app_paint/app_paint.h"
 #include "app_disasm/app_disasm.h"
 #include "app_memprof/app_memprof.h"
+#include "app_elf/app_elf.h"
 
 #include "sdk/syscall_def.h"
 #include "../mkfs/mkfs.h"
@@ -261,6 +262,8 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		sdk_prc_create_process((unsigned int)app_memprof, "memprofile", 0, 0);
 	} else if (COMMAND("ls")){
 		ls(screen, current_path);
+	} else if (COMMAND("elf")){
+		sdk_prc_create_process((unsigned int)app_elf, "elf", 0, 0);
 	} else if (COMMAND("ps")){
 		ps(screen);
 	} else if (COMMAND("diskinfo")){

@@ -71,6 +71,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_elf\\app_elf.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_elf\\app_elf.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_memprof\\app_memprof.c",
 			"bootfile": false
 		},
