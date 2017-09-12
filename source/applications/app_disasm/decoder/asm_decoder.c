@@ -1,3 +1,5 @@
+#include "asm_decoder.h"
+
 #include "sdk/os/debug.h"
 #include "sdk/os/process.h"
 #include "sdk/clk/clock.h"
@@ -29,14 +31,7 @@ char * branch_suffix[] = {"EQ", "NE", "CS/HS", "CC/LO", "MI", "PL", "VS", "VC", 
 char * alu_f_opcode[] = {"FADD", "FSUB", "FMUL", "FDIV", "FPOW", "FMOD"};
 char * instr_f[] = {"FFIX", "FFLT", "FMOV", "FMVN", "FABS", "FRND", "FSQT", "FLOG", "FLGN", "FEXP", "FSIN", "FCOS", "FTAN", "FASN", "FACS"};
 
-typedef struct STR_SYMBOL{
-	unsigned int address;
-	char name[64];
-} STR_SYMBOL;
-
-static list_t * sym_table;
-
-int get_symbol(int address, char * name){
+int get_symbol(int address, char * name, list_t * sym_table){
 	list_node_t * node = sym_table->head;
 	while (node){
 		STR_SYMBOL *s = (STR_SYMBOL *)node->val;
@@ -67,8 +62,8 @@ char* reverse_string(char *str)
 
 #define ADD_SYMBOL(a){STR_SYMBOL * s1 = malloc(sizeof(STR_SYMBOL));	strcpy(s1->name, #a);	s1->address = (int)a;list_rpush(sym_table, list_node_new(s1));} 
 
-void init_symbol_table(){
-	sym_table = list_new();
+list_t * init_symbol_table(){
+	list_t * sym_table = list_new();
 
 	ADD_SYMBOL(sdk_debug_log);
 	ADD_SYMBOL(sdk_debug_logf);
@@ -108,9 +103,10 @@ void init_symbol_table(){
 	ADD_SYMBOL(sdk_nic_recv);
 	ADD_SYMBOL(sdk_nic_send);
 	ADD_SYMBOL(sdk_nic_sendf);
+	return sym_table;
 }
 
-unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
+unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr, list_t * sym_table){
 	sdk_scr_printf(canvas, "\n");
 	sdk_scr_setTextColor(canvas, CANVAS_COLOR_GREEN);
 	//unsigned char * caddr = start_addr + i;
@@ -343,7 +339,7 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr){
 		if (instr % 2 == 0){
 			SIMM32				
 			char name[64] = "";
-			int fres = get_symbol(base+imm32, name);
+			int fres = get_symbol(base+imm32, name, sym_table);
 			sdk_scr_printf(canvas, "    B%s %ld (0x%x)", branch_suffix[cond], imm32, base+imm32);
 			if (fres > 0){
 				sdk_scr_setTextColor(canvas, CANVAS_COLOR_RED);

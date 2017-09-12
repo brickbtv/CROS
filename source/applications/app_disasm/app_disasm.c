@@ -8,6 +8,7 @@
 #include "stdlib/stdio_shared.h"
 #include "stdlib/stdlib_shared.h"
 #include "stdlib/string_shared.h"
+#include "stdlib/containers/list.h"
 #include "stdlib/extern/strtol/strtol.h"
 #include "decoder/asm_decoder.h"
 
@@ -17,9 +18,10 @@ typedef struct APP_DISASM{
 	bool insPress;
 	unsigned char * addr;
 	unsigned char * next_addr;
+	list_t * sym_table;
 }APP_DISASM;
 
-unsigned char * show_asm(ScreenClass * screen, unsigned char * addr);
+unsigned char * show_asm(ScreenClass * screen, unsigned char * addr, list_t * sym_table);
 
 void msgHandlerDisasm(int type, int reason, int value, void * userdata){
 	APP_DISASM * app = (APP_DISASM *)userdata;
@@ -43,7 +45,7 @@ void msgHandlerDisasm(int type, int reason, int value, void * userdata){
 					break;
 				} 
 				if (value == KEY_DOWN){
-					app->next_addr = show_asm(app->screen, app->next_addr);
+					app->next_addr = show_asm(app->screen, app->next_addr, app->sym_table);
 				}
 			}
 	}
@@ -56,7 +58,7 @@ unsigned char * get_addr_from_args(const char * path){
 	} 
 }
 
-unsigned char * show_asm(ScreenClass * screen, unsigned char * addr){
+unsigned char * show_asm(ScreenClass * screen, unsigned char * addr, list_t * sym_table){
 	screen->clearArea(screen, CANVAS_COLOR_BLACK, 10, 1, screen->_canvas->res_hor - 10, screen->_canvas->res_ver - 2);
 	
 	unsigned char * addr_v = addr;
@@ -67,7 +69,7 @@ unsigned char * show_asm(ScreenClass * screen, unsigned char * addr){
 	unsigned char * second_instr;
 	
 	for (int i = 0; i < 23; i++){
-		addr_v = decode_instruction(screen->_canvas, (unsigned char *)addr_v);
+		addr_v = decode_instruction(screen->_canvas, (unsigned char *)addr_v, sym_table);
 		if (i == 0)
 			second_instr = addr_v;
 	}
@@ -94,7 +96,7 @@ void app_disasm(const char * args){
 	app.gui->draw_header(app.gui, title);
 	app.gui->draw_bottom(app.gui, " DOWN - scroll\tINS^x - exit");
 	
-	init_symbol_table();
+	app.sym_table = init_symbol_table();
 	
 	app.next_addr = show_asm(app.screen, addr);
 	

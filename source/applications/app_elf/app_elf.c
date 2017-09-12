@@ -10,7 +10,7 @@
 
 #include "sdk/scr/ScreenClass.h"
 
-
+#include "app_disasm/decoder/asm_decoder.h"
 #include "containers/list.h"
 
 #include <string_shared.h>
@@ -99,6 +99,24 @@ char * bytes_order[] = {"Unknown", "BIG", "LITTLE"};
 char * section_type[] = {"SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB", 
 						"SHT_RELA", "SHT_HASH", "SHT_DYNAMIC", "SHT_NOTE", 
 						"SHT_NOBITS", "SHT_REL"};
+
+unsigned int elf_get_sys_symbol(list_t * sym_table, char * sym_name){
+	if (sym_name[0] == '_'){
+		sdk_debug_logf("%s", sym_name);
+		sym_name = &sym_name[1];
+		sdk_debug_logf("%s", sym_name);
+	}
+
+	list_node_t * node = sym_table->head;
+	while (node){
+		STR_SYMBOL *s = (STR_SYMBOL *)node->val;
+		if (strcmp(s->name, sym_name) == 0){
+			return s->address;
+		}
+		node = node->next;
+	}
+	return 0;
+}
 
 void elf_dump(ScreenClass * screen, const char* filename){
 	FILE * file = fs_open_file(filename, 'r');
@@ -222,19 +240,32 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									"shndx",
 									"CROS addr");
 		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
-		
+		list_t * sym_table = init_symbol_table();
 		for (int j = 1; j < symsec.sh_size / symsec.sh_entsize; j++){
 			Elf32_Sym elf_sym;
 			fs_seek(file, symsec.sh_offset + j * symsec.sh_entsize);
 			fs_read_file(file, (char*)&elf_sym, sizeof(Elf32_Sym), &rb);
+			
+			// is relocation for SDK function?
+			unsigned int offset = elf_get_sys_symbol(sym_table, &symnames[elf_sym.st_name]);
+			
 			screen->printf(screen, "%-20s0x%-10x%-10d%-10d%-12s0x%-20x\n",
 									&symnames[elf_sym.st_name],
 									elf_sym.st_value,
 									elf_sym.st_size,
 									elf_sym.st_info,
 									&names[sections[elf_sym.st_shndx].sh_name],
-									0);
+									offset);
+									
+			
+			// Fatal: Can't find symbol in ELF and System SDK. 
+			if (offset == 0 && elf_sym.st_shndx == 0){
+				screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+				screen->printf(screen, "FATAL! Symbol '%s' not found.%-80s\n", &symnames[elf_sym.st_name], "");
+				screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+			}
 		}
+				
 		
 		fs_close_file(file);
 	} else {
