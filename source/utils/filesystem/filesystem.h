@@ -43,6 +43,9 @@ int fs_unlink(const char* path);
 int fs_chdir(const char* dir);
 int fs_chdrive(const char* path);
 int fs_getcwd(const char * cwd_str, int str_len);
+
+int fs_seek(FILE* file, unsigned int offset);
+
 unsigned int fs_getsize(FILE* file);
 
 #endif

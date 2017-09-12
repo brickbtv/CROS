@@ -163,6 +163,11 @@ int fs_getcwd(const char * cwd_str, int str_len){
 	DEF_ERR_HANDLER(res);
 }
 
+int fs_seek(FILE* file, unsigned int offset){
+	FRESULT res = f_lseek(file->fil, offset);
+	DEF_ERR_HANDLER(res);
+}
+
 unsigned int fs_getsize(FILE* file){
 	//return f_size(file->fil);
 	return 0;
