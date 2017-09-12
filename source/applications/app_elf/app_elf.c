@@ -106,6 +106,8 @@ char * section_type[] = {"SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB",
 						"SHT_NOBITS", "SHT_REL"};
 
 unsigned int elf_get_sys_symbol(list_t * sym_table, char * sym_name){
+	if (!sym_name)
+		return 0;
 	if (sym_name[0] == '_')
 		sym_name = &sym_name[1];
 	
@@ -334,7 +336,10 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			sdk_debug_logf("shndx: %d, rod: %d", sections[elf_symbols[obj_id].st_shndx].sh_name, rodatasec.sh_name);
 			
 			if (sections[elf_symbols[obj_id].st_shndx].sh_name == rodatasec.sh_name){
-				NAD = ((unsigned int)&rodata[0] - (unsigned int)&textdata[0]) + elf_symbols[obj_id].st_value + rel_entry.r_offset + 1;
+				NAD = ((unsigned int)&rodata[elf_symbols[obj_id].st_value] - (unsigned int)&textdata[rel_entry.r_offset]) + 2;
+				
+				sdk_debug_logf("S: %x", &rodata[elf_symbols[obj_id].st_value]);
+				
 				sdk_debug_logf("NAD: 0x%x", NAD);
 			}
 			
@@ -366,7 +371,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		
 		sdk_debug_logf("text: 0x%x", &textdata[0]);
 		sdk_debug_logf("rodata: 0x%x", &rodata[0]);
-		sdk_prc_create_process((unsigned int)&textdata[0], "TEST", 0, 0);
+		sdk_prc_create_process((unsigned int)&textdata[0], "TEST", 0, (Canvas*)sdk_prc_getCanvas());
 		sdk_prc_sleep(100000);
 		
 		free(rodata);
