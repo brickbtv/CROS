@@ -142,7 +142,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		
 		// table of sections headers
 		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
-		screen->printf(screen, "ELF sections header:%-80s\n", "");
+		screen->printf(screen, "ELF sections headers:%-80s\n", "");
 		screen->printf(screen, "%-3s%-16s%-13s%-10s%-5s%-7s%-5s%-5s%-5s%-8s%-3s\n", 
 									"#",
 									"name", 
@@ -188,8 +188,6 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									elf_secheader.sh_info,
 									elf_secheader.sh_addralign,
 									elf_secheader.sh_entsize);
-			
-			sdk_prc_sleep(500);
 		}
 		
 		fs_close_file(file);
