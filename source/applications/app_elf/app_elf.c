@@ -223,6 +223,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		Elf32_Shdr symnamessec;
 		Elf32_Shdr textsec;
 		Elf32_Shdr reltextsec;
+		Elf32_Shdr rodatasec;
 		
 		for (int i = 0; i < elf_header.e_shnum; i++){
 			if (strcmp(&names[sections[i].sh_name], ".symtab") == 0)
@@ -233,6 +234,8 @@ void elf_dump(ScreenClass * screen, const char* filename){
 				textsec = sections[i];
 			if (strcmp(&names[sections[i].sh_name], ".rel.text") == 0)
 				reltextsec = sections[i];
+			if (strcmp(&names[sections[i].sh_name], ".rodata") == 0)
+				rodatasec = sections[i];
 		}
 		
 		char * symnames = malloc(symnamessec.sh_size);
@@ -305,6 +308,12 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			
 		}
 		
+		// .rodata section (constants like strings)
+		
+		unsigned char * rodata = malloc(rodatasec.sh_size);
+		fs_seek(file, rodatasec.sh_offset);
+		fs_read_file(file, rodata, rodatasec.sh_size, &rb);
+		
 		// .text section PATCHING
 		for (int i = 0; i < reltextsec.sh_size / reltextsec.sh_entsize; i++){
 			Elf32_Rel rel_entry;
@@ -312,17 +321,25 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			fs_read_file(file, (char*)&rel_entry, sizeof(Elf32_Rel), &rb);
 
 			// apply patch
-			//unsigned int offset = elf_get_sys_symbol(sym_table, &symnames[elf_symbols[rel_entry.r_info].st_name]);
 			#define ELF32_R_SYM(i)  ((i)>>8)
 		    #define ELF32_R_TYPE(i)   ((unsigned char)(i))
 		    #define ELF32_R_INFO(s,t) (((s)<<8)+(unsigned char)(t))
 			
 			int obj_id = ELF32_R_SYM(rel_entry.r_info);
 			
+			// PATCH FOR system FUNCIONS
 			unsigned int NAD = elf_symbols[obj_id].st_value - (unsigned int)&textdata[0] - rel_entry.r_offset + 1;
 			
+			// PATCH FOR elf RODATA
+			sdk_debug_logf("shndx: %d, rod: %d", sections[elf_symbols[obj_id].st_shndx].sh_name, rodatasec.sh_name);
 			
-			screen->printf(screen, "relocate: 0x%-10x %s\n", rel_entry.r_offset, &symnames[elf_symbols[obj_id].st_name]);
+			if (sections[elf_symbols[obj_id].st_shndx].sh_name == rodatasec.sh_name){
+				NAD = ((unsigned int)&rodata[0] - (unsigned int)&textdata[0]) + elf_symbols[obj_id].st_value + rel_entry.r_offset + 1;
+				sdk_debug_logf("NAD: 0x%x", NAD);
+			}
+			
+			
+			screen->printf(screen, "\nrelocate: 0x%-10x %s", rel_entry.r_offset, &symnames[elf_symbols[obj_id].st_name]);
 			textdata[rel_entry.r_offset] = NAD;
 			textdata[rel_entry.r_offset + 1] = NAD >> 8;
 			textdata[rel_entry.r_offset + 2] = NAD >> 16;
@@ -331,7 +348,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		
 		// dump .text section AFTER patching
 		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
-		screen->printf(screen, ".text section AFTER patching:%-80s\n", "");
+		screen->printf(screen, "\n.text section AFTER patching:%-80s\n", "");
 		screen->printf(screen, "\n%-12s%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c", "", 
 								'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 								'a', 'b', 'c', 'd', 'e', 'f');
@@ -347,10 +364,12 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			
 		}
 		
-		sdk_debug_logf("0x%x", &textdata[0]);
-		//sdk_prc_create_process((unsigned int)&textdata[0], "TEST", 0, 0);
+		sdk_debug_logf("text: 0x%x", &textdata[0]);
+		sdk_debug_logf("rodata: 0x%x", &rodata[0]);
+		sdk_prc_create_process((unsigned int)&textdata[0], "TEST", 0, 0);
 		sdk_prc_sleep(100000);
 		
+		free(rodata);
 		free(textdata);
 		free(symnames);
 		free(sections);
