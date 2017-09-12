@@ -56,8 +56,7 @@ void hex_dump(ScreenClass * screen, const char* filename){
 	}
 }
 
-typedef struct Elf32_Ehdr
-{
+typedef struct Elf32_Ehdr {
     unsigned char e_ident[16];
     uint16_t      e_type;
     uint16_t      e_machine;
@@ -74,8 +73,7 @@ typedef struct Elf32_Ehdr
     uint16_t      e_shstrndx;
 } Elf32_Ehdr;
 
-typedef struct Elf32_Shdr
-{
+typedef struct Elf32_Shdr {
     uint32_t   sh_name;
     uint32_t   sh_type;
     uint32_t   sh_flags;
@@ -87,6 +85,15 @@ typedef struct Elf32_Shdr
     uint32_t   sh_addralign;
     uint32_t   sh_entsize;
 } Elf32_Shdr;
+
+typedef struct Elf32_Sym {
+       uint32_t      st_name;
+       uint32_t      st_value;
+       uint32_t      st_size;
+       unsigned char   st_info;
+       unsigned char   st_other;
+       unsigned short  st_shndx;
+} Elf32_Sym;
 
 char * bytes_order[] = {"Unknown", "BIG", "LITTLE"};
 char * section_type[] = {"SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB", 
@@ -157,13 +164,13 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									"es");
 		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		
-		for (int i = 0; i < elf_header.e_shnum; i++){
+		Elf32_Shdr sections[64];
+		for (int i = 1; i < elf_header.e_shnum; i++){
 			Elf32_Shdr elf_secheader;
 			fs_seek(file, elf_header.e_shoff + i * elf_header.e_shentsize);
 			fs_read_file(file, (char*)&elf_secheader, sizeof(Elf32_Shdr), &rb);
 			
-			if (i == 0)	// always empty 
-				continue;
+			sections[i] = elf_secheader;
 			
 			int fl = elf_secheader.sh_flags;			
 			int b = 0;
@@ -188,6 +195,45 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									elf_secheader.sh_info,
 									elf_secheader.sh_addralign,
 									elf_secheader.sh_entsize);
+		}
+		
+		// symboltable	
+		Elf32_Shdr symsec;
+		Elf32_Shdr symnamessec;
+		
+		for (int i = 0; i < elf_header.e_shnum; i++){
+			if (strcmp(&names[sections[i].sh_name], ".symtab") == 0)
+				symsec = sections[i];
+			if (strcmp(&names[sections[i].sh_name], ".strtab") == 0)
+				symnamessec = sections[i];
+		}
+		
+		char symnames[1024];
+		fs_seek(file, symnamessec.sh_offset);
+		fs_read_file(file, symnames, symnamessec.sh_size, &rb);
+		
+		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+		screen->printf(screen, "ELF symbol table:%-80s\n", "");
+		screen->printf(screen, "%-20s%-12s%-10s%-10s%-10s%-20s\n",
+									"name",
+									"value",
+									"size",
+									"info",
+									"shndx",
+									"CROS addr");
+		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+		
+		for (int j = 1; j < symsec.sh_size / symsec.sh_entsize; j++){
+			Elf32_Sym elf_sym;
+			fs_seek(file, symsec.sh_offset + j * symsec.sh_entsize);
+			fs_read_file(file, (char*)&elf_sym, sizeof(Elf32_Sym), &rb);
+			screen->printf(screen, "%-20s0x%-10x%-10d%-10d%-12s0x%-20x\n",
+									&symnames[elf_sym.st_name],
+									elf_sym.st_value,
+									elf_sym.st_size,
+									elf_sym.st_info,
+									&names[sections[elf_sym.st_shndx].sh_name],
+									0);
 		}
 		
 		fs_close_file(file);
