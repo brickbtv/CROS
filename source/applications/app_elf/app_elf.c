@@ -93,13 +93,14 @@ char * bytes_order[] = {"Unknown", "BIG", "LITTLE"};
 void elf_dump(ScreenClass * screen, const char* filename){
 	FILE * file = fs_open_file(filename, 'r');
 	if (file){
-		unsigned char buff[4096];
+		//unsigned char buff[4096];
 		int rb;
 		
-		memset(buff, 0, 4096);
+		//memset(buff, 0, 4096);
 		Elf32_Ehdr elf_header;
-		fs_read_file(file, buff, 4096, &rb);
-		memcpy(&elf_header, buff, sizeof(Elf32_Ehdr));
+		fs_seek(file, 0);
+		fs_read_file(file, (char*)&elf_header, sizeof(Elf32_Ehdr), &rb);
+		//memcpy(&elf_header, buff, sizeof(Elf32_Ehdr));
 		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
 		screen->printf(screen, "ELF header:\n");
 		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
@@ -109,21 +110,21 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									elf_header.e_ident[1],
 									elf_header.e_ident[2],
 									elf_header.e_ident[3]);
-		screen->printf(screen, "         word size: %d\n", 32 * elf_header.e_ident[4]);
+		screen->printf(screen, "         word size: %d\t\t", 32 * elf_header.e_ident[4]);
 		screen->printf(screen, "         bytes order: %s\n", bytes_order[elf_header.e_ident[5]]);
 		
-		screen->printf(screen, "e_type: %d\n", elf_header.e_type); 
-		screen->printf(screen, "e_machine: %d\n", elf_header.e_machine);
+		screen->printf(screen, "e_type: %d\t\t", elf_header.e_type); 
+		screen->printf(screen, "e_machine: %d\t\t", elf_header.e_machine);
 		screen->printf(screen, "e_version: %d\n", elf_header.e_version);
-		screen->printf(screen, "e_entry: 0x%x\n", elf_header.e_entry);
-		screen->printf(screen, "e_phoff: 0x%x\n", elf_header.e_phoff);
+		screen->printf(screen, "e_entry: 0x%x\t", elf_header.e_entry);
+		screen->printf(screen, "e_phoff: 0x%x\t\t", elf_header.e_phoff);
 		screen->printf(screen, "e_shoff: 0x%x\n", elf_header.e_shoff);
 		
-		screen->printf(screen, "e_flags: %d\n", elf_header.e_flags);
-		screen->printf(screen, "e_ehsize: %d\n", elf_header.e_ehsize);
+		screen->printf(screen, "e_flags: %d\t\t", elf_header.e_flags);
+		screen->printf(screen, "e_ehsize: %d\t\t", elf_header.e_ehsize);
 		screen->printf(screen, "e_phentsize: %d\n", elf_header.e_phentsize);
-		screen->printf(screen, "e_phnum: %d\n", elf_header.e_phnum );
-		screen->printf(screen, "e_shentsize: %d\n", elf_header.e_shentsize);
+		screen->printf(screen, "e_phnum: %d\t\t", elf_header.e_phnum );
+		screen->printf(screen, "e_shentsize: %d\t\t", elf_header.e_shentsize);
 		screen->printf(screen, "e_shnum: %d\n", elf_header.e_shnum);
 		screen->printf(screen, "e_shstrndx: %d\n", elf_header.e_shstrndx);
 				
@@ -131,14 +132,21 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		
 		// section with sections names
 		Elf32_Shdr elf_secheader_names;
-		memcpy(&elf_secheader_names, &buff[elf_header.e_shoff + elf_header.e_shstrndx * elf_header.e_shentsize], sizeof(Elf32_Shdr));
+		fs_seek(file, elf_header.e_shoff + elf_header.e_shstrndx * elf_header.e_shentsize);
+		fs_read_file(file, (char*)&elf_secheader_names, sizeof(Elf32_Shdr), &rb);
+		//memcpy(&elf_secheader_names, &buff[], sizeof(Elf32_Shdr));
 		
-		char * names = &buff[elf_secheader_names.sh_offset];
+		char names[1024];//= &buff[elf_secheader_names.sh_offset];
+		fs_seek(file, elf_secheader_names.sh_offset);
+		fs_read_file(file, names, elf_secheader_names.sh_size, &rb);
 		
 		// table of sections headers
 		for (int i = 0; i < elf_header.e_shnum; i++){
 			Elf32_Shdr elf_secheader;
-			memcpy(&elf_secheader, &buff[elf_header.e_shoff + i * elf_header.e_shentsize], sizeof(Elf32_Shdr));
+			//memcpy(&elf_secheader, &buff[elf_header.e_shoff + i * elf_header.e_shentsize], sizeof(Elf32_Shdr));
+			fs_seek(file, elf_header.e_shoff + i * elf_header.e_shentsize);
+			fs_read_file(file, (char*)&elf_secheader, sizeof(Elf32_Shdr), &rb);
+			
 			if (i == 0)	// always empty 
 				continue;
 				
