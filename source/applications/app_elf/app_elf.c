@@ -95,17 +95,20 @@ typedef struct Elf32_Sym {
        unsigned short  st_shndx;
 } Elf32_Sym;
 
+typedef struct Elf32_Rel{
+       uint32_t      r_offset;
+       uint32_t      r_info;
+} Elf32_Rel;
+
 char * bytes_order[] = {"Unknown", "BIG", "LITTLE"};
 char * section_type[] = {"SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB", 
 						"SHT_RELA", "SHT_HASH", "SHT_DYNAMIC", "SHT_NOTE", 
 						"SHT_NOBITS", "SHT_REL"};
 
 unsigned int elf_get_sys_symbol(list_t * sym_table, char * sym_name){
-	if (sym_name[0] == '_'){
-		sdk_debug_logf("%s", sym_name);
+	if (sym_name[0] == '_')
 		sym_name = &sym_name[1];
-		sdk_debug_logf("%s", sym_name);
-	}
+	
 
 	list_node_t * node = sym_table->head;
 	while (node){
@@ -219,6 +222,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		Elf32_Shdr symsec;
 		Elf32_Shdr symnamessec;
 		Elf32_Shdr textsec;
+		Elf32_Shdr reltextsec;
 		
 		for (int i = 0; i < elf_header.e_shnum; i++){
 			if (strcmp(&names[sections[i].sh_name], ".symtab") == 0)
@@ -227,6 +231,8 @@ void elf_dump(ScreenClass * screen, const char* filename){
 				symnamessec = sections[i];
 			if (strcmp(&names[sections[i].sh_name], ".text") == 0)
 				textsec = sections[i];
+			if (strcmp(&names[sections[i].sh_name], ".rel.text") == 0)
+				reltextsec = sections[i];
 		}
 		
 		char * symnames = malloc(symnamessec.sh_size);
@@ -244,6 +250,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									"CROS addr");
 		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		list_t * sym_table = init_symbol_table();
+		Elf32_Sym * elf_symbols = malloc(sizeof(Elf32_Sym)*(symsec.sh_size / symsec.sh_entsize));
 		for (int j = 1; j < symsec.sh_size / symsec.sh_entsize; j++){
 			Elf32_Sym elf_sym;
 			fs_seek(file, symsec.sh_offset + j * symsec.sh_entsize);
@@ -267,6 +274,11 @@ void elf_dump(ScreenClass * screen, const char* filename){
 				screen->printf(screen, "FATAL! Symbol '%s' not found.%-80s\n", &symnames[elf_sym.st_name], "");
 				screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 			}
+			
+			if (offset != 0)
+				elf_sym.st_value = offset;
+			
+			elf_symbols[j] = elf_sym;
 		}
 				
 		// dump .text section BEFORE patching
@@ -281,7 +293,9 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		fs_seek(file, textsec.sh_offset);
 		fs_read_file(file, textdata, textsec.sh_size, &rb);
 		
-		for ( int i = 0 ; i < rb; i++){
+		int textdatalen = rb;
+		
+		for (int i = 0 ; i < textdatalen; i++){
 			if (i % 0x10 == 0){
 				screen->setBackColor(screen, CANVAS_COLOR_BLUE);
 				screen->printf(screen, "\n0x%-10x", i);
@@ -290,6 +304,52 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			screen->printf(screen, "%-2x ", textdata[i]);
 			
 		}
+		
+		// .text section PATCHING
+		for (int i = 0; i < reltextsec.sh_size / reltextsec.sh_entsize; i++){
+			Elf32_Rel rel_entry;
+			fs_seek(file, reltextsec.sh_offset + i * reltextsec.sh_entsize);
+			fs_read_file(file, (char*)&rel_entry, sizeof(Elf32_Rel), &rb);
+
+			// apply patch
+			//unsigned int offset = elf_get_sys_symbol(sym_table, &symnames[elf_symbols[rel_entry.r_info].st_name]);
+			#define ELF32_R_SYM(i)  ((i)>>8)
+		    #define ELF32_R_TYPE(i)   ((unsigned char)(i))
+		    #define ELF32_R_INFO(s,t) (((s)<<8)+(unsigned char)(t))
+			
+			int obj_id = ELF32_R_SYM(rel_entry.r_info);
+			
+			unsigned int NAD = elf_symbols[obj_id].st_value - (unsigned int)&textdata[0] - rel_entry.r_offset + 1;
+			
+			
+			screen->printf(screen, "relocate: 0x%-10x %s\n", rel_entry.r_offset, &symnames[elf_symbols[obj_id].st_name]);
+			textdata[rel_entry.r_offset] = NAD;
+			textdata[rel_entry.r_offset + 1] = NAD >> 8;
+			textdata[rel_entry.r_offset + 2] = NAD >> 16;
+			textdata[rel_entry.r_offset + 3] = NAD >> 24;
+		}
+		
+		// dump .text section AFTER patching
+		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+		screen->printf(screen, ".text section AFTER patching:%-80s\n", "");
+		screen->printf(screen, "\n%-12s%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c", "", 
+								'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+								'a', 'b', 'c', 'd', 'e', 'f');
+		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+		
+		for (int i = 0 ; i < textdatalen; i++){
+			if (i % 0x10 == 0){
+				screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+				screen->printf(screen, "\n0x%-10x", i);
+				screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+			}
+			screen->printf(screen, "%-2x ", textdata[i]);
+			
+		}
+		
+		sdk_debug_logf("0x%x", &textdata[0]);
+		//sdk_prc_create_process((unsigned int)&textdata[0], "TEST", 0, 0);
+		sdk_prc_sleep(100000);
 		
 		free(textdata);
 		free(symnames);
