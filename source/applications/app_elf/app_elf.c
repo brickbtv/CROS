@@ -161,7 +161,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		fs_seek(file, elf_header.e_shoff + elf_header.e_shstrndx * elf_header.e_shentsize);
 		fs_read_file(file, (char*)&elf_secheader_names, sizeof(Elf32_Shdr), &rb);
 		
-		char names[1024];
+		char * names = malloc(elf_secheader_names.sh_size);
 		fs_seek(file, elf_secheader_names.sh_offset);
 		fs_read_file(file, names, elf_secheader_names.sh_size, &rb);
 		
@@ -182,7 +182,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									"es");
 		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		
-		Elf32_Shdr sections[64];
+		Elf32_Shdr * sections = malloc(sizeof(Elf32_Shdr) * elf_header.e_shnum);
 		for (int i = 1; i < elf_header.e_shnum; i++){
 			Elf32_Shdr elf_secheader;
 			fs_seek(file, elf_header.e_shoff + i * elf_header.e_shentsize);
@@ -218,15 +218,18 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		// symboltable	
 		Elf32_Shdr symsec;
 		Elf32_Shdr symnamessec;
+		Elf32_Shdr textsec;
 		
 		for (int i = 0; i < elf_header.e_shnum; i++){
 			if (strcmp(&names[sections[i].sh_name], ".symtab") == 0)
 				symsec = sections[i];
 			if (strcmp(&names[sections[i].sh_name], ".strtab") == 0)
 				symnamessec = sections[i];
+			if (strcmp(&names[sections[i].sh_name], ".text") == 0)
+				textsec = sections[i];
 		}
 		
-		char symnames[1024];
+		char * symnames = malloc(symnamessec.sh_size);
 		fs_seek(file, symnamessec.sh_offset);
 		fs_read_file(file, symnames, symnamessec.sh_size, &rb);
 		
@@ -266,7 +269,32 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			}
 		}
 				
+		// dump .text section BEFORE patching
+		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+		screen->printf(screen, ".text section BEFORE patching:%-80s\n", "");
+		screen->printf(screen, "\n%-12s%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c", "", 
+								'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+								'a', 'b', 'c', 'd', 'e', 'f');
+		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		
+		unsigned char * textdata = malloc(textsec.sh_size);
+		fs_seek(file, textsec.sh_offset);
+		fs_read_file(file, textdata, textsec.sh_size, &rb);
+		
+		for ( int i = 0 ; i < rb; i++){
+			if (i % 0x10 == 0){
+				screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+				screen->printf(screen, "\n0x%-10x", i);
+				screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+			}
+			screen->printf(screen, "%-2x ", textdata[i]);
+			
+		}
+		
+		free(textdata);
+		free(symnames);
+		free(sections);
+		free(names);
 		fs_close_file(file);
 	} else {
 		screen->printf(screen, "Failed to open file.\n");

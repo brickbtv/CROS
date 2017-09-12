@@ -98,7 +98,7 @@ void app_disasm(const char * args){
 	
 	app.sym_table = init_symbol_table();
 	
-	app.next_addr = show_asm(app.screen, addr);
+	app.next_addr = show_asm(app.screen, addr, app.sym_table);
 	
 	while (1){
 		while (sdk_prc_haveNewMessage()){
