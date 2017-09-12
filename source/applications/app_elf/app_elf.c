@@ -105,7 +105,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		fs_read_file(file, (char*)&elf_header, sizeof(Elf32_Ehdr), &rb);
 		//memcpy(&elf_header, buff, sizeof(Elf32_Ehdr));
 		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
-		screen->printf(screen, "ELF header:\n");
+		screen->printf(screen, "ELF header:%-80s\n", "");
 		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		
 		screen->printf(screen, "e_ident: magic: %c%c%c%c\n", 
@@ -142,7 +142,19 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		
 		// table of sections headers
 		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
-		screen->printf(screen, "ELF sections header\n");
+		screen->printf(screen, "ELF sections header:%-80s\n", "");
+		screen->printf(screen, "%-3s%-16s%-13s%-10s%-5s%-7s%-5s%-5s%-5s%-8s%-3s\n", 
+									"#",
+									"name", 
+									"type",
+									"flags",
+									"addr",
+									"offs",
+									"size",
+									"link",
+									"info",
+									"align",
+									"es");
 		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		
 		for (int i = 0; i < elf_header.e_shnum; i++){
@@ -152,12 +164,23 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			
 			if (i == 0)	// always empty 
 				continue;
-				
-			screen->printf(screen, "%-3d%-15s%-13s%-2d0x%-2x0x%-4x%-4d%-3d%-3d%-3d%-3d\n", 
+			
+			int fl = elf_secheader.sh_flags;			
+			int b = 0;
+			char flags[4];
+			memset(flags, 0, 4);
+			if (fl & 0x1)
+				flags[b++] = 'W';
+			if (fl & 0x2)
+				flags[b++] = 'A';
+			if (fl & 0x4)
+				flags[b++] = 'E';
+			
+			screen->printf(screen, "%-3d%-16s%-13s%-10s0x%-3x0x%-5x%-5d%-5d%-5d%-8d%-3d\n", 
 									elf_secheader.sh_name, 
 									&names[elf_secheader.sh_name], 
 									section_type[elf_secheader.sh_type],
-									elf_secheader.sh_flags,
+									flags,
 									elf_secheader.sh_addr,
 									elf_secheader.sh_offset,
 									elf_secheader.sh_size,
@@ -165,17 +188,6 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									elf_secheader.sh_info,
 									elf_secheader.sh_addralign,
 									elf_secheader.sh_entsize);
-			
-			/*screen->printf(screen, "sh_name: %d (%s)\n", elf_secheader.sh_name, &names[elf_secheader.sh_name]);
-			screen->printf(screen, "sh_type: %d\n", elf_secheader.sh_type);
-			screen->printf(screen, "sh_flags: %d\n", elf_secheader.sh_flags);
-			screen->printf(screen, "sh_addr: %d\n", elf_secheader.sh_addr);
-			screen->printf(screen, "sh_offset: %d\n", elf_secheader.sh_offset);
-			screen->printf(screen, "sh_size: %d\n", elf_secheader.sh_size);
-			screen->printf(screen, "sh_link: %d\n", elf_secheader.sh_link);
-			screen->printf(screen, "sh_info: %d\n", elf_secheader.sh_info);
-			screen->printf(screen, "sh_addralign: %d\n", elf_secheader.sh_addralign);
-			screen->printf(screen, "sh_entsize: %d\n", elf_secheader.sh_entsize);*/
 			
 			sdk_prc_sleep(500);
 		}
@@ -192,7 +204,7 @@ void app_elf(const char* filename){
 	screen = ScreenClass_ctor(screen, cv);
 
 	elf_dump(screen, "ELF.T");
-	sdk_prc_sleep(10000);
+	sdk_prc_sleep(100000);
 	
 	sdk_prc_die();
 }
