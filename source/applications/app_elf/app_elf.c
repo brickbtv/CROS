@@ -89,6 +89,9 @@ typedef struct Elf32_Shdr
 } Elf32_Shdr;
 
 char * bytes_order[] = {"Unknown", "BIG", "LITTLE"};
+char * section_type[] = {"SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB", 
+						"SHT_RELA", "SHT_HASH", "SHT_DYNAMIC", "SHT_NOTE", 
+						"SHT_NOBITS", "SHT_REL"};
 
 void elf_dump(ScreenClass * screen, const char* filename){
 	FILE * file = fs_open_file(filename, 'r');
@@ -110,51 +113,60 @@ void elf_dump(ScreenClass * screen, const char* filename){
 									elf_header.e_ident[1],
 									elf_header.e_ident[2],
 									elf_header.e_ident[3]);
-		screen->printf(screen, "         word size: %d\t\t", 32 * elf_header.e_ident[4]);
+		screen->printf(screen, "         word size: %d\n", 32 * elf_header.e_ident[4]);
 		screen->printf(screen, "         bytes order: %s\n", bytes_order[elf_header.e_ident[5]]);
 		
-		screen->printf(screen, "e_type: %d\t\t", elf_header.e_type); 
-		screen->printf(screen, "e_machine: %d\t\t", elf_header.e_machine);
+		screen->printf(screen, "e_type: %d\n", elf_header.e_type); 
+		screen->printf(screen, "e_machine: %d\n", elf_header.e_machine);
 		screen->printf(screen, "e_version: %d\n", elf_header.e_version);
-		screen->printf(screen, "e_entry: 0x%x\t", elf_header.e_entry);
-		screen->printf(screen, "e_phoff: 0x%x\t\t", elf_header.e_phoff);
+		screen->printf(screen, "e_entry: 0x%x\n", elf_header.e_entry);
+		screen->printf(screen, "e_phoff: 0x%x\n", elf_header.e_phoff);
 		screen->printf(screen, "e_shoff: 0x%x\n", elf_header.e_shoff);
 		
-		screen->printf(screen, "e_flags: %d\t\t", elf_header.e_flags);
-		screen->printf(screen, "e_ehsize: %d\t\t", elf_header.e_ehsize);
+		screen->printf(screen, "e_flags: %d\n", elf_header.e_flags);
+		screen->printf(screen, "e_ehsize: %d\n", elf_header.e_ehsize);
 		screen->printf(screen, "e_phentsize: %d\n", elf_header.e_phentsize);
-		screen->printf(screen, "e_phnum: %d\t\t", elf_header.e_phnum );
-		screen->printf(screen, "e_shentsize: %d\t\t", elf_header.e_shentsize);
+		screen->printf(screen, "e_phnum: %d\n", elf_header.e_phnum );
+		screen->printf(screen, "e_shentsize: %d\n", elf_header.e_shentsize);
 		screen->printf(screen, "e_shnum: %d\n", elf_header.e_shnum);
 		screen->printf(screen, "e_shstrndx: %d\n", elf_header.e_shstrndx);
-				
-		//sdk_prc_sleep(5000);	
-		
+
 		// section with sections names
 		Elf32_Shdr elf_secheader_names;
 		fs_seek(file, elf_header.e_shoff + elf_header.e_shstrndx * elf_header.e_shentsize);
 		fs_read_file(file, (char*)&elf_secheader_names, sizeof(Elf32_Shdr), &rb);
-		//memcpy(&elf_secheader_names, &buff[], sizeof(Elf32_Shdr));
 		
-		char names[1024];//= &buff[elf_secheader_names.sh_offset];
+		char names[1024];
 		fs_seek(file, elf_secheader_names.sh_offset);
 		fs_read_file(file, names, elf_secheader_names.sh_size, &rb);
 		
 		// table of sections headers
+		screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+		screen->printf(screen, "ELF sections header\n");
+		screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+		
 		for (int i = 0; i < elf_header.e_shnum; i++){
 			Elf32_Shdr elf_secheader;
-			//memcpy(&elf_secheader, &buff[elf_header.e_shoff + i * elf_header.e_shentsize], sizeof(Elf32_Shdr));
 			fs_seek(file, elf_header.e_shoff + i * elf_header.e_shentsize);
 			fs_read_file(file, (char*)&elf_secheader, sizeof(Elf32_Shdr), &rb);
 			
 			if (i == 0)	// always empty 
 				continue;
 				
-			screen->setBackColor(screen, CANVAS_COLOR_BLUE);
-			screen->printf(screen, "ELF section header for %d, offset 0x%x:\n", i, elf_header.e_shoff + i * elf_header.e_shentsize);
-			screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+			screen->printf(screen, "%-3d%-15s%-13s%-2d0x%-2x0x%-4x%-4d%-3d%-3d%-3d%-3d\n", 
+									elf_secheader.sh_name, 
+									&names[elf_secheader.sh_name], 
+									section_type[elf_secheader.sh_type],
+									elf_secheader.sh_flags,
+									elf_secheader.sh_addr,
+									elf_secheader.sh_offset,
+									elf_secheader.sh_size,
+									elf_secheader.sh_link,
+									elf_secheader.sh_info,
+									elf_secheader.sh_addralign,
+									elf_secheader.sh_entsize);
 			
-			screen->printf(screen, "sh_name: %d (%s)\n", elf_secheader.sh_name, &names[elf_secheader.sh_name]);
+			/*screen->printf(screen, "sh_name: %d (%s)\n", elf_secheader.sh_name, &names[elf_secheader.sh_name]);
 			screen->printf(screen, "sh_type: %d\n", elf_secheader.sh_type);
 			screen->printf(screen, "sh_flags: %d\n", elf_secheader.sh_flags);
 			screen->printf(screen, "sh_addr: %d\n", elf_secheader.sh_addr);
@@ -163,9 +175,9 @@ void elf_dump(ScreenClass * screen, const char* filename){
 			screen->printf(screen, "sh_link: %d\n", elf_secheader.sh_link);
 			screen->printf(screen, "sh_info: %d\n", elf_secheader.sh_info);
 			screen->printf(screen, "sh_addralign: %d\n", elf_secheader.sh_addralign);
-			screen->printf(screen, "sh_entsize: %d\n", elf_secheader.sh_entsize);
+			screen->printf(screen, "sh_entsize: %d\n", elf_secheader.sh_entsize);*/
 			
-			sdk_prc_sleep(2000);
+			sdk_prc_sleep(500);
 		}
 		
 		fs_close_file(file);
