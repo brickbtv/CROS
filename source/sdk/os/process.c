@@ -5,8 +5,8 @@
 #include <details/memdetails.h>
 #include "debug.h"
 
-void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, Canvas * parent_canvas){
-	app_syscall4(syscall_prc_create_process,(unsigned int)entry_point, (unsigned int)&arg_line[0], (unsigned int)parent_canvas, (unsigned int)&name[0]);
+int sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, Canvas * parent_canvas){
+	return app_syscall4(syscall_prc_create_process,(unsigned int)entry_point, (unsigned int)&arg_line[0], (unsigned int)parent_canvas, (unsigned int)&name[0]);
 }
 
 unsigned int sdk_prc_sleep(unsigned int ms){
@@ -64,4 +64,22 @@ list_t * sdk_prc_get_scheduler_list(void){
 
 unsigned int sdk_prc_get_total_memory(void){
 	return (unsigned int)app_syscall0(syscall_get_total_memory);
+}
+
+void sdk_prc_wait_till_process_die(unsigned int pid){
+	int alive = 1;
+	ProcessDummy * prc;
+	while (alive){
+		list_t * processes_list = sdk_prc_get_scheduler_list();
+		list_node_t * node = processes_list->head;
+		alive = 0;
+		while (node){
+			prc = (ProcessDummy *) node->val;
+			if (prc->pid == pid)
+				alive = 1;
+			node = node->next;
+		}
+		if (alive)
+			sdk_prc_sleep(100);
+	}
 }

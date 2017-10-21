@@ -265,8 +265,12 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		sdk_prc_create_process((unsigned int)app_memprof, "memprofile", 0, 0);
 	} else if (COMMAND("ls")){
 		ls(screen, current_path);
-	} else if (COMMAND("elf")){
-		sdk_prc_create_process((unsigned int)app_elf, "elf", 0, 0);
+	} else if (COMMAND_WITH_ARGS("elf ")){
+		char * args = calloc(256);
+		sprintf(args, "%s", &input[strlen("elf ")]);
+	
+		CHECK_FILE_EXIST(args);
+		sdk_prc_create_process((unsigned int)app_elf, "elf", args, 0);
 	} else if (COMMAND("ps")){
 		ps(screen);
 	} else if (COMMAND("diskinfo")){
@@ -298,7 +302,23 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		sdk_prc_create_process((unsigned int)app_disasm, "disasm", args, 0);
 	} else if (COMMAND_WITH_ARGS("cat ")){
 		cat(screen, &input[strlen("cat ")]);
+	} else if (COMMAND("")){
+		// jsut new line
 	} else {
-		screen->printf(screen, "Unknown command. Type 'help' for commands list.\n");
+		if (is_file_exists(input)){
+			char * args = calloc(256);
+			sprintf(args, "%s", input);
+			
+			/*
+				TODO: find a best way to request the parent canvas
+			*/
+			if (COMMAND("ls")){
+				int pid = sdk_prc_create_process((unsigned int)app_elfrun, "elf", args, screen->getCanvas(screen));
+				sdk_prc_wait_till_process_die(pid);
+			} else
+				sdk_prc_create_process((unsigned int)app_elfrun, "elf", args, 0);
+		} else {
+			screen->printf(screen, "Unknown command. Type 'help' for commands list.\n");
+		}
 	}
 }

@@ -15,6 +15,7 @@
 #include <utils/timers_and_clocks/timers.h>
 
 #include "stdlib/details/memdetails.h"
+#include "app_disasm/decoder/asm_decoder.h"
 
 typedef struct APP_SHELL{
 	char input[128];
@@ -126,6 +127,12 @@ void printHelloMessage(){
 	shell.screen->printf(shell.screen, "%s>", shell.current_path);
 }
 
+void initSymTab(){
+	shell.screen->printf(shell.screen, "Init symbol table... ");
+	init_symbol_table();
+	shell.screen->printf(shell.screen, "done\n");
+}
+
 void app_shell(void){
 	initShellApp();
 		
@@ -137,8 +144,9 @@ void app_shell(void){
 	if (mount_drive_and_mkfs_if_needed(shell.screen, 0) == 2)
 		while(1){};	
 		
+	initSymTab();
 	printHelloMessage();
-
+	
 	while(1){
 		if (sdk_prc_is_focused()){		
 			while (sdk_prc_haveNewMessage()){

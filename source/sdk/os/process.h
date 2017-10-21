@@ -40,7 +40,7 @@ typedef struct ProcessDummy{
 	uint32_t entry_point;
 }ProcessDummy;
 
-void sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, Canvas * parent_canvas);
+int sdk_prc_create_process(unsigned int entry_point, char * name, char * arg_line, Canvas * parent_canvas);
 
 unsigned int sdk_prc_sleep(unsigned int ms);
 void sdk_prc_sleep_until_new_messages();
@@ -60,4 +60,6 @@ void sdk_prc_die(void);
 
 list_t * sdk_prc_get_scheduler_list(void);
 unsigned int sdk_prc_get_total_memory(void);
+
+void sdk_prc_wait_till_process_die(unsigned int pid);
 #endif

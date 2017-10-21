@@ -63,9 +63,13 @@ char* reverse_string(char *str)
 }
 
 #define ADD_SYMBOL(a){STR_SYMBOL * s1 = malloc(sizeof(STR_SYMBOL));	strcpy(s1->name, #a);	s1->address = (int)a;list_rpush(sym_table, list_node_new(s1));} 
+list_t * sym_table = 0;
 
 list_t * init_symbol_table(){
-	list_t * sym_table = list_new();
+	if (sym_table)
+		return sym_table;
+		
+	sym_table = list_new();
 
 	ADD_SYMBOL(sdk_debug_log);
 	ADD_SYMBOL(sdk_debug_logf);
