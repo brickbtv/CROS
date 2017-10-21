@@ -1,4 +1,4 @@
-#include "app_shell.h"
+//#include "app_shell.h"
 
 #include <sdk/scr/screen.h>
 #include <sdk/scr/ScreenClass.h>
@@ -8,8 +8,8 @@
 #include <sdk/clk/clock.h>
 
 #include <utils/filesystem/filesystem.h>
-#include "commands/commands.h"
-#include "mkfs/mkfs.h"
+#include "app_shell/commands/commands.h"
+#include "app_shell/mkfs/mkfs.h"
 
 #include <string_shared.h>
 #include <utils/timers_and_clocks/timers.h>

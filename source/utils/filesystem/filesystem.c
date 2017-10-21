@@ -51,22 +51,25 @@ FILE * fs_open_file(const char* path, const char mode){
 	
 	FRESULT res = f_open((FIL*)file->fil, path, open_mode);
 	if (res != FR_OK){
-		sdk_debug_logf("res: %d", res);
 		return 0;
 	}
 	
 	return file;
 }
 
+int fs_exists(const char * filename){
+	return f_stat(filename, 0);
+}
+
 void fs_close_file(FILE* file){
 	f_close((FIL*)file->fil);
 	
-	if (file != 0 && file->fil != 0){
-		//free(file->fil);
-		//free(file);
+	if (file && file->fil){
+		free(file->fil);
+		free(file);
 		
-		file->fil = 0;
-		file = 0;
+		//file->fil = 0;
+		//file = 0;
 	}
 }
 

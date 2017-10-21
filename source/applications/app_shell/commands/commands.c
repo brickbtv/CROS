@@ -22,6 +22,7 @@
 #include "app_disasm/app_disasm.h"
 #include "app_memprof/app_memprof.h"
 #include "app_elf/app_elf.h"
+#include "app_remdebug/app_remdebug.h"
 
 #include "sdk/syscall_def.h"
 #include "../mkfs/mkfs.h"
@@ -256,6 +257,8 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		cp(screen, &input[strlen("cp ")]);
 	} else if (COMMAND("chat")){
 		sdk_prc_create_process((unsigned int)app_chat, "chat", 0, 0);
+	} else if (COMMAND("remdebug")){
+		sdk_prc_create_process((unsigned int)app_remdebug, "remdebug", 0, 0);
 	} else if (COMMAND("chat_server")){
 		sdk_prc_create_process((unsigned int)app_chat_server, "chat_server", 0, 0);
 	} else if (COMMAND("memprofile")){

@@ -39,6 +39,8 @@ FOLDER * fs_opendir(const char* path);
 void fs_closedir(FOLDER* folder);
 int fs_readdir(FOLDER* folder, FILEINFO* fileinfo);
 
+int fs_exists(const char * filename);
+
 int fs_unlink(const char* path);
 int fs_chdir(const char* dir);
 int fs_chdrive(const char* path);

@@ -12,6 +12,8 @@
 #include "stdlib/stdio_shared.h"
 #include "stdlib/string_shared.h"
 
+#include "utils/filesystem/filesystem.h"
+
 #define NEXT_BYTE caddr++; instr = *caddr;
 
 #define IMM32 NEXT_BYTE unsigned long imm32 = instr; NEXT_BYTE imm32 = imm32 | instr << 8; NEXT_BYTE imm32 = imm32 | instr << 16; NEXT_BYTE imm32 = imm32 | instr << 24;
@@ -103,6 +105,34 @@ list_t * init_symbol_table(){
 	ADD_SYMBOL(sdk_nic_recv);
 	ADD_SYMBOL(sdk_nic_send);
 	ADD_SYMBOL(sdk_nic_sendf);
+	
+	ADD_SYMBOL(fs_mount_drive);
+	ADD_SYMBOL(fs_make_filesystem);
+	ADD_SYMBOL(fs_open_file);
+	ADD_SYMBOL(fs_close_file);
+	ADD_SYMBOL(fs_write_file);
+	ADD_SYMBOL(fs_read_file);
+
+	ADD_SYMBOL(fs_mkdir);
+	ADD_SYMBOL(fs_remove);
+
+	ADD_SYMBOL(fs_opendir);
+	ADD_SYMBOL(fs_closedir);
+	ADD_SYMBOL(fs_readdir);
+
+	ADD_SYMBOL(fs_exists);
+
+	ADD_SYMBOL(fs_unlink);
+	ADD_SYMBOL(fs_chdir);
+	ADD_SYMBOL(fs_chdrive);
+	ADD_SYMBOL(fs_getcwd);
+
+	ADD_SYMBOL(fs_seek);
+
+	ADD_SYMBOL(fs_getsize);
+	
+	ADD_SYMBOL(strlen);
+	
 	return sym_table;
 }
 

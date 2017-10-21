@@ -309,6 +309,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 				screen->setBackColor(screen, CANVAS_COLOR_RED);
 				screen->printf(screen, "FATAL! Symbol '%s' not found.%-80s\n", &symnames[elf_sym.st_name], "");
 				screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+				sdk_prc_sleep(100000);
 			}
 			
 			if (offset != 0)
@@ -370,7 +371,7 @@ void elf_dump(ScreenClass * screen, const char* filename){
 		sdk_debug_logf("text: 0x%x", &textdata[0]);
 		sdk_debug_logf("rodata: 0x%x", &rodata[0]);
 		sdk_prc_create_process((unsigned int)&textdata[0], filename, 0, (Canvas*)sdk_prc_getCanvas());
-		sdk_prc_sleep(100000);
+		sdk_prc_sleep(10000);
 		
 		free(rodata);
 		free(textdata);
@@ -388,8 +389,8 @@ void app_elf(const char* filename){
 	ScreenClass * screen = malloc(sizeof(ScreenClass));
 	screen = ScreenClass_ctor(screen, cv);
 
-	elf_dump(screen, "ELF.T");
-	sdk_prc_sleep(100000);
+	elf_dump(screen, "LS");
+	//sdk_prc_sleep(100000);
 	
 	sdk_prc_die();
 }

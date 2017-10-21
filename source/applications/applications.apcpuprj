@@ -95,6 +95,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\app_remdebug\\app_remdebug.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\app_remdebug\\app_remdebug.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\app_shell\\app_shell.c",
 			"bootfile": false
 		},
