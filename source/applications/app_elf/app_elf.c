@@ -289,6 +289,9 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 										"CROS addr");
 			screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		}
+		
+		unsigned char * textdata = malloc(textsec.sh_size);
+		
 		list_t * sym_table = init_symbol_table();
 		Elf32_Sym * elf_symbols = malloc(sizeof(Elf32_Sym)*(symsec.sh_size / symsec.sh_entsize));
 		for (int j = 1; j < symsec.sh_size / symsec.sh_entsize; j++){
@@ -322,15 +325,24 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 			
 			if (offset != 0)
 				elf_sym.st_value = offset;
+			else {
+				/*
+					IMPORTANT: Patch for callbacks and other pointers.
+					
+					If symbol already in text section, it should take an absolute offset, not local
+				*/
+				if (sections[elf_sym.st_shndx].sh_name == textsec.sh_name/* && elf_sym.st_info == 16*/){
+					elf_sym.st_value += (unsigned int)&textdata[0] + 1;
+				}
+			}
 			
 			elf_symbols[j] = elf_sym;
 		}
 		if (error_flag)
 			return error_flag;		
-			
+						
 		// dump .text section BEFORE patching
 		
-		unsigned char * textdata = malloc(textsec.sh_size);
 		fs_seek(file, textsec.sh_offset);
 		fs_read_file(file, textdata, textsec.sh_size, &rb);
 		
@@ -382,8 +394,21 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 		
 		// dump .text section AFTER patching
 		if (draw){
-			print_section(screen, &textsec, file, ".text section AFTER patching");
+			//print_section(screen, &textsec, file, ".text section AFTER patching");
+			int textdatalen = textsec.sh_size;
+	
+			for (int i = 0 ; i < textdatalen; i++){
+				if (i % 0x10 == 0){
+					screen->setBackColor(screen, CANVAS_COLOR_BLUE);
+					screen->printf(screen, "\n0x%-10x", i);
+					screen->setBackColor(screen, CANVAS_COLOR_BLACK);
+				}
+				screen->printf(screen, "%-2x ", textdata[i]);
+				
+			}
 		}
+		
+		//sdk_debug_logf("textdata: %x", &textdata[0]);
 		
 		// run app
 		if (!draw){
@@ -393,6 +418,7 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 				TODO: better way to sync process finish
 			*/
 			sdk_prc_wait_till_process_die(pid);
+			//sdk_prc_sleep(10000);
 		}				
 		free(rodata);
 		free(textdata);
