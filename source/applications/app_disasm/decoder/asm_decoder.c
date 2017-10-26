@@ -4,6 +4,7 @@
 #include "sdk/os/process.h"
 #include "sdk/clk/clock.h"
 #include "sdk/scr/screen.h"
+#include "sdk/scr/ScreenClass.h"
 #include "sdk/dkc/disk_drive.h"
 #include "sdk/kyb/keyboard.h"
 #include "sdk/nic/network.h"
@@ -11,8 +12,13 @@
 #include "stdlib/stdlib_shared.h"
 #include "stdlib/stdio_shared.h"
 #include "stdlib/string_shared.h"
+#include "stdlib/extern/tlsf/tlsf.h"
 
 #include "utils/filesystem/filesystem.h"
+#include "utils/gui/gui.h"
+#include "utils/gui/GuiClass.h"
+#include "utils/gui/charmap/charmap.h"
+#include "utils/timers_and_clocks/timers.h"
 
 #define NEXT_BYTE caddr++; instr = *caddr;
 
@@ -86,6 +92,7 @@ list_t * init_symbol_table(){
 	ADD_SYMBOL(sdk_prc_sleep);
 	ADD_SYMBOL(sdk_prc_sleep_until_new_messages);
 	ADD_SYMBOL(sdk_prc_unlock);
+	ADD_SYMBOL(sdk_prc_get_total_memory);
 	
 	ADD_SYMBOL(sdk_scr_clearArea);
 	ADD_SYMBOL(sdk_scr_clearScreen);
@@ -136,6 +143,35 @@ list_t * init_symbol_table(){
 	ADD_SYMBOL(fs_getsize);
 	
 	ADD_SYMBOL(strlen);
+	ADD_SYMBOL(find);
+	ADD_SYMBOL(strncpy);
+	ADD_SYMBOL(strcpy);
+	ADD_SYMBOL(atoi);
+	ADD_SYMBOL(sprintf);
+	
+	ADD_SYMBOL(malloc);
+	ADD_SYMBOL(calloc);
+	ADD_SYMBOL(free);
+	
+	ADD_SYMBOL(gui_charmap_draw_blink);
+	ADD_SYMBOL(gui_charmap_get_symbol);
+	ADD_SYMBOL(gui_charmap_handleMessage);
+	ADD_SYMBOL(gui_charmap_new);
+	ADD_SYMBOL(gui_charmap_redraw);
+	ADD_SYMBOL(gui_charmap_set_symbol);
+	ADD_SYMBOL(gui_draw_area);
+	ADD_SYMBOL(gui_draw_bottom);
+	ADD_SYMBOL(gui_draw_header);
+	
+	ADD_SYMBOL(timers_add_timer);
+	ADD_SYMBOL(timers_del_timer);
+	ADD_SYMBOL(timers_handleMessage);
+	
+	ADD_SYMBOL(tlsf_get_pool);
+	ADD_SYMBOL(tlsf_walk_pool);
+	
+	ADD_SYMBOL(ScreenClass_ctor);
+	ADD_SYMBOL(GuiClass_ctor);	
 	
 	return sym_table;
 }
@@ -523,4 +559,5 @@ unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr, list_
 	
 	return ++caddr;
 }
+
 
