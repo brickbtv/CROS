@@ -291,7 +291,7 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 		}
 		
 		unsigned char * textdata = malloc(textsec.sh_size);
-		
+				
 		list_t * sym_table = init_symbol_table();
 		Elf32_Sym * elf_symbols = malloc(sizeof(Elf32_Sym)*(symsec.sh_size / symsec.sh_entsize));
 		for (int j = 1; j < symsec.sh_size / symsec.sh_entsize; j++){
@@ -331,8 +331,8 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 					
 					If symbol already in text section, it should take an absolute offset, not local
 				*/
-				if (sections[elf_sym.st_shndx].sh_name == textsec.sh_name/* && elf_sym.st_info == 16*/){
-					elf_sym.st_value += (unsigned int)&textdata[0] + 1;
+				if (sections[elf_sym.st_shndx].sh_name == textsec.sh_name && elf_sym.st_info == 16){
+					elf_sym.st_value += (unsigned int)&textdata[0];
 				}
 			}
 			
@@ -340,7 +340,7 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 		}
 		if (error_flag)
 			return error_flag;		
-						
+		
 		// dump .text section BEFORE patching
 		
 		fs_seek(file, textsec.sh_offset);
@@ -357,7 +357,7 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 		fs_read_file(file, rodata, rodatasec.sh_size, &rb);
 		
 		if (draw){
-			print_section(screen, &reltextsec, file, ".rel.text section");
+			//print_section(screen, &reltextsec, file, ".rel.text section");
 		}
 		
 		// .text section PATCHING
@@ -372,19 +372,22 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 		    #define ELF32_R_INFO(s,t) (((s)<<8)+(unsigned char)(t))
 			
 			unsigned int obj_id = ELF32_R_SYM(rel_entry.r_info);
+			unsigned int obj_type = ELF32_R_TYPE(rel_entry.r_info);
+			
+			unsigned int additional_offset = (unsigned int)textdata[rel_entry.r_offset];
 			
 			// PATCH FOR system FUNCIONS
-			unsigned int NAD = elf_symbols[obj_id].st_value - (unsigned int)&textdata[0] - rel_entry.r_offset + 1;
+			unsigned int NAD = elf_symbols[obj_id].st_value - (unsigned int)&textdata[0] - rel_entry.r_offset + additional_offset;
 			
 			// PATCH FOR elf RODATA
 			//sdk_debug_logf("shndx: %d, rod: %d", sections[elf_symbols[obj_id].st_shndx].sh_name, rodatasec.sh_name);
 			
 			if (sections[elf_symbols[obj_id].st_shndx].sh_name == rodatasec.sh_name){
-				NAD = ((unsigned int)&rodata[elf_symbols[obj_id].st_value] - (unsigned int)&textdata[rel_entry.r_offset]) + 2;
+				NAD = ((unsigned int)&rodata[elf_symbols[obj_id].st_value] - (unsigned int)&textdata[rel_entry.r_offset]) + additional_offset;
 			}
 			
 			if (draw){
-				screen->printf(screen, "\nrelocate: 0x%-10x %-5d %-5d %s", rel_entry.r_offset, obj_id, rel_entry.r_info, &symnames[elf_symbols[obj_id].st_name]);
+				screen->printf(screen, "\nrelocate: 0x%-10x %-5d %-5d %-5d %s", rel_entry.r_offset, obj_id, obj_type, rel_entry.r_info, &symnames[elf_symbols[obj_id].st_name]);
 			}
 			textdata[rel_entry.r_offset] = NAD;
 			textdata[rel_entry.r_offset + 1] = NAD >> 8;
@@ -408,8 +411,6 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 			}
 		}
 		
-		//sdk_debug_logf("textdata: %x", &textdata[0]);
-		
 		// run app
 		if (!draw){
 			int pid = sdk_prc_create_process((unsigned int)&textdata[0], filename, 0, (Canvas*)sdk_prc_getCanvas());
@@ -418,7 +419,6 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 				TODO: better way to sync process finish
 			*/
 			sdk_prc_wait_till_process_die(pid);
-			//sdk_prc_sleep(10000);
 		}				
 		free(rodata);
 		free(textdata);
@@ -451,7 +451,7 @@ void app_elf(const char* filename){
 	
 	elf_dump(screen, filename, 1);
 	
-	screen->printf(screen, "\n\n\t\tPRESS ANY KEY TO EXIT\n\n");
+	screen->printf(screen, "\n\n\t\tPRESS Enter TO EXIT\n\n");
 	
 	int noexit = 1;
 	while(noexit){		
