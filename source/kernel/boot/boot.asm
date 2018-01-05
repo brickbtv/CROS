@@ -11,7 +11,7 @@ extern _krn_unexpectedContextSwitch
 
 ; reserve cpu registers context
 ; Address: 0x8	Size: 196 bytes
-.zero 196		; default registers set
+.zero 204		; default registers set
 
 ; init function
 _reset:

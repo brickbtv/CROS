@@ -68,9 +68,11 @@ bool krn_inited = false;
 void* krn_init(void){	
 	krn_debugLog("==============================");
 	krn_initMalloc();
-	
+	krn_debugLog("+++++++++");
+		
 	#define APPSTACKSIZE 1024*10
 	processKernel = prc_create("idle", APPSTACKSIZE, 1024*20, (uint32_t*) &krn_start, USERMODE_SUPERVISOR, 0, 0);
+	krn_debugLog("-----");
 	
 	krn_autorun();
 		
@@ -124,6 +126,7 @@ ScreenInfo scr_info;
 *	Kernel entry point. 
 */
 void krn_start(void){
+	krn_debugLog("==============================!");
 	hw_initAll();
 
 	hw_kyb_setCallback(kybCback);

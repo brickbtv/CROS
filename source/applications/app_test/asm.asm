@@ -11,7 +11,7 @@ _test_l:
 	nop
 	bl _test_l
 	nop
-	hwi
+	hwf
 	swi
 	nop
 	mrs r2

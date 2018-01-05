@@ -30,9 +30,12 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	if (krn_is_init() == TRUE)
 		krn_getIdleProcess()->sync_lock = TRUE;
 	
+	krn_debugLog("1");
 					 	
 	Process * prc = calloc(sizeof(Process));
 	//memset(prc, 0, sizeof(Process));
+	krn_debugLog("12");
+	
 	
 	// allocate stack
 	prc->stack = calloc(stackSize * sizeof(char));
@@ -57,6 +60,7 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 		prc->arg_line = calloc(arg_line_size);
 		strcpy(prc->arg_line, (char*)arg_line);
 	}
+	krn_debugLog("2");
 	
 	// allocate screen buffer
 	ScreenInfo info = hw_scr_screenInfo();
@@ -94,7 +98,10 @@ Process * prc_create(const char * name, uint32_t stackSize, uint32_t heapSize,
 	if (!isMultitaskingInitialized())
 		initMultitasking();
 	
+	krn_debugLog("3");
 	addProcessToScheduler(prc);
+	
+	krn_debugLog("4");
 
 	// set up events queue
 	prc->list_msgs = list_new();

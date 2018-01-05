@@ -239,13 +239,13 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		CHECK_FILE_EXIST(args);
 	
 		sdk_prc_create_process((unsigned int)app_texteditor, "edit", args, 0);
-	} else if (COMMAND_WITH_ARGS("paint ")){
+	/*} else if (COMMAND_WITH_ARGS("paint ")){
 		char * args = calloc(256);
 		sprintf(args, "%s", &input[strlen("paint ")]);
 	
 		CHECK_FILE_EXIST(args);
 	
-		sdk_prc_create_process((unsigned int)app_paint, "paint", args, 0);
+		sdk_prc_create_process((unsigned int)app_paint, "paint", args, 0);*/
 	} else if (COMMAND_WITH_ARGS("basic ")){
 		char * args = calloc(256);
 		sprintf(args, "%s", &input[strlen("basic ")]);
@@ -261,8 +261,8 @@ void manage_command(ScreenClass * screen, char * current_path, const char * inpu
 		sdk_prc_create_process((unsigned int)app_remdebug, "remdebug", 0, 0);
 	} else if (COMMAND("chat_server")){
 		sdk_prc_create_process((unsigned int)app_chat_server, "chat_server", 0, 0);
-	} else if (COMMAND("memprofile")){
-		sdk_prc_create_process((unsigned int)app_memprof, "memprofile", 0, 0);
+	//} else if (COMMAND("memprofile")){
+	//	sdk_prc_create_process((unsigned int)app_memprof, "memprofile", 0, 0);
 	} else if (COMMAND("ls")){
 		ls(screen, current_path);
 	} else if (COMMAND_WITH_ARGS("elf ")){

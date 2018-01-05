@@ -35,7 +35,9 @@ void hw_cpu_handleInterrupt(int reason, u32 data0, u32 data1){
 			break;
 		case HW_CPU_INTR_UNDEFINED_INSTRUCTION:
 			krn_debugLogf("INT: Undefined instruction. %s", prc->name);
-			krn_debugBSOD("CPU0 interruption", "Undefined instruction");
+			//krn_debugBSOD("CPU0 interruption", "Undefined instruction");
+			//prc->screen
+			prc->i_should_die = 1;
 			break;
 		case HW_CPU_INTR_ILLEGAL_INSTRUCTION:
 			krn_debugLogf("INT: Illegal instruction. %s", prc->name);
