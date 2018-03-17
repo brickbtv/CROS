@@ -15,8 +15,8 @@ typedef enum Usermode{
 */
 typedef struct Ctx{
 	int gregs[16];
-	int rim0, rim1;
 	int flags;
+	int rim0, rim1;
 	double fregs[16];
 } Ctx;
 
