@@ -8,5 +8,7 @@
 		".\\sdk\\sdk.apcpuprj",
 		".\\applications\\applications.apcpuprj",
 		".\\utils\\utils.apcpuprj"
-	]
+	],
+	"startup_project": "kernel",
+	"active_configuration": "Debug"
 }
