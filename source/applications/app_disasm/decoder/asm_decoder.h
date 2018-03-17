@@ -10,6 +10,7 @@ typedef struct STR_SYMBOL{
 } STR_SYMBOL;
 
 list_t * init_symbol_table();
-unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr, list_t * sym_table);
+//unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr, list_t * sym_table);
+void decode_instruction(Canvas * canvas, unsigned char * caddr, list_t * sym_table);
 
 #endif

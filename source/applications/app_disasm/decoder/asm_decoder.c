@@ -176,7 +176,42 @@ list_t * init_symbol_table(){
 	return sym_table;
 }
 
-unsigned char * decode_instruction(Canvas * canvas, unsigned char * caddr, list_t * sym_table){
+char * opcodes_min[] = {"and (logical AND)",  "eor (exclusive OR)",  "sub (subtraction)",  "rsb (reverse subtraction)",  "add (addition)",  "or  (logical OR)",  "sll (shift left logical/Shift left arithmetic)",  "srl (shift right logical)",  "sra (shift right arithmetic)",  "nop (no operation)",  "movrim0 (set rim0 upper 24 bits)",  "movrim1 (set rim1 upper 24 bits)",  "smul (signed multiplication)",  "umul (unsigned multiplication)",  "sdiv (signed division)",  "udiv (unsigned division)",  "strb (store byte)",  "strh (store half-word)",  "str  (store word)",  "ldrsb (load signed byte)",  "ldrub (load unsigned byte)",  "ldrsh (load signed half-word)",  "ldruh (load unsigned half-word)",  "ldrw  (load word)",  "not (bitwise NOT)",  "mov (move immediate/register to register)",  "cmp (compare and set flags)",  "msr/mrs (Store/Load flags register)",  "stm (store multiple)",  "ldm (load multiple)",  "dbgbrk (debug break)",  "nextirq (get next irq information)",  "rdtsc (read time stamp counter)",  "hwf (hardware function)",  "swi (software interrupt. aka: System call)",  "hlt (halt cpu)",  "ctxswitch (context switch)",  "memcpy (memory copy)",  "memset (memory set)",  "cmpxchg (compare and exchange)",  "RESERVED",  "RESERVED",  "RESERVED",  "RESERVED",  "RESERVED",  "RESERVED",  "RESERVED",  "RESERVED",  "beq (branch if equal) Z==1",  "bne (branch if not equal) Z==0",  "bcs/bhs (Carry set/ if unsigned higher or same) C==1",  "bcc/blo (Carry clear / if unsigned lower) C==0",  "bmi (if Negative set) N==1",  "bpl (if Negative clear) N==0",  "bvs (if Overflow set) V==1",  "bvc (if Overflow clear) V==0",  "bhi (if unsigned higher) C==1 && Z==0",  "bls (if unsigned lower or same) C==0 || Z==1",  "bge (if signed greater than or equal) N==V",  "blt (if signed less than) N!=V",  "bgt (if signed greater than) Z==0 && N==V",  "ble (if signed less than or equal) Z==1 || N!=V",  "b (branch always)",  "RESERVED",  "bleq (branch with link if equal)",  "blne (branch with link if not equal)",  "blcs/blhs",  "blmi",  "blpl",  "blvs",  "blvc",  "blhi",  "blhi",  "blls",  "blge",  "bllt",  "blgt",  "blle",  "bl",  "RESERVED",  "fadd (floating point addition)",  "fsub (floating point subtraction)",  "fmul (floating point multiplication)",  "fdiv (floating point division)",  "fpow (raise to power)",  "fmod (floating point remainder)",  "RESERVED",  "RESERVED",  "fstrs (floating point store single)",  "fstrd (floating point store double)",  "fldrs (floating point load single)",  "fldrd (floating point load double)",  "fstm (floating point store multiple)",  "fldm (floating point load multiple)",  "fcmp (floating point compare)",  "RESERVED",  "ffix (truncate floating point to integer value)",  "fflt (converts an integer value to a floating point)",  "fmov (copy floating point register)",  "fmvn (copy negated floating point register)",  "fabs (absolute value)",  "frnd (rounds to the neareast integral value)",  "fsqt (square root)",  "flog (base-10 logarithm)",  "flgn (base e logarithm)",  "fexp (base e exponential.  fst = e^fsrc)",  "fsin (sine of an angle)",  "fcos (cosine of an angle)",  "ftan (tangent of an angle)",  "fasn (arc sine)",  "facs (arc cosine)",  "fatn (arc tangent)",  "fmsr (copy bits as-is from an integer to float)",  "fmrs (copy bits as-is from a float to an integer) ",  "fmdr (copy bits as-is from an integer to a double)",  "fmrd (copy bits as-is from a double to an integer)", };
+
+void decode_instruction(Canvas * canvas, unsigned char * caddr, list_t * sym_table){
+	sdk_scr_printf(canvas, "\n");
+	sdk_scr_setTextColor(canvas, CANVAS_COLOR_GREEN);
+	
+	
+	sdk_scr_printf(canvas, " 0x%x    %-3x %-3x %-3x %-3x", caddr,*(caddr + 3), *(caddr + 2), *(caddr + 1), *caddr );
+	
+	
+	sdk_scr_setTextColor(canvas, CANVAS_COLOR_WHITE);
+	
+	unsigned char instr = *(caddr + 3);
+	if (instr < 116)
+		if (instr != 0x4E)
+			sdk_scr_printf(canvas, "    %s", opcodes_min[instr]);
+		else {
+			signed short offset = ((unsigned int)(*(caddr + 2)) << 16) + ((unsigned int)(*(caddr + 1)) << 8) + *(caddr);			
+			
+					
+			char name[64] = "";
+			int fres = get_symbol((int)((offset + 1) * 4 + caddr), name, sym_table);
+			sdk_scr_printf(canvas, "    bl, %x", (offset + 1) * 4 + caddr);
+			if (fres > 0){
+				sdk_scr_setTextColor(canvas, CANVAS_COLOR_RED);
+				sdk_scr_printf(canvas, " %s", name);
+				sdk_scr_setTextColor(canvas, CANVAS_COLOR_WHITE);
+			} else {
+				sdk_scr_printf(canvas, "    bl, %x", (offset + 1) * 4 + caddr);
+			}
+		}
+	else 
+		sdk_scr_printf(canvas, "    RESERVED");
+}
+
+unsigned char * decode_instruction_deprecated(Canvas * canvas, unsigned char * caddr, list_t * sym_table){
 	sdk_scr_printf(canvas, "\n");
 	sdk_scr_setTextColor(canvas, CANVAS_COLOR_GREEN);
 	//unsigned char * caddr = start_addr + i;

@@ -47,6 +47,10 @@ void msgHandlerDisasm(int type, int reason, int value, void * userdata){
 				if (value == KEY_DOWN){
 					app->next_addr = show_asm(app->screen, app->next_addr, app->sym_table);
 				}
+				
+				if (value == KEY_UP){
+					app->next_addr = show_asm(app->screen, app->next_addr - 8, app->sym_table);
+				}
 			}
 	}
 }
@@ -69,7 +73,8 @@ unsigned char * show_asm(ScreenClass * screen, unsigned char * addr, list_t * sy
 	unsigned char * second_instr;
 	
 	for (int i = 0; i < 23; i++){
-		addr_v = decode_instruction(screen->_canvas, (unsigned char *)addr_v, sym_table);
+		/*addr_v = */decode_instruction(screen->_canvas, (unsigned char *)addr_v, sym_table);
+		addr_v += 4;
 		if (i == 0)
 			second_instr = addr_v;
 	}
@@ -94,7 +99,7 @@ void app_disasm(const char * args){
 	sprintf(title, "DisASM: %s (%d)", args, (int)addr);
 	app.screen->clearScreen(app.screen, CANVAS_COLOR_BLACK);
 	app.gui->draw_header(app.gui, title);
-	app.gui->draw_bottom(app.gui, " DOWN - scroll\tINS^x - exit");
+	app.gui->draw_bottom(app.gui, " UP/DOWN - scroll\tINS^x - exit");
 	
 	app.sym_table = init_symbol_table();
 	
