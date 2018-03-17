@@ -29,7 +29,7 @@ void hex_dump(ScreenClass * screen, const char* filename){
 				
 		while(rb > 0){
 			screen->setBackColor(screen, CANVAS_COLOR_BLUE);
-			screen->printf(screen, "\n%-12s%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c%-3c", "", 
+			screen->printf(screen, "\n%-12s%-3c%-3c%-3c%-3c%-5c%-3c%-3c%-3c%-5c%-3c%-3c%-3c%-5c%-3c%-3c%-3c", "", 
 									'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 									'a', 'b', 'c', 'd', 'e', 'f');
 			screen->setBackColor(screen, CANVAS_COLOR_BLACK);
@@ -148,7 +148,6 @@ void print_section(ScreenClass * screen, Elf32_Shdr * section, FILE * file, char
 			screen->setBackColor(screen, CANVAS_COLOR_BLACK);
 		}
 		screen->printf(screen, "%-2x ", data[i]);
-		
 	}
 	free(data);
 }
@@ -311,6 +310,7 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 										&names[sections[elf_sym.st_shndx].sh_name],
 										offset);
 			}
+			//sdk_prc_sleep(5000);
 			
 			// Fatal: Can't find symbol in ELF and System SDK. 
 			/*
@@ -331,7 +331,8 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 					
 					If symbol already in text section, it should take an absolute offset, not local
 				*/
-				if (sections[elf_sym.st_shndx].sh_name == textsec.sh_name && elf_sym.st_info == 16){
+				if (sections[elf_sym.st_shndx].sh_name == textsec.sh_name && elf_sym.st_info == 32){
+					sdk_debug_logf("FOUNDFDFFF %s", &symnames[elf_sym.st_name]);
 					elf_sym.st_value += (unsigned int)&textdata[0];
 				}
 			}
@@ -342,7 +343,6 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 			return error_flag;		
 		
 		// dump .text section BEFORE patching
-		
 		fs_seek(file, textsec.sh_offset);
 		fs_read_file(file, textdata, textsec.sh_size, &rb);
 		
@@ -350,11 +350,15 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 			print_section(screen, &textsec, file, ".text section BEFORE patching");
 		}
 		
+		sdk_debug_logf("TEXTDATA: 0x%x",(unsigned int)&textdata[0]);
+		
 		// .rodata section (constants like strings)
 		
 		unsigned char * rodata = malloc(rodatasec.sh_size);
-		fs_seek(file, rodatasec.sh_offset);
-		fs_read_file(file, rodata, rodatasec.sh_size, &rb);
+		if (rodatasec.sh_size > 0){
+			fs_seek(file, rodatasec.sh_offset);
+			fs_read_file(file, rodata, rodatasec.sh_size, &rb);
+		}
 		
 		if (draw){
 			//print_section(screen, &reltextsec, file, ".rel.text section");
@@ -374,25 +378,60 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 			unsigned int obj_id = ELF32_R_SYM(rel_entry.r_info);
 			unsigned int obj_type = ELF32_R_TYPE(rel_entry.r_info);
 			
-			unsigned int additional_offset = (unsigned int)textdata[rel_entry.r_offset];
-			
+			unsigned int additional_offset = (unsigned int)textdata[rel_entry.r_offset + 0];
+						
 			// PATCH FOR system FUNCIONS
 			unsigned int NAD = elf_symbols[obj_id].st_value - (unsigned int)&textdata[0] - rel_entry.r_offset + additional_offset;
 			
 			// PATCH FOR elf RODATA
-			//sdk_debug_logf("shndx: %d, rod: %d", sections[elf_symbols[obj_id].st_shndx].sh_name, rodatasec.sh_name);
+			sdk_debug_logf("shndx: 0x%x, rods.sh_name: 0x%x, 0x%x, 0x%x, 0x%x = 0x%x", elf_symbols[obj_id].st_value, (unsigned int)&textdata[0], rel_entry.addend, rel_entry.r_offset, additional_offset, NAD);
 			
 			if (sections[elf_symbols[obj_id].st_shndx].sh_name == rodatasec.sh_name){
-				NAD = ((unsigned int)&rodata[elf_symbols[obj_id].st_value] - (unsigned int)&textdata[rel_entry.r_offset]) + additional_offset;
+				NAD = ((unsigned int)&rodata[elf_symbols[obj_id].st_value] - (unsigned int)&textdata[rel_entry.r_offset]) /*+ additional_offset*/;
+				NAD -= 8;
+				
+				sdk_debug_logf("NAD: %x", NAD);
+								
+				textdata[rel_entry.r_offset + 0] = (unsigned short)(NAD >> 8  & 0xFF);
+				textdata[rel_entry.r_offset + 1] = (unsigned short)(NAD >> 16 & 0xFF);
+				textdata[rel_entry.r_offset + 2] = (unsigned short)(NAD >> 24 & 0xFF);
+				textdata[rel_entry.r_offset + 4] = (unsigned short)(NAD       & 0xFF);
+				
+			} else {
+				
+				
+				if (textdata[rel_entry.r_offset + 3] == 0xA){
+					
+					NAD = -(unsigned int)&textdata[0] + elf_symbols[obj_id].st_value/* + additional_offset*/;
+					NAD += 8;
+					sdk_debug_logf("FULLFCKNGOFFS: %x", NAD);
+					textdata[rel_entry.r_offset + 0] = (unsigned short)(NAD >> 8  & 0xFF);
+					textdata[rel_entry.r_offset + 1] = (unsigned short)(NAD >> 16 & 0xFF);
+					textdata[rel_entry.r_offset + 2] = (unsigned short)(NAD >> 24 & 0xFF);
+					textdata[rel_entry.r_offset + 4] = (unsigned short)(NAD       & 0xFF);
+				} else {
+					NAD /= 4;
+					NAD --;
+					textdata[rel_entry.r_offset + 0] = (unsigned short)(NAD       & 0xFF);
+					textdata[rel_entry.r_offset + 1] = (unsigned short)(NAD >>  8 & 0xFF);
+					textdata[rel_entry.r_offset + 2] = (unsigned short)(NAD >> 16 & 0xFF);
+				}
 			}
 			
 			if (draw){
-				screen->printf(screen, "\nrelocate: 0x%-10x %-5d %-5d %-5d %s", rel_entry.r_offset, obj_id, obj_type, rel_entry.r_info, &symnames[elf_symbols[obj_id].st_name]);
+				screen->printf(screen, "\nrelocate: 0x%-10x %-5d %-5d %-5d %-5d %s", rel_entry.r_offset, obj_id, obj_type, rel_entry.r_info, elf_symbols[obj_id].st_info, &symnames[elf_symbols[obj_id].st_name]);
 			}
-			textdata[rel_entry.r_offset] = NAD;
-			textdata[rel_entry.r_offset + 1] = NAD >> 8;
-			textdata[rel_entry.r_offset + 2] = NAD >> 16;
-			textdata[rel_entry.r_offset + 3] = NAD >> 24;
+			
+			
+			
+			//textdata[rel_entry.r_offset + 5] = (unsigned int)(NAD       & 0xFF);
+			//textdata[rel_entry.r_offset + 1] = (unsigned int)(NAD >> 8  & 0xFF);
+			//textdata[rel_entry.r_offset + 2] = (unsigned int)(NAD >> 16 & 0xFF);
+			//textdata[rel_entry.r_offset + 3] = (unsigned int)(NAD >> 24 & 0xFF);		
+			
+			//textdata[rel_entry.r_offset + 0] = (unsigned short)(NAD       & 0xFF);
+			//textdata[rel_entry.r_offset + 1] = (unsigned short)(NAD >>  8 & 0xFF);
+			//textdata[rel_entry.r_offset + 2] = (unsigned short)(NAD >> 16 & 0xFF);
 		}
 		
 		// dump .text section AFTER patching
@@ -419,7 +458,10 @@ int elf_dump(ScreenClass * screen, const char* filename, int draw){
 				TODO: better way to sync process finish
 			*/
 			sdk_prc_wait_till_process_die(pid);
-		}				
+		}			
+		
+		//sdk_prc_sleep(1000000);
+		
 		free(rodata);
 		free(textdata);
 		free(symnames);
