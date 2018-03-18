@@ -113,6 +113,7 @@ list_t * init_symbol_table(){
 	ADD_SYMBOL(sdk_dkc_read);
 	ADD_SYMBOL(sdk_dkc_write);
 	
+	ADD_SYMBOL(sdk_nic_getAddress);
 	ADD_SYMBOL(sdk_nic_recv);
 	ADD_SYMBOL(sdk_nic_send);
 	ADD_SYMBOL(sdk_nic_sendf);

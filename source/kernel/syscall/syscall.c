@@ -144,6 +144,11 @@ void syscall_clk_setCountdownTimer(void){
 //		NETWORK		//
 //////////////////////
 
+void syscall_nic_address(void){
+	Process * prc = prc_getCurrentProcess();
+	prc->context->gregs[0] = hw_nic_getInformation();
+}
+
 void syscall_nic_debug(void){
 	Process * prc = prc_getCurrentProcess();
 	char * msg = (char *)prc->context->gregs[0];
@@ -240,6 +245,7 @@ F_SYSCALL syscalls_cbacks[] =
 	syscall_clk_readCountdownTimer,
 	syscall_clk_setCountdownTimer,
 	// network
+	syscall_nic_address,
 	syscall_nic_debug,
 	syscall_nic_send,
 	syscall_nic_recv,

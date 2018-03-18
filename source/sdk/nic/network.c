@@ -6,6 +6,10 @@
 #include <stdarg_shared.h>
 #include <stdio_shared.h>
 
+int sdk_nic_getAddress(void){
+	return app_syscall0(syscall_nic_address);
+}
+
 void sdk_nic_send(unsigned int addr, const char * msg, unsigned int size){
 	app_syscall3(syscall_nic_send, addr, (unsigned int)&msg[0], size);
 }
