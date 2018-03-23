@@ -62,6 +62,9 @@ int fs_exists(const char * filename){
 }
 
 void fs_close_file(FILE* file){
+	if (!file)
+		return;
+		
 	f_close((FIL*)file->fil);
 	
 	if (file && file->fil){
@@ -73,7 +76,7 @@ void fs_close_file(FILE* file){
 	}
 }
 
-int fs_write_file(FILE* file, const char * buf){
+int fs_write_file(FILE* file, const unsigned char * buf){
 	UINT bw; 
 	f_write((FIL*)file->fil, buf, strlen(buf), &bw);
 	
@@ -84,7 +87,19 @@ int fs_write_file(FILE* file, const char * buf){
 	return FS_OK;
 }
 
-int fs_read_file(FILE* file, char* buf, unsigned int size, unsigned int* readed_bytes){
+int fs_write_file_binary(FILE* file, const unsigned char * buf, unsigned int size){
+	UINT bw; 
+	f_write((FIL*)file->fil, buf, size, &bw);
+	
+	if (bw != size){
+		return FS_UNKNOWN_ERROR;
+	}
+	
+	return FS_OK;
+}
+
+
+int fs_read_file(FILE* file, unsigned char* buf, unsigned int size, unsigned int* readed_bytes){
 	FRESULT res = f_read((FIL*)file->fil, buf, size, readed_bytes);
 	
 	DEF_ERR_HANDLER(res)

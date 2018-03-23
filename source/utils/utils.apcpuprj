@@ -111,6 +111,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\networking\\networking.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\networking\\networking.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\filesystem\\fatfs\\src\\option\\syscall.c",
 			"bootfile": false
 		},

@@ -29,8 +29,9 @@ int fs_mount_drive(int drive_id);
 int fs_make_filesystem(int drive_id);
 FILE * fs_open_file(const char* path, const char mode);
 void fs_close_file(FILE* file);
-int fs_write_file(FILE* file, const char * buf);
-int fs_read_file(FILE* file, char* buf, unsigned int size, unsigned int* readed_bytes);
+int fs_write_file(FILE* file, const unsigned  char * buf);
+int fs_read_file(FILE* file, unsigned char* buf, unsigned int size, unsigned int* readed_bytes);
+int fs_write_file_binary(FILE* file, const unsigned char * buf, unsigned int size);
 
 int fs_mkdir(const char* path);
 int fs_remove(const char* path);

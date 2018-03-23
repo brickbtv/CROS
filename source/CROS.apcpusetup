@@ -22,6 +22,40 @@
 					]
 				}				
 			]
+		},
+		{
+			"name" : "FileTransfer",
+			"description" : "2 VM, 2 DD",
+			"vms" : [
+				
+				{
+					"ramkb" : 4096,
+					"speedhz" : 32000000,
+					"autodelete" : true,
+					"opensimulator" : true,
+					
+					"disks" : [
+						{
+							"slot" : 0,
+							"guid" : "90A4030C49E96596D7003B91A26685A0",
+						}						
+					]
+				},
+				{
+					"ramkb" : 4096,
+					"speedhz" : 32000000,
+					"autodelete" : true,
+					"opensimulator" : true,
+					
+					"disks" : [
+						{
+							"slot" : 0,
+							"guid" : "93317D1846B643B74FF2C9A779F0F7AF",
+						}						
+					]
+				}	
+				
+			]
 		}
 	]
 }
