@@ -123,6 +123,7 @@ list_t * init_symbol_table(){
 	ADD_SYMBOL(fs_open_file);
 	ADD_SYMBOL(fs_close_file);
 	ADD_SYMBOL(fs_write_file);
+	ADD_SYMBOL(fs_write_file_binary);
 	ADD_SYMBOL(fs_read_file);
 
 	ADD_SYMBOL(fs_mkdir);
@@ -147,6 +148,8 @@ list_t * init_symbol_table(){
 	ADD_SYMBOL(find);
 	ADD_SYMBOL(strncpy);
 	ADD_SYMBOL(strcpy);
+	ADD_SYMBOL(strcmp);
+	ADD_SYMBOL(strncmp);
 	ADD_SYMBOL(atoi);
 	ADD_SYMBOL(sprintf);
 	
