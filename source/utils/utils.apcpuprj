@@ -79,6 +79,14 @@
 			"bootfile": false
 		},
 		{
+			"path": ".\\elf\\elf.c",
+			"bootfile": false
+		},
+		{
+			"path": ".\\elf\\elf.h",
+			"bootfile": false
+		},
+		{
 			"path": ".\\filesystem\\fatfs\\src\\ff.c",
 			"bootfile": false
 		},
